@@ -2,55 +2,59 @@
 
 ## Start Here
 
-For the current player and stream-resolution investigation, read:
+For the current app and playback investigation, read:
 
 - [`HANDOFF_PLAYER_DEBUG.md`](./HANDOFF_PLAYER_DEBUG.md)
 
 That file contains:
-- the current backend/mobile architecture
-- the stream URL resolution flow for mobile
+- the current `mobile-api-base` app architecture
+- the current playback flow for direct streams and embed sources
 - verified good/bad source behavior
 - the latest debugging findings
-- the next follow-up items for source resolution and player stability
+- the next follow-up items for player stability
 
 ## Repository Layout
 
-- `backend/`: Fastify middleware that crawls public Motchill data, normalizes it, caches it, and resolves playback URLs.
-- `mobile/`: Flutter app for Android/iOS that consumes the backend API and plays native-playable streams with `video_player`.
+- `mobile-api-base/`: Flutter mobile app for Android/iOS that talks directly to the public Motchill API and renders the catalog, detail, search, and player screens.
+- `docs/`: Specs, plans, and archived investigation notes.
+- `docs/release/`: Release artifacts such as APK builds for handoff or testing.
+
+The old `backend/` and `mobile/` split has been removed from the current codebase. Historical notes may still exist in `docs/superpowers/` for context.
 
 ## Local Development
-
-Backend:
-
-```bash
-cd backend
-npm install
-npm start
-```
 
 Flutter app:
 
 ```bash
-cd mobile
+cd mobile-api-base
+fvm use 3.41.6
+fvm flutter pub get
+fvm flutter run
+```
+
+If you are not using `fvm`, install Flutter `3.41.6` first, then run:
+
+```bash
+cd mobile-api-base
 flutter pub get
 flutter run
 ```
 
-Default API base URLs:
+The app reads the public API base from `MOTCHILL_PUBLIC_API_BASE_URL` and defaults to:
 
-- Android emulator: `http://10.0.2.2:3000`
-- iOS simulator: `http://127.0.0.1:3000`
+- `https://motchilltv.taxi`
 
 Override with:
 
 ```bash
-flutter run --dart-define=MOTCHILL_API_BASE_URL=http://your-backend:3000
+flutter run --dart-define=MOTCHILL_PUBLIC_API_BASE_URL=https://your-mirror.example
 ```
 
-## Key Endpoints
+## Key Endpoints Used By The App
 
-- `GET /health`
-- `GET /api/home`
-- `GET /api/search?q=...`
-- `GET /api/episode/:slug`
-- `GET /api/playback/:slug`
+- `GET /api/moviehomepage`
+- `GET /api/movie/:slug`
+- `GET /api/movie/preview/:slug`
+- `GET /api/navbar`
+- `GET /api/ads/popup`
+- `GET /api/play/get?movieId=...&episodeId=...&server=...`

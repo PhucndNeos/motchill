@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Archive note:** This is a historical plan from before the repo was consolidated into `mobile-api-base` and before the current player architecture changed. Keep it for context only; the paths and backend assumptions below are not the current codebase state.
+
 **Goal:** Resolve playback the same way the web embed does, then expose only native-playable URLs to Flutter so Android and iOS can use `video_player` without WebView fallback.
 
 **Architecture:** The backend will fetch `/api/source/:id`, decrypt the payload with the same AES-CBC parameters the web uses, and normalize `Link`, `SubLink`, and track metadata into a stable playback response. Flutter will request playback from the backend, show only sources that the backend can resolve, and fail dead sources fast with a toast instead of switching into a broken state.

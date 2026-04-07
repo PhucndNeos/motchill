@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "name": "mobile-api-base (Flutter)",
+            "program": "lib/main.dart",
+            "cwd": "mobile-api-base",
+            "request": "launch",
+            "type": "dart"
+        }
+    ]
+}

@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Archive note:** This is a historical plan from when the project still assumed a backend HLS relay and a separate `mobile/` app. The current repository state no longer matches those paths or assumptions.
+
 **Goal:** Make the app play video through `video_player` only, using a backend HLS relay/proxy that rewrites playlists and proxies segments so iOS/Android native players can open the stream directly.
 
 **Architecture:** The backend remains the only place that talks to the upstream streaming hosts. It resolves playback metadata, rewrites playlists so every segment URI points back to the backend, and proxies segment bytes with the upstream headers needed to avoid TLS and hotlink issues. The Flutter app consumes only the backend relay URL and uses `video_player` as the sole playback mechanism; no WebView fallback remains in the product path.
