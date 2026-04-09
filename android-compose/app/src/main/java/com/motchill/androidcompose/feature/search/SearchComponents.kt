@@ -374,7 +374,7 @@ private fun SearchFilterStrip(
             label = uiState.selectedCountryLabel.ifBlank { "Quốc gia" },
             selected = uiState.selectedCountryLabel.isNotBlank(),
             onClick = { onOpenPicker(SearchPickerKind.Country) },
-            onClear = if (uiState.selectedCountryLabel.isBlank()) onClearCountry else null,
+            onClear = if (uiState.selectedCountryLabel.isNotBlank()) onClearCountry else null,
         )
         SearchFilterChip(
             label = uiState.selectedTypeLabel.ifBlank { "Loại phim" },
