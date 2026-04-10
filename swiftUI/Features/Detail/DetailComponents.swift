@@ -39,6 +39,15 @@ struct DetailScreen: View {
                 )
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                DetailIconButton(
+                    icon: viewModel.isLiked ? "heart.fill" : "heart",
+                    label: "Like",
+                    onTap: toggleLike
+                )
+            }
+        }
         .task(id: viewModel.movie.id) {
             guard viewModel.state == .idle else { return }
             await viewModel.load()
@@ -78,9 +87,6 @@ private struct DetailLoadedContent: View {
     let onOpenEpisode: (MotchillMovieEpisode) -> Void
 
     var body: some View {
-        let contentWidth = max(AppContainer.shared.configuration.screenSize.width - 48, 1)
-        let heroHeight = contentWidth * 10 / 16
-
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 DetailHeroSection(
@@ -91,9 +97,7 @@ private struct DetailLoadedContent: View {
                     onOpenEpisode: {
                         guard let episode = viewModel.detail?.episodes.first else { return }
                         onOpenEpisode(episode)
-                    },
-                    width: contentWidth,
-                    height: heroHeight
+                    }
                 )
 
                 DetailOverviewCard(
@@ -122,9 +126,8 @@ private struct DetailLoadedContent: View {
                     }
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 20)
-            .frame(width: contentWidth, alignment: .leading)
+            .padding(.horizontal, 16)
+            .frame(width: AppContainer.shared.configuration.screenSize.width)
         }
     }
 }
@@ -135,13 +138,10 @@ private struct DetailHeroSection: View {
     let onToggleLike: () -> Void
     let onOpenTrailer: () -> Void
     let onOpenEpisode: () -> Void
-    let width: CGFloat
-    let height: CGFloat
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             RemoteImageView(url: detailURL(viewModel.backDropURL()), cornerRadius: 0)
-                .frame(width: width, height: height)
                 .overlay(
                     LinearGradient(
                         colors: [
@@ -155,22 +155,6 @@ private struct DetailHeroSection: View {
                 )
 
             VStack(alignment: .leading, spacing: 14) {
-                HStack {
-                    DetailIconButton(
-                        icon: "chevron.left",
-                        label: "Back",
-                        onTap: { router.pop() }
-                    )
-
-                    Spacer()
-
-                    DetailIconButton(
-                        icon: viewModel.isLiked ? "heart.fill" : "heart",
-                        label: "Like",
-                        onTap: onToggleLike
-                    )
-                }
-
                 Spacer(minLength: 0)
 
                 VStack(alignment: .leading, spacing: 12) {
@@ -208,9 +192,7 @@ private struct DetailHeroSection: View {
                 .padding(.bottom, 8)
             }
             .padding(16)
-            .frame(width: width, height: height, alignment: .bottomLeading)
         }
-        .frame(width: width, height: height)
         .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 36, style: .continuous)

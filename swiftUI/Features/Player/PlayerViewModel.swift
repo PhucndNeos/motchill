@@ -23,6 +23,8 @@ final class PlayerViewModel {
     private var timeObserverToken: Any?
     @ObservationIgnored
     private var lastPersistedProgressBucket: Int64 = 0
+    @ObservationIgnored
+    private var overlayAutoHideTask: Task<Void, Never>?
 
     let movieID: Int
     let episodeID: Int
@@ -38,6 +40,7 @@ final class PlayerViewModel {
     var currentPositionMillis: Int64 = 0
     var durationMillis: Int64 = 0
     var isPlaying = false
+    var overlayVisible = true
 
     init(
         movieID: Int,
@@ -147,6 +150,24 @@ final class PlayerViewModel {
         }
     }
 
+    func handleOverlayTap() {
+        if overlayVisible {
+            hideOverlay()
+        } else {
+            showOverlayTemporarily()
+        }
+    }
+
+    func showOverlayTemporarily() {
+        overlayVisible = true
+        scheduleOverlayAutoHide()
+    }
+
+    func hideOverlay() {
+        overlayVisible = false
+        cancelOverlayAutoHide()
+    }
+
     func selectAudioTrack(_ track: MotchillPlayTrack?) {
         if let track, !availableAudioTracks.contains(track) {
             return
@@ -197,6 +218,7 @@ final class PlayerViewModel {
         player.pause()
         isPlaying = false
         detachTimeObserver()
+        cancelOverlayAutoHide()
     }
 
     func persistProgress() async {
@@ -241,6 +263,7 @@ final class PlayerViewModel {
 
         player.play()
         isPlaying = true
+        showOverlayTemporarily()
     }
 
     private func attachTimeObserver() {
@@ -276,6 +299,30 @@ final class PlayerViewModel {
             player.removeTimeObserver(timeObserverToken)
             self.timeObserverToken = nil
         }
+    }
+
+    private func scheduleOverlayAutoHide() {
+        overlayAutoHideTask?.cancel()
+        overlayAutoHideTask = Task { [weak self] in
+            do {
+                try await Task.sleep(nanoseconds: 3_000_000_000)
+            } catch {
+                return
+            }
+
+            guard !Task.isCancelled else { return }
+
+            await MainActor.run {
+                guard let self else { return }
+                self.overlayVisible = false
+                self.overlayAutoHideTask = nil
+            }
+        }
+    }
+
+    private func cancelOverlayAutoHide() {
+        overlayAutoHideTask?.cancel()
+        overlayAutoHideTask = nil
     }
 
     static func previewLoaded() -> PlayerViewModel {

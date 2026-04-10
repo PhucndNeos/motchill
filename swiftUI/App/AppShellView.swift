@@ -36,6 +36,5 @@ struct AppShellView: View {
                 }
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
     }
 }

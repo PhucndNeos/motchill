@@ -5,12 +5,9 @@ struct HomeScreen: View {
     let router: AppRouter
 
     var body: some View {
-        let contentWidth = max(AppContainer.shared.configuration.screenSize.width - 48, 1)
 
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                HomeHeader(onTapSearch: openSearch)
-
                 switch viewModel.state {
                 case .loading:
                     HomeStatusCard(
@@ -45,10 +42,26 @@ struct HomeScreen: View {
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 20)
-            .frame(width: contentWidth, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .background(HomeBackground().ignoresSafeArea())
+        .navigationTitle("Phuc TV")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: openSearch) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "magnifyingglass")
+                        Text("Tìm kiếm")
+                    }
+                    .font(AppTheme.bodyFont.weight(.semibold))
+                    .foregroundStyle(AppTheme.textPrimary)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)                    
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 
     private func retry() {
@@ -80,44 +93,6 @@ private struct HomeLoadedContent: View {
                 sections: viewModel.contentSections,
                 router: router
             )
-        }
-    }
-}
-
-private struct HomeHeader: View {
-    let onTapSearch: () -> Void
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Motchill")
-                    .font(AppTheme.titleFont)
-                    .foregroundStyle(AppTheme.textPrimary)
-
-                Text("Khám phá nội dung nổi bật, chuyển nhanh sang tìm kiếm, và giữ nhịp điều hướng giống Android.")
-                    .font(AppTheme.bodyFont)
-                    .foregroundStyle(AppTheme.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            Spacer(minLength: 12)
-
-            Button(action: onTapSearch) {
-                Label("Tìm kiếm", systemImage: "magnifyingglass")
-                    .font(AppTheme.bodyFont.weight(.semibold))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(
-                        Capsule(style: .continuous)
-                            .fill(Color.white.opacity(0.06))
-                    )
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                    )
-            }
-            .buttonStyle(.plain)
         }
     }
 }

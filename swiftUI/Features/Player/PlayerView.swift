@@ -60,46 +60,60 @@ private struct PlayerScreen: View {
                 .ignoresSafeArea()
 
             if let _ = viewModel.selectedSource {
-                VideoPlayer(player: viewModel.player)
-                    .ignoresSafeArea()
-                    .overlay(alignment: .topLeading) {
+                ZStack {
+                    VideoPlayer(player: viewModel.player)
+                        .ignoresSafeArea()
+                        .simultaneousGesture(
+                            TapGesture().onEnded {
+                                viewModel.handleOverlayTap()
+                            }
+                        )
+
+                    VStack {
                         PlayerTopBar(
                             movieTitle: viewModel.movieTitle,
                             episodeLabel: viewModel.episodeLabel,
-                            sourceName: viewModel.sourceTitle,
-                            onBack: { router.pop() }
+                            sourceName: viewModel.sourceTitle
                         )
-                    }
-                    .overlay(alignment: .bottomLeading) {
                         if !viewModel.playableSources.isEmpty {
-                            PlayerBlurChipRow(height: 54) {
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    LazyHStack(spacing: 8) {
-                                        ForEach(Array(viewModel.playableSources.enumerated()), id: \.element.id) { index, source in
-                                            Button(action: { viewModel.selectSource(index) }) {
-                                                Text(source.displayName)
-                                                    .font(AppTheme.captionFont.weight(.semibold))
-                                                    .foregroundStyle(index == viewModel.selectedSourceIndex ? Color.white : AppTheme.textPrimary)
-                                                    .padding(.horizontal, 12)
-                                                    .padding(.vertical, 8)
-                                                    .background(
-                                                        Capsule(style: .continuous)
-                                                            .fill(index == viewModel.selectedSourceIndex ? AppTheme.accent.opacity(0.20) : Color.white.opacity(0.05))
+                            LazyHStack(spacing: 8) {
+                                ForEach(Array(viewModel.playableSources.enumerated()), id: \.element.id) {
+                                    index,
+                                    source in
+                                    Button(action: { viewModel.selectSource(index) }) {
+                                        Text(source.displayName)
+                                            .font(AppTheme.captionFont.weight(.semibold))
+                                            .foregroundStyle(
+                                                index == viewModel.selectedSourceIndex ? Color.white : AppTheme.textPrimary
+                                            )
+                                            .padding()
+                                            .background(
+                                                Capsule(style: .continuous)
+                                                    .fill(
+                                                        index == viewModel.selectedSourceIndex ? AppTheme.accent
+                                                            .opacity(0.5) : Color.white
+                                                            .opacity(0.5)
                                                     )
-                                                    .overlay(
-                                                        Capsule(style: .continuous)
-                                                            .stroke(index == viewModel.selectedSourceIndex ? AppTheme.accent.opacity(0.40) : Color.white.opacity(0.10), lineWidth: 1)
+                                            )
+                                            .overlay(
+                                                Capsule(style: .continuous)
+                                                    .stroke(
+                                                        index == viewModel.selectedSourceIndex ? AppTheme.border : AppTheme.border,
+                                                        lineWidth: 1
                                                     )
-                                            }
-                                            .buttonStyle(.plain)
-                                        }
+                                            )
                                     }
+                                    .buttonStyle(.plain)
                                 }
                             }
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 20)
+                            .frame(height: 30)
                         }
+                        Spacer()
                     }
+                    .padding(.bottom, 20)
+                    .opacity(viewModel.overlayVisible ? 1 : 0)
+                    .allowsHitTesting(viewModel.overlayVisible)
+                }
             } else {
                 PlayerLoadingState(
                     title: viewModel.movieTitle,
@@ -129,12 +143,10 @@ private struct PlayerTopBar: View {
     let movieTitle: String
     let episodeLabel: String
     let sourceName: String
-    let onBack: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            PlayerIconButton(icon: "chevron.left", label: "Back", onTap: onBack)
-
+            Spacer()
             VStack(alignment: .leading, spacing: 6) {
                 Text(movieTitle)
                     .font(AppTheme.titleFont)
@@ -153,34 +165,9 @@ private struct PlayerTopBar: View {
                         .lineLimit(1)
                 }
             }
-
-            Spacer(minLength: 12)
+            Spacer()
         }
         .padding(20)
-    }
-}
-
-private struct PlayerBlurChipRow<Content: View>: View {
-    let content: Content
-    let height: CGFloat?
-
-    init(height: CGFloat? = nil, @ViewBuilder content: () -> Content) {
-        self.content = content()
-        self.height = height
-    }
-
-    var body: some View {
-        content
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(.ultraThinMaterial)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
-            )
-            .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
     }
 }
 
@@ -293,32 +280,21 @@ private struct PlayerIconButton: View {
     var body: some View {
         Button(action: onTap) {
             Image(systemName: icon)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(Color.white)
                 .padding(10)
                 .background(
                     Circle()
-                        .fill(Color.black.opacity(0.36))
+                        .fill(Color.black.opacity(0.56))
                 )
                 .overlay(
                     Circle()
-                        .stroke(Color.white.opacity(0.10), lineWidth: 1)
+                        .stroke(Color.white.opacity(0.50), lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
     }
-}
-
-private func formatDuration(_ positionMs: Int64) -> String {
-    let totalSeconds = max(positionMs, 0) / 1000
-    let hours = totalSeconds / 3600
-    let minutes = (totalSeconds % 3600) / 60
-    let seconds = totalSeconds % 60
-    if hours > 0 {
-        return String(format: "%d:%02d:%02d", hours, minutes, seconds)
-    }
-    return String(format: "%02d:%02d", minutes, seconds)
 }
 
 #Preview("Player") {
