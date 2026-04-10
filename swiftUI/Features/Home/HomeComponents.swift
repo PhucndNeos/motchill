@@ -5,6 +5,8 @@ struct HomeScreen: View {
     let router: AppRouter
 
     var body: some View {
+        let contentWidth = max(AppContainer.shared.configuration.screenSize.width - 48, 1)
+
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 HomeHeader(onTapSearch: openSearch)
@@ -43,7 +45,7 @@ struct HomeScreen: View {
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 20)
-            .frame(maxWidth: 1180, alignment: .leading)
+            .frame(width: contentWidth, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .background(HomeBackground().ignoresSafeArea())

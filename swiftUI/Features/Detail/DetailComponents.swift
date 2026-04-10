@@ -71,6 +71,8 @@ private struct DetailLoadedContent: View {
     let onOpenEpisode: () -> Void
 
     var body: some View {
+        let contentWidth = max(AppContainer.shared.configuration.screenSize.width - 48, 1)
+
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 DetailHeroSection(
@@ -108,7 +110,7 @@ private struct DetailLoadedContent: View {
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 20)
-            .frame(maxWidth: 1180, alignment: .leading)
+            .frame(width: contentWidth, alignment: .leading)
         }
     }
 }
@@ -243,6 +245,7 @@ private struct DetailOverviewCard: View {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .stroke(Color.white.opacity(0.10), lineWidth: 1)
         )
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
