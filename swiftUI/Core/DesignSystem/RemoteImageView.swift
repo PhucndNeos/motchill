@@ -3,11 +3,12 @@ import Kingfisher
 
 struct RemoteImageView: View {
     let url: URL?
+    var cornerRadius: CGFloat = 24
 
     var body: some View {
         KFImage(url)
             .placeholder {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .fill(
                         LinearGradient(
                             colors: [
@@ -17,11 +18,11 @@ struct RemoteImageView: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
-                    )
+                )
             }
             .resizable()
             .scaledToFill()
             .clipped()
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     }
 }

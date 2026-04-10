@@ -56,23 +56,12 @@ private struct PlayerScreen: View {
 
     var body: some View {
         ZStack {
-            PlayerBackground()
+            Color.black
                 .ignoresSafeArea()
 
             if let _ = viewModel.selectedSource {
                 VideoPlayer(player: viewModel.player)
                     .ignoresSafeArea()
-                    .overlay(
-                        LinearGradient(
-                            colors: [
-                                Color.black.opacity(0.12),
-                                Color.black.opacity(0.34),
-                                Color.black.opacity(0.80)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
                     .overlay(alignment: .topLeading) {
                         PlayerTopBar(
                             movieTitle: viewModel.movieTitle,
@@ -82,15 +71,34 @@ private struct PlayerScreen: View {
                         )
                     }
                     .overlay(alignment: .bottomLeading) {
-                        PlayerControlPanel(
-                            viewModel: viewModel,
-                            onSelectSource: viewModel.selectSource,
-                            onSelectAudioTrack: viewModel.selectAudioTrack,
-                            onSelectSubtitleTrack: viewModel.selectSubtitleTrack,
-                            onTogglePlayback: viewModel.togglePlayback,
-                            onSeekBack: { viewModel.seek(by: -viewModel.seekStepMillis) },
-                            onSeekForward: { viewModel.seek(by: viewModel.seekStepMillis) }
-                        )
+                        if !viewModel.playableSources.isEmpty {
+                            PlayerBlurChipRow(height: 54) {
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    LazyHStack(spacing: 8) {
+                                        ForEach(Array(viewModel.playableSources.enumerated()), id: \.element.id) { index, source in
+                                            Button(action: { viewModel.selectSource(index) }) {
+                                                Text(source.displayName)
+                                                    .font(AppTheme.captionFont.weight(.semibold))
+                                                    .foregroundStyle(index == viewModel.selectedSourceIndex ? Color.white : AppTheme.textPrimary)
+                                                    .padding(.horizontal, 12)
+                                                    .padding(.vertical, 8)
+                                                    .background(
+                                                        Capsule(style: .continuous)
+                                                            .fill(index == viewModel.selectedSourceIndex ? AppTheme.accent.opacity(0.20) : Color.white.opacity(0.05))
+                                                    )
+                                                    .overlay(
+                                                        Capsule(style: .continuous)
+                                                            .stroke(index == viewModel.selectedSourceIndex ? AppTheme.accent.opacity(0.40) : Color.white.opacity(0.10), lineWidth: 1)
+                                                    )
+                                            }
+                                            .buttonStyle(.plain)
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 20)
+                        }
                     }
             } else {
                 PlayerLoadingState(
@@ -152,185 +160,27 @@ private struct PlayerTopBar: View {
     }
 }
 
-private struct PlayerControlPanel: View {
-    let viewModel: PlayerViewModel
-    let onSelectSource: (Int) -> Void
-    let onSelectAudioTrack: (MotchillPlayTrack?) -> Void
-    let onSelectSubtitleTrack: (MotchillPlayTrack?) -> Void
-    let onTogglePlayback: () -> Void
-    let onSeekBack: () -> Void
-    let onSeekForward: () -> Void
+private struct PlayerBlurChipRow<Content: View>: View {
+    let content: Content
+    let height: CGFloat?
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(viewModel.movieTitle)
-                    .font(AppTheme.sectionTitleFont)
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .lineLimit(2)
-                Text(viewModel.episodeLabel)
-                    .font(AppTheme.bodyFont)
-                    .foregroundStyle(AppTheme.textSecondary)
-            }
-
-            if !viewModel.playableSources.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 8) {
-                        ForEach(Array(viewModel.playableSources.enumerated()), id: \.element.id) { index, source in
-                            Button(action: { onSelectSource(index) }) {
-                                Text(source.displayName)
-                                    .font(AppTheme.captionFont.weight(.semibold))
-                                    .foregroundStyle(index == viewModel.selectedSourceIndex ? Color.white : AppTheme.textPrimary)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        Capsule(style: .continuous)
-                                            .fill(index == viewModel.selectedSourceIndex ? AppTheme.accent.opacity(0.20) : Color.white.opacity(0.05))
-                                    )
-                                    .overlay(
-                                        Capsule(style: .continuous)
-                                            .stroke(index == viewModel.selectedSourceIndex ? AppTheme.accent.opacity(0.40) : Color.white.opacity(0.10), lineWidth: 1)
-                                    )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-            }
-
-            HStack(spacing: 10) {
-                Menu {
-                    Button("Auto", action: { onSelectAudioTrack(nil) })
-                    ForEach(viewModel.availableAudioTracks, id: \.self) { track in
-                        Button(track.displayLabel) { onSelectAudioTrack(track) }
-                    }
-                } label: {
-                    PlayerMenuChip(
-                        title: "Audio",
-                        value: viewModel.selectedAudioTrack?.displayLabel ?? "Auto"
-                    )
-                }
-                .disabled(viewModel.availableAudioTracks.isEmpty)
-
-                Menu {
-                    Button("Off", action: { onSelectSubtitleTrack(nil) })
-                    ForEach(viewModel.availableSubtitleTracks, id: \.self) { track in
-                        Button(track.displayLabel) { onSelectSubtitleTrack(track) }
-                    }
-                } label: {
-                    PlayerMenuChip(
-                        title: "Subtitle",
-                        value: viewModel.selectedSubtitleTrack?.displayLabel ?? "Off"
-                    )
-                }
-                .disabled(viewModel.availableSubtitleTracks.isEmpty)
-            }
-
-            HStack(spacing: 12) {
-                PlayerTransportButton(systemImage: "gobackward.10", label: "Back 10s", onTap: onSeekBack)
-                PlayerTransportButton(systemImage: viewModel.isPlaying ? "pause.fill" : "play.fill", label: viewModel.isPlaying ? "Pause" : "Play", filled: true, onTap: onTogglePlayback)
-                PlayerTransportButton(systemImage: "goforward.10", label: "Forward 10s", onTap: onSeekForward)
-
-                Spacer(minLength: 12)
-
-                Text("\(formatDuration(viewModel.currentPositionMillis)) / \(formatDuration(viewModel.durationMillis))")
-                    .font(AppTheme.captionFont.weight(.semibold))
-                    .foregroundStyle(AppTheme.textPrimary)
-            }
-
-            ProgressView(value: viewModel.progressFraction)
-                .tint(AppTheme.accent)
-        }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.black.opacity(0.38))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.white.opacity(0.10), lineWidth: 1)
-        )
-        .padding(.horizontal, 20)
-        .padding(.bottom, 20)
+    init(height: CGFloat? = nil, @ViewBuilder content: () -> Content) {
+        self.content = content()
+        self.height = height
     }
-}
-
-private struct PlayerMenuChip: View {
-    let title: String
-    let value: String
 
     var body: some View {
-        HStack(spacing: 8) {
-            Text(title)
-                .font(AppTheme.captionFont.weight(.semibold))
-                .foregroundStyle(AppTheme.textSecondary)
-            Text(value)
-                .font(AppTheme.captionFont.weight(.semibold))
-                .foregroundStyle(AppTheme.textPrimary)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(
-            Capsule(style: .continuous)
-                .fill(Color.white.opacity(0.05))
-        )
-        .overlay(
-            Capsule(style: .continuous)
-                .stroke(Color.white.opacity(0.10), lineWidth: 1)
-        )
-    }
-}
-
-private struct PlayerTransportButton: View {
-    let systemImage: String
-    let label: String
-    var filled: Bool = false
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            Image(systemName: systemImage)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color.white)
-                .frame(width: 44, height: 44)
-                .background(
-                    Circle()
-                        .fill(filled ? AppTheme.accent : Color.white.opacity(0.06))
-                )
-                .overlay(
-                    Circle()
-                        .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                )
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
-    }
-}
-
-private struct PlayerBackground: View {
-    var body: some View {
-        ZStack {
-            AppTheme.background
-
-            LinearGradient(
-                colors: [
-                    Color(red: 0.17, green: 0.10, blue: 0.18).opacity(0.65),
-                    .clear
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+        content
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(.ultraThinMaterial)
             )
-
-            RadialGradient(
-                colors: [
-                    Color(red: 0.92, green: 0.22, blue: 0.26).opacity(0.14),
-                    .clear
-                ],
-                center: .topTrailing,
-                startRadius: 0,
-                endRadius: 560
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
             )
-        }
+            .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
     }
 }
 

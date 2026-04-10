@@ -140,7 +140,7 @@ private struct DetailHeroSection: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            RemoteImageView(url: detailURL(viewModel.backDropURL()))
+            RemoteImageView(url: detailURL(viewModel.backDropURL()), cornerRadius: 0)
                 .frame(width: width, height: height)
                 .overlay(
                     LinearGradient(
