@@ -2,13 +2,12 @@ import SwiftUI
 
 struct HomeScreen: View {
     let viewModel: HomeViewModel
-    let onTapSearch: () -> Void
-    let onOpenDetail: () -> Void
+    let router: AppRouter
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                HomeHeader(onTapSearch: onTapSearch)
+                HomeHeader(onTapSearch: openSearch)
 
                 switch viewModel.state {
                 case .loading:
@@ -25,7 +24,7 @@ struct HomeScreen: View {
                         subtitle: "Trang chủ sẽ hiển thị các section khi dữ liệu sẵn sàng.",
                         showsProgress: false,
                         actionTitle: "Tìm kiếm",
-                        onAction: onTapSearch
+                        onAction: openSearch
                     )
                 case .error(let message):
                     HomeStatusCard(
@@ -38,8 +37,7 @@ struct HomeScreen: View {
                 case .loaded:
                     HomeLoadedContent(
                         viewModel: viewModel,
-                        onTapSearch: onTapSearch,
-                        onOpenDetail: onOpenDetail
+                        router: router
                     )
                 }
             }
@@ -56,27 +54,29 @@ struct HomeScreen: View {
             await viewModel.retry()
         }
     }
+
+    private func openSearch() {
+        router.push(.search)
+    }
 }
 
 private struct HomeLoadedContent: View {
     let viewModel: HomeViewModel
-    let onTapSearch: () -> Void
-    let onOpenDetail: () -> Void
+    let router: AppRouter
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             if !viewModel.heroMovies.isEmpty {
                 HomeHeroStage(
                     viewModel: viewModel,
-                    onOpenDetail: onOpenDetail
+                    router: router
                 )
                 .aspectRatio(4/3, contentMode: .fit)
             }
 
             HomeSectionList(
                 sections: viewModel.contentSections,
-                onTapSearch: onTapSearch,
-                onOpenDetail: onOpenDetail
+                router: router
             )
         }
     }
@@ -122,7 +122,7 @@ private struct HomeHeader: View {
 
 private struct HomeHeroStage: View {
     let viewModel: HomeViewModel
-    let onOpenDetail: () -> Void
+    let router: AppRouter
     @State private var activeHeroID: Int?
 
     var body: some View {
@@ -136,7 +136,7 @@ private struct HomeHeroStage: View {
                         HomeHeroSlideItem(
                             movie: movie,
                             onTap: {
-                                onOpenDetail()
+                                router.push(.detail(movie))
                             }
                         )
                         .frame(width: width, height: height)
@@ -327,16 +327,14 @@ private struct HomeBackground: View {
 
 private struct HomeSectionList: View {
     let sections: [MotchillHomeSection]
-    let onTapSearch: () -> Void
-    let onOpenDetail: () -> Void
+    let router: AppRouter
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             ForEach(sections, id: \.self) { section in
                 HomeSectionRail(
                     section: section,
-                    onTapSearch: onTapSearch,
-                    onOpenDetail: onOpenDetail
+                    router: router
                 )
             }
         }
@@ -345,8 +343,7 @@ private struct HomeSectionList: View {
 
 private struct HomeSectionRail: View {
     let section: MotchillHomeSection
-    let onTapSearch: () -> Void
-    let onOpenDetail: () -> Void
+    let router: AppRouter
 
     var body: some View {
         let products = section.products
@@ -362,7 +359,9 @@ private struct HomeSectionRail: View {
 
                     Spacer()
 
-                    Button(action: onTapSearch) {
+                    Button(action: {
+                        router.push(.search)
+                    }) {
                         Text("Xem thêm")
                             .font(AppTheme.captionFont.weight(.semibold))
                             .foregroundStyle(AppTheme.textPrimary)
@@ -383,10 +382,10 @@ private struct HomeSectionRail: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 12) {
                         ForEach(products, id: \.id) { movie in
-                            HomeMovieCard(
+                            MovieCardView(
                                 movie: movie,
                                 onTap: {
-                                    onOpenDetail()
+                                    router.push(.detail(movie))
                                 }
                             )
                         }
@@ -398,7 +397,7 @@ private struct HomeSectionRail: View {
     }
 }
 
-private struct HomeMovieCard: View {
+struct MovieCardView: View {
     let movie: MotchillMovieCard
     let onTap: () -> Void
 

@@ -1,27 +1,28 @@
 import SwiftUI
 
 struct AppShellView: View {
-    @State private var path: [AppRoute] = []
+    @State private var router = AppRouter()
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack(path: $router.path) {
             HomeView(
                 repository: AppContainer.shared.repository,
-                onTapSearch: {
-                    path.append(.search)
-                },
-                onOpenDetail: {
-                    path.append(.detail)
-                }
+                router: router
             )
             .navigationDestination(for: AppRoute.self) { route in
                 switch route {
                 case .home:
-                    HomeView(repository: AppContainer.shared.repository)
+                    HomeView(repository: AppContainer.shared.repository, router: router)
                 case .search:
                     SearchView()
-                case .detail:
-                    DetailView()
+                case .detail(let movie):
+                    DetailView(
+                        movie: movie,
+                        repository: AppContainer.shared.repository,
+                        likedMovieStore: AppContainer.shared.likedMovieStore,
+                        playbackPositionStore: AppContainer.shared.playbackPositionStore,
+                        router: router
+                    )
                 case .player:
                     PlayerView()
                 }

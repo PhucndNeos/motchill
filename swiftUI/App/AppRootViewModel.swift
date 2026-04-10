@@ -10,7 +10,6 @@ final class AppRootViewModel {
     let launchTargets: [AppRoute] = [
         .home,
         .search,
-        .detail,
         .player,
     ]
 

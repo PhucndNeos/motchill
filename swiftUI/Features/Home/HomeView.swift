@@ -2,37 +2,31 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var viewModel: HomeViewModel
-    let onTapSearch: () -> Void
-    let onOpenDetail: () -> Void
+    let router: AppRouter
     private let shouldLoadOnAppear: Bool
 
     init(
         repository: MotchillRepository,
-        onTapSearch: @escaping () -> Void = {},
-        onOpenDetail: @escaping () -> Void = {}
+        router: AppRouter
     ) {
         _viewModel = State(initialValue: HomeViewModel(repository: repository))
-        self.onTapSearch = onTapSearch
-        self.onOpenDetail = onOpenDetail
+        self.router = router
         self.shouldLoadOnAppear = true
     }
 
     init(
         viewModel: HomeViewModel,
-        onTapSearch: @escaping () -> Void = {},
-        onOpenDetail: @escaping () -> Void = {}
+        router: AppRouter
     ) {
         _viewModel = State(initialValue: viewModel)
-        self.onTapSearch = onTapSearch
-        self.onOpenDetail = onOpenDetail
+        self.router = router
         self.shouldLoadOnAppear = false
     }
 
     var body: some View {
         HomeScreen(
             viewModel: viewModel,
-            onTapSearch: onTapSearch,
-            onOpenDetail: onOpenDetail
+            router: router
         )
         .task {
             guard shouldLoadOnAppear else {

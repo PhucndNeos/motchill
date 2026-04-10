@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -371,19 +372,6 @@ private fun HomeSpotlightPanel(
                         .fillMaxSize()
                         .background(Color.Black.copy(alpha = 0.28f)),
                 )
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0xFF090909).copy(alpha = 0.95f),
-                                    Color(0xFF090909).copy(alpha = 0.80f),
-                                    Color.Transparent,
-                                ),
-                            ),
-                        ),
-                )
 
                 Column(
                     modifier = Modifier
@@ -611,7 +599,7 @@ private fun HomeRatingBadge(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF101010)
+@Preview(showBackground = true, backgroundColor = 0xFF101010, device = Devices.TABLET)
 @Composable
 private fun HomeScreenPreview() {
     HomeScreenContent(

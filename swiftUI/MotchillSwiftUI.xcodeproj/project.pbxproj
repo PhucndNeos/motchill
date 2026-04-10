@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0E35015989413977A8A494EE /* AppShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DF5A246B4C338C8B029D34D /* AppShellView.swift */; };
+		1A2B3C4D5E6F708192A3B4C5 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708192A3B4C4 /* AppRouter.swift */; };
 		28C8A905C95B3E48B51BE02D /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25D1DCCD752344925DA3A644 /* SearchView.swift */; };
 		2ADE81018F407143CA9A4637 /* PlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D4E882AB801EC0ED8296E9 /* PlayerViewModel.swift */; };
 		44275316F121033B65345D97 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60E35DF450A83DEA5F566362 /* Foundation.framework */; };
@@ -16,6 +17,9 @@
 		5212D2E2B0AE4E3DAA3A3A22 /* HomeMockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5212D2E2B0AE4E3DAA3A3A12 /* HomeMockData.swift */; };
 		5212D2E2B0AE4E3DAA3A3A23 /* HomeScreenState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5212D2E2B0AE4E3DAA3A3A13 /* HomeScreenState.swift */; };
 		58EA0E06425B4CEEB1F55CCF /* DetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECEEF25F11216CE5C55AAAE3 /* DetailViewModel.swift */; };
+		AA1111111111111111111112 /* DetailPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1111111111111111111111 /* DetailPresentation.swift */; };
+		AA1111111111111111111114 /* DetailComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1111111111111111111113 /* DetailComponents.swift */; };
+		AA1111111111111111111116 /* DetailMockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1111111111111111111115 /* DetailMockData.swift */; };
 		60DB0856335866207AE13DF1 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F0A6691C77B0663E0581353 /* HomeView.swift */; };
 		6492485EC75DFE1953CE7F77 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB872D063E20972755D7D68 /* SearchViewModel.swift */; };
 		67DE089DB2859C6E04455F33 /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1BBC2CEE4330D9EFF54F410 /* AppRoute.swift */; };
@@ -62,6 +66,10 @@
 		68A94BAA2F88906100C59159 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		68A94BAC2F88906100C59159 /* AppContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainer.swift; sourceTree = "<group>"; };
 		68A94BAE2F88906100C59159 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		AA1111111111111111111111 /* DetailPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailPresentation.swift; sourceTree = "<group>"; };
+		AA1111111111111111111113 /* DetailComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailComponents.swift; sourceTree = "<group>"; };
+		AA1111111111111111111115 /* DetailMockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailMockData.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708192A3B4C4 /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
 		68A94BAF2F88906100C59159 /* RemoteImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteImageView.swift; sourceTree = "<group>"; };
 		68A94BB12F88906100C59159 /* MotchillAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotchillAPIClient.swift; sourceTree = "<group>"; };
 		68A94BB32F88906100C59159 /* MotchillStores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotchillStores.swift; sourceTree = "<group>"; };
@@ -281,6 +289,7 @@
 			children = (
 				961DF5795FC832D0B5B3FF9F /* AppRootViewModel.swift */,
 				B1BBC2CEE4330D9EFF54F410 /* AppRoute.swift */,
+				1A2B3C4D5E6F708192A3B4C4 /* AppRouter.swift */,
 				7DF5A246B4C338C8B029D34D /* AppShellView.swift */,
 				6E536999F6E49408D2EC499F /* MotchillSwiftUIApp.swift */,
 			);
@@ -290,6 +299,9 @@
 		C89EEE7963347CFB1E3DD038 /* Detail */ = {
 			isa = PBXGroup;
 			children = (
+				AA1111111111111111111111 /* DetailPresentation.swift */,
+				AA1111111111111111111113 /* DetailComponents.swift */,
+				AA1111111111111111111115 /* DetailMockData.swift */,
 				F2981A3E66B7D4A996B21761 /* DetailView.swift */,
 				ECEEF25F11216CE5C55AAAE3 /* DetailViewModel.swift */,
 			);
@@ -448,9 +460,13 @@
 			files = (
 				9F64097F8CDAECBFBBB5F389 /* AppRootViewModel.swift in Sources */,
 				67DE089DB2859C6E04455F33 /* AppRoute.swift in Sources */,
+				1A2B3C4D5E6F708192A3B4C5 /* AppRouter.swift in Sources */,
 				0E35015989413977A8A494EE /* AppShellView.swift in Sources */,
 				D4BEAA024707B4B9F6DA0C43 /* DetailView.swift in Sources */,
 				58EA0E06425B4CEEB1F55CCF /* DetailViewModel.swift in Sources */,
+				AA1111111111111111111112 /* DetailPresentation.swift in Sources */,
+				AA1111111111111111111114 /* DetailComponents.swift in Sources */,
+				AA1111111111111111111116 /* DetailMockData.swift in Sources */,
 				BC3F44E3B078EDAF90A6096F /* FeaturePlaceholderView.swift in Sources */,
 				68A94BC12F88906100C59159 /* AppTheme.swift in Sources */,
 				68A94BC22F88906100C59159 /* MotchillRepository.swift in Sources */,
