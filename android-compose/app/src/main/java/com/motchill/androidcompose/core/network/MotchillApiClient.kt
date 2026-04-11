@@ -25,10 +25,8 @@ import java.util.concurrent.TimeUnit
 
 class MotchillApiClient(
     private val client: OkHttpClient = defaultClient(),
-    private val baseUrl: String = ApiConfig.baseUrl,
+    private val baseUrlProvider: () -> String = { ApiConfig.baseUrl },
 ) {
-    private val normalizedBaseUrl = baseUrl.trimEnd('/')
-
     suspend fun fetchHomeSections(): List<HomeSection> {
         return getJsonArray("/api/moviehomepage").map { it.toHomeSection() }
     }
@@ -145,6 +143,7 @@ class MotchillApiClient(
     }
 
     private fun buildUrl(path: String, query: Map<String, String>?): String {
+        val normalizedBaseUrl = baseUrlProvider().trimEnd('/')
         val url = "$normalizedBaseUrl$path".toHttpUrl().newBuilder()
         query?.forEach { (key, value) ->
             if (value.isNotEmpty()) {

@@ -3,6 +3,7 @@ package com.motchill.androidcompose.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.motchill.androidcompose.core.config.RemoteConfigStore
 import com.motchill.androidcompose.data.repository.MotchillRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -27,6 +28,17 @@ internal class HomeViewModel(
                 isLoading = true,
                 errorMessage = null,
             )
+
+            runCatching {
+                RemoteConfigStore.clear()
+                RemoteConfigStore.refreshFromRemote()
+            }.onFailure { error ->
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = error.message ?: error::class.java.simpleName,
+                )
+                return@launch
+            }
 
             runCatching {
                 coroutineScope {
