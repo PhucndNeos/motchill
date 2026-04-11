@@ -269,7 +269,7 @@ final class PlayerViewModel {
     private func attachTimeObserver() {
         guard timeObserverToken == nil else { return }
         timeObserverToken = player.addPeriodicTimeObserver(
-            forInterval: CMTime(seconds: 5, preferredTimescale: 600),
+            forInterval: CMTime(seconds: 1, preferredTimescale: 600),
             queue: .main
         ) { [weak self] time in
             guard let self else { return }

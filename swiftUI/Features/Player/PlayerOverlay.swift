@@ -11,6 +11,7 @@ import SwiftUI
 struct PlayerOverlay: View {
     @Bindable var viewModel: PlayerViewModel
     let onBack: () -> Void
+    @State private var scrubbingFraction: Double?
 
     init(
         viewModel: PlayerViewModel,
@@ -32,8 +33,13 @@ struct PlayerOverlay: View {
         )
     }
 
-    private var progressBufferFraction: Double {
-        min(viewModel.progressFraction + 0.23, 1)
+    private var displayedProgressFraction: Double {
+        scrubbingFraction ?? viewModel.progressFraction
+    }
+
+    private var displayedCurrentPositionMillis: Int64 {
+        guard viewModel.durationMillis > 0 else { return viewModel.currentPositionMillis }
+        return Int64((Double(viewModel.durationMillis) * displayedProgressFraction).rounded())
     }
 
     private var playIcon: String {
@@ -197,27 +203,10 @@ struct PlayerOverlay: View {
     private var bottomPanel: some View {
         VStack(alignment: .leading, spacing: 28) {
             VStack(alignment: .leading, spacing: 12) {
-                GeometryReader { proxy in
-                    ZStack(alignment: .leading) {
-                        Capsule(style: .continuous)
-                            .fill(Color.white.opacity(0.10))
-
-                        Capsule(style: .continuous)
-                            .fill(Color.white.opacity(0.18))
-                            .frame(width: proxy.size.width * progressBufferFraction)
-
-                        Capsule(style: .continuous)
-                            .fill(Color(red: 1.0, green: 0.78, blue: 0.76))
-                            .shadow(color: Color(red: 1.0, green: 0.76, blue: 0.73).opacity(0.45), radius: 10, x: 0, y: 0)
-                            .frame(width: proxy.size.width * viewModel.progressFraction)
-                    }
-                }
-                .frame(height: 6)
-                .clipShape(Capsule(style: .continuous))
-                .contentShape(Rectangle())
+                scrubbableProgressBar
 
                 HStack {
-                    Text(formatMillis(viewModel.currentPositionMillis))
+                    Text(formatMillis(displayedCurrentPositionMillis))
                     Spacer()
                     Text(formatMillis(viewModel.durationMillis))
                 }
@@ -267,6 +256,43 @@ struct PlayerOverlay: View {
                 }
             }
         }
+    }
+
+    private var scrubbableProgressBar: some View {
+        GeometryReader { proxy in
+            let width = max(proxy.size.width, 1)
+
+            ZStack(alignment: .leading) {
+                Capsule(style: .continuous)
+                    .fill(Color.white.opacity(0.10))
+
+                Capsule(style: .continuous)
+                    .fill(Color(red: 1.0, green: 0.78, blue: 0.76))
+                    .shadow(color: Color(red: 1.0, green: 0.76, blue: 0.73).opacity(0.45), radius: 10, x: 0, y: 0)
+                    .frame(width: width * displayedProgressFraction)
+            }
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        guard viewModel.durationMillis > 0 else { return }
+                        scrubbingFraction = clampFraction(value.location.x / width)
+                        viewModel.showOverlayTemporarily()
+                    }
+                    .onEnded { value in
+                        guard viewModel.durationMillis > 0 else {
+                            scrubbingFraction = nil
+                            return
+                        }
+
+                        let fraction = clampFraction(value.location.x / width)
+                        let targetMillis = Int64((Double(viewModel.durationMillis) * fraction).rounded())
+                        scrubbingFraction = nil
+                        viewModel.seek(to: targetMillis, playAfterSeek: true)
+                    }
+            )
+        }
+        .frame(height: 6)
     }
 
     private var sidePanel: some View {
@@ -389,6 +415,10 @@ private func formatMillis(_ value: Int64) -> String {
     let minutes = totalSeconds / 60
     let seconds = totalSeconds % 60
     return String(format: "%d:%02d", minutes, seconds)
+}
+
+private func clampFraction(_ value: Double) -> Double {
+    min(max(value, 0), 1)
 }
 
 #Preview("Player Overlay") {
