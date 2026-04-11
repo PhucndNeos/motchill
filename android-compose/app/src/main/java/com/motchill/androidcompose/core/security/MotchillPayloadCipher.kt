@@ -1,5 +1,6 @@
 package com.motchill.androidcompose.core.security
 
+import com.motchill.androidcompose.core.config.RemoteConfigStore
 import org.json.JSONArray
 import org.json.JSONObject
 import java.security.MessageDigest
@@ -9,8 +10,6 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 object MotchillPayloadCipher {
-    const val passphrase = "sB7hP!c9X3@rVn\$5mGqT1eLzK!fU8dA2"
-
     fun decrypt(encryptedPayload: String): String {
         val data = Base64.getDecoder().decode(encryptedPayload.trim())
         require(data.size >= 17) { "Encrypted payload is too short" }
@@ -21,7 +20,7 @@ object MotchillPayloadCipher {
         val salt = data.copyOfRange(8, 16)
         val ciphertext = data.copyOfRange(16, data.size)
         val keyIv = evpBytesToKey(
-            passphrase = passphrase.toByteArray(Charsets.UTF_8),
+            passphrase = RemoteConfigStore.requireKey().toByteArray(Charsets.UTF_8),
             salt = salt,
             keyLength = 32,
             ivLength = 16,

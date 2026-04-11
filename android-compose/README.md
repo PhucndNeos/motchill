@@ -11,3 +11,16 @@ rewriting the shell.
 - Phase 0: scaffold and architecture spec
 - Phase 1: data foundation in progress
 - Next: home screen, detail screen, player, and search/category
+
+## Build APK
+
+Use the PowerShell script at `scripts/build-and-upload-deploygate.ps1` to:
+
+- build the debug APK
+- copy it into `docs/`
+
+Example:
+
+```powershell
+.\scripts\build-and-upload-deploygate.ps1
+```
