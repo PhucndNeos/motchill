@@ -12,7 +12,10 @@ struct MotchillSimpleLabel: Codable, Hashable, Identifiable, Sendable {
     let displayColumn: Int
 }
 
-struct MotchillHomeSection: Codable, Hashable, Sendable {
+struct MotchillHomeSection: Codable, Hashable, Sendable, Identifiable {
+    var id: String {
+        key
+    }
     let title: String
     let key: String
     let products: [MotchillMovieCard]

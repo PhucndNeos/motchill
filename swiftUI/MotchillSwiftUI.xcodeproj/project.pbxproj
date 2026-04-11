@@ -17,6 +17,9 @@
 		5212D2E2B0AE4E3DAA3A3A22 /* HomeMockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5212D2E2B0AE4E3DAA3A3A12 /* HomeMockData.swift */; };
 		5212D2E2B0AE4E3DAA3A3A23 /* HomeScreenState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5212D2E2B0AE4E3DAA3A3A13 /* HomeScreenState.swift */; };
 		58EA0E06425B4CEEB1F55CCF /* DetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECEEF25F11216CE5C55AAAE3 /* DetailViewModel.swift */; };
+		5E8AC1D42F8A23E3008F0316 /* HomeIpadComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8AC1D32F8A23D8008F0316 /* HomeIpadComponents.swift */; };
+		5E8AC1D62F8A3F9D008F0316 /* TabSegmentedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8AC1D52F8A3F91008F0316 /* TabSegmentedView.swift */; };
+		5E8AC1D82F8A480F008F0316 /* PlayerOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8AC1D72F8A4809008F0316 /* PlayerOverlay.swift */; };
 		60DB0856335866207AE13DF1 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F0A6691C77B0663E0581353 /* HomeView.swift */; };
 		6492485EC75DFE1953CE7F77 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB872D063E20972755D7D68 /* SearchViewModel.swift */; };
 		67DE089DB2859C6E04455F33 /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1BBC2CEE4330D9EFF54F410 /* AppRoute.swift */; };
@@ -63,6 +66,9 @@
 		5212D2E2B0AE4E3DAA3A3A11 /* HomeComponents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeComponents.swift; sourceTree = "<group>"; };
 		5212D2E2B0AE4E3DAA3A3A12 /* HomeMockData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeMockData.swift; sourceTree = "<group>"; };
 		5212D2E2B0AE4E3DAA3A3A13 /* HomeScreenState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeScreenState.swift; sourceTree = "<group>"; };
+		5E8AC1D32F8A23D8008F0316 /* HomeIpadComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeIpadComponents.swift; sourceTree = "<group>"; };
+		5E8AC1D52F8A3F91008F0316 /* TabSegmentedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabSegmentedView.swift; sourceTree = "<group>"; };
+		5E8AC1D72F8A4809008F0316 /* PlayerOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerOverlay.swift; sourceTree = "<group>"; };
 		60E35DF450A83DEA5F566362 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		68A94BAA2F88906100C59159 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		68A94BAC2F88906100C59159 /* AppContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainer.swift; sourceTree = "<group>"; };
@@ -154,6 +160,7 @@
 		41F41E57870C9B6EB176BE05 /* Player */ = {
 			isa = PBXGroup;
 			children = (
+				5E8AC1D72F8A4809008F0316 /* PlayerOverlay.swift */,
 				2548B599515D6C9A2A28FE54 /* PlayerView.swift */,
 				C5D4E882AB801EC0ED8296E9 /* PlayerViewModel.swift */,
 			);
@@ -163,6 +170,7 @@
 		5E0CEBAB2F89228300FD087E /* SharedUI */ = {
 			isa = PBXGroup;
 			children = (
+				5E8AC1D52F8A3F91008F0316 /* TabSegmentedView.swift */,
 			);
 			path = SharedUI;
 			sourceTree = "<group>";
@@ -284,6 +292,7 @@
 			isa = PBXGroup;
 			children = (
 				5212D2E2B0AE4E3DAA3A3A11 /* HomeComponents.swift */,
+				5E8AC1D32F8A23D8008F0316 /* HomeIpadComponents.swift */,
 				5212D2E2B0AE4E3DAA3A3A12 /* HomeMockData.swift */,
 				5212D2E2B0AE4E3DAA3A3A13 /* HomeScreenState.swift */,
 				6F0A6691C77B0663E0581353 /* HomeView.swift */,
@@ -468,6 +477,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9F64097F8CDAECBFBBB5F389 /* AppRootViewModel.swift in Sources */,
+				5E8AC1D42F8A23E3008F0316 /* HomeIpadComponents.swift in Sources */,
 				67DE089DB2859C6E04455F33 /* AppRoute.swift in Sources */,
 				1A2B3C4D5E6F708192A3B4C5 /* AppRouter.swift in Sources */,
 				0E35015989413977A8A494EE /* AppShellView.swift in Sources */,
@@ -477,6 +487,7 @@
 				AA1111111111111111111114 /* DetailComponents.swift in Sources */,
 				AA1111111111111111111116 /* DetailMockData.swift in Sources */,
 				BC3F44E3B078EDAF90A6096F /* FeaturePlaceholderView.swift in Sources */,
+				5E8AC1D62F8A3F9D008F0316 /* TabSegmentedView.swift in Sources */,
 				68A94BC12F88906100C59159 /* AppTheme.swift in Sources */,
 				68A94BC22F88906100C59159 /* MotchillRepository.swift in Sources */,
 				68A94BC32F88906100C59159 /* MotchillJSONMappers.swift in Sources */,
@@ -487,6 +498,7 @@
 				68A94BC82F88906100C59159 /* AppConfiguration.swift in Sources */,
 				68A94BC92F88906100C59159 /* MotchillStores.swift in Sources */,
 				68A94BCA2F88906100C59159 /* MotchillPayloadCipher.swift in Sources */,
+				5E8AC1D82F8A480F008F0316 /* PlayerOverlay.swift in Sources */,
 				68A94BCB2F88906100C59159 /* DefaultMotchillRepository.swift in Sources */,
 				68A94BF12F889C5600C59159 /* MotchillLogger.swift in Sources */,
 				5212D2E2B0AE4E3DAA3A3A21 /* HomeComponents.swift in Sources */,
@@ -523,7 +535,7 @@
 				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 24RDK3GC54;
+				DEVELOPMENT_TEAM = 7V4HFL737W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
@@ -533,7 +545,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.motchill.swiftui;
+				PRODUCT_BUNDLE_IDENTIFIER = com.movie.watch;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -606,7 +618,7 @@
 				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 24RDK3GC54;
+				DEVELOPMENT_TEAM = 7V4HFL737W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
@@ -616,7 +628,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.motchill.swiftui;
+				PRODUCT_BUNDLE_IDENTIFIER = com.movie.watch;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

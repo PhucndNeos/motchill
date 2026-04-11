@@ -44,24 +44,7 @@ struct HomeScreen: View {
             .padding(.vertical, 20)
         }
         .frame(maxWidth: .infinity, alignment: .center)
-        .background(HomeBackground().ignoresSafeArea())
-        .navigationTitle("Phuc TV")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(action: openSearch) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "magnifyingglass")
-                        Text("Tìm kiếm")
-                    }
-                    .font(AppTheme.bodyFont.weight(.semibold))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)                    
-                }
-                .buttonStyle(.plain)
-            }
-        }
+        .background(HomeBackground().ignoresSafeArea())        
     }
 
     private func retry() {

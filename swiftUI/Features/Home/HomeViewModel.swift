@@ -6,7 +6,8 @@ import Observation
 final class HomeViewModel {
     @ObservationIgnored
     private let repository: MotchillRepository
-
+    var selectedMovie: MotchillMovieCard?
+    var selectedSection: MotchillHomeSection?
     var state: HomeScreenState
 
     init(
@@ -53,6 +54,12 @@ final class HomeViewModel {
                 state = .empty
             } else {
                 state = .loaded(HomeFeedContent(sections: sections))
+                if selectedSection == nil {
+                    selectedSection = sections.first
+                }
+                if selectedMovie == nil {
+                    selectedMovie = selectedSection?.products.first
+                }
             }
         } catch {
             MotchillLogger.shared.error(

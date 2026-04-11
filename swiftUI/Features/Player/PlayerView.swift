@@ -63,56 +63,13 @@ private struct PlayerScreen: View {
                 ZStack {
                     VideoPlayer(player: viewModel.player)
                         .ignoresSafeArea()
-                        .simultaneousGesture(
-                            TapGesture().onEnded {
-                                viewModel.handleOverlayTap()
-                            }
-                        )
+                        .allowsHitTesting(false)
 
-                    VStack {
-                        PlayerTopBar(
-                            movieTitle: viewModel.movieTitle,
-                            episodeLabel: viewModel.episodeLabel,
-                            sourceName: viewModel.sourceTitle
-                        )
-                        if !viewModel.playableSources.isEmpty {
-                            LazyHStack(spacing: 8) {
-                                ForEach(Array(viewModel.playableSources.enumerated()), id: \.element.id) {
-                                    index,
-                                    source in
-                                    Button(action: { viewModel.selectSource(index) }) {
-                                        Text(source.displayName)
-                                            .font(AppTheme.captionFont.weight(.semibold))
-                                            .foregroundStyle(
-                                                index == viewModel.selectedSourceIndex ? Color.white : AppTheme.textPrimary
-                                            )
-                                            .padding()
-                                            .background(
-                                                Capsule(style: .continuous)
-                                                    .fill(
-                                                        index == viewModel.selectedSourceIndex ? AppTheme.accent
-                                                            .opacity(0.5) : Color.white
-                                                            .opacity(0.5)
-                                                    )
-                                            )
-                                            .overlay(
-                                                Capsule(style: .continuous)
-                                                    .stroke(
-                                                        index == viewModel.selectedSourceIndex ? AppTheme.border : AppTheme.border,
-                                                        lineWidth: 1
-                                                    )
-                                            )
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                            .frame(height: 30)
-                        }
-                        Spacer()
-                    }
-                    .padding(.bottom, 20)
+                    PlayerOverlay(
+                        viewModel: viewModel,
+                        onBack: { router.pop() }
+                    )
                     .opacity(viewModel.overlayVisible ? 1 : 0)
-                    .allowsHitTesting(viewModel.overlayVisible)
                 }
             } else {
                 PlayerLoadingState(
@@ -136,38 +93,10 @@ private struct PlayerScreen: View {
                 )
             }
         }
-    }
-}
-
-private struct PlayerTopBar: View {
-    let movieTitle: String
-    let episodeLabel: String
-    let sourceName: String
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            Spacer()
-            VStack(alignment: .leading, spacing: 6) {
-                Text(movieTitle)
-                    .font(AppTheme.titleFont)
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .lineLimit(1)
-
-                HStack(spacing: 8) {
-                    Text(episodeLabel)
-                        .font(AppTheme.bodyFont)
-                        .foregroundStyle(AppTheme.textSecondary)
-                    Text("•")
-                        .foregroundStyle(AppTheme.textSecondary)
-                    Text(sourceName)
-                        .font(AppTheme.bodyFont.weight(.semibold))
-                        .foregroundStyle(AppTheme.textPrimary)
-                        .lineLimit(1)
-                }
-            }
-            Spacer()
+        .onTapGesture {
+            viewModel.handleOverlayTap()
         }
-        .padding(20)
+        .toolbar(.hidden, for: .navigationBar)
     }
 }
 

@@ -14,6 +14,10 @@ struct HomeFeedContent: Equatable {
 
         return sections.filter { $0.key != "slide" }
     }
+    
+    func section(withKey key: String) -> MotchillHomeSection? {
+        sections.first(where: { $0.key == key })
+    }    
 }
 
 enum HomeScreenState: Equatable {

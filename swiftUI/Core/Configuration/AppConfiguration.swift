@@ -3,7 +3,7 @@ import UIKit
 
 struct AppConfiguration {
     let appName: String = "Motchill"
-    let apiBaseURL: URL = URL(string: "https://motchilltv.taxi")!
+    let apiBaseURL: URL = URL(string: "https://motchilltv.date")!
     let minimumIOSVersion: String = "18.0"
     let requestTimeout: TimeInterval = 20
     @MainActor

@@ -1,6 +1,13 @@
 import Foundation
 
 enum HomeMockData {
+    private static let dunePoster = "https://upload.wikimedia.org/wikipedia/en/thumb/5/52/Dune_Part_Two_poster.jpeg/250px-Dune_Part_Two_poster.jpeg"
+    private static let oppenheimerPoster = "https://upload.wikimedia.org/wikipedia/en/thumb/4/4a/Oppenheimer_%28film%29.jpg/250px-Oppenheimer_%28film%29.jpg"
+    private static let batmanPoster = "https://upload.wikimedia.org/wikipedia/en/f/ff/The_Batman_%28film%29_poster.jpg"
+    private static let arrivalPoster = "https://upload.wikimedia.org/wikipedia/en/d/df/Arrival%2C_Movie_Poster.jpg"
+    private static let spiderVersePoster = "https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/Spider-Man-_Across_the_Spider-Verse_poster.jpg/250px-Spider-Man-_Across_the_Spider-Verse_poster.jpg"
+    private static let topGunPoster = "https://upload.wikimedia.org/wikipedia/en/thumb/1/13/Top_Gun_Maverick_Poster.jpg/250px-Top_Gun_Maverick_Poster.jpg"
+
     static let loadedSections: [MotchillHomeSection] = [
         section(
             title: "Slide",
@@ -11,8 +18,8 @@ enum HomeMockData {
                     name: "Dune: Part Two",
                     otherName: "2024",
                     description: "A war of bloodlines and prophecy pushes the desert planet into a new era of power.",
-                    banner: "/home/slide-banner-1",
-                    avatar: "/home/slide-avatar-1",
+                    banner: dunePoster,
+                    avatar: dunePoster,
                     rating: "8.8",
                     year: 2024,
                     statusTitle: "Featured",
@@ -23,8 +30,8 @@ enum HomeMockData {
                     name: "Oppenheimer",
                     otherName: "2023",
                     description: "The story of the physicist behind the atomic age and the moral cost that followed.",
-                    banner: "/home/slide-banner-2",
-                    avatar: "/home/slide-avatar-2",
+                    banner: oppenheimerPoster,
+                    avatar: oppenheimerPoster,
                     rating: "8.6",
                     year: 2023,
                     statusTitle: "Trending",
@@ -35,8 +42,8 @@ enum HomeMockData {
                     name: "The Batman",
                     otherName: "2022",
                     description: "A vigilante chases a hidden conspiracy through Gotham's rain-soaked underworld.",
-                    banner: "/home/slide-banner-3",
-                    avatar: "/home/slide-avatar-3",
+                    banner: batmanPoster,
+                    avatar: batmanPoster,
                     rating: "8.0",
                     year: 2022,
                     statusTitle: "Popular",
@@ -47,8 +54,8 @@ enum HomeMockData {
                     name: "Arrival",
                     otherName: "2016",
                     description: "A linguist tries to understand a message from visitors before the world fractures.",
-                    banner: "/home/slide-banner-4",
-                    avatar: "/home/slide-avatar-4",
+                    banner: arrivalPoster,
+                    avatar: arrivalPoster,
                     rating: "7.9",
                     year: 2016,
                     statusTitle: "Classic",
@@ -59,8 +66,8 @@ enum HomeMockData {
                     name: "Spider-Man: Across the Spider-Verse",
                     otherName: "2023",
                     description: "Miles crosses dimensions again while a bigger multiverse conflict closes in.",
-                    banner: "/home/slide-banner-5",
-                    avatar: "/home/slide-avatar-5",
+                    banner: spiderVersePoster,
+                    avatar: spiderVersePoster,
                     rating: "8.7",
                     year: 2023,
                     statusTitle: "Top pick",
@@ -71,8 +78,8 @@ enum HomeMockData {
                     name: "Top Gun: Maverick",
                     otherName: "2022",
                     description: "A veteran pilot returns to train the next generation for an impossible mission.",
-                    banner: "/home/slide-banner-6",
-                    avatar: "/home/slide-avatar-6",
+                    banner: topGunPoster,
+                    avatar: topGunPoster,
                     rating: "8.3",
                     year: 2022,
                     statusTitle: "Action",
@@ -89,8 +96,8 @@ enum HomeMockData {
                     name: "A Quiet Signal",
                     otherName: "Drama • 2026",
                     description: "A suspenseful feature built around a disappearing broadcast and a family that keeps hearing the same signal.",
-                    banner: "/home/featured-banner-1",
-                    avatar: "/home/featured-avatar-1",
+                    banner: placeholderImage(seed: "a-quiet-signal-banner", width: 1600, height: 2400),
+                    avatar: placeholderImage(seed: "a-quiet-signal-avatar", width: 900, height: 1350),
                     rating: "8.8",
                     year: 2026,
                     statusTitle: "Now showing",
@@ -101,8 +108,8 @@ enum HomeMockData {
                     name: "After the Rain",
                     otherName: "Romance • Limited series",
                     description: "Two people reconnect through a city-wide blackout and the cassette tape that starts everything again.",
-                    banner: "/home/featured-banner-2",
-                    avatar: "/home/featured-avatar-2",
+                    banner: placeholderImage(seed: "after-the-rain-banner", width: 1600, height: 2400),
+                    avatar: placeholderImage(seed: "after-the-rain-avatar", width: 900, height: 1350),
                     rating: "8.3",
                     year: 2025,
                     statusTitle: "Trending",
@@ -113,8 +120,8 @@ enum HomeMockData {
                     name: "Neon Harbor",
                     otherName: "Sci-Fi • Action",
                     description: "An ex-courier races through a flooded metro to protect the last map of the old city.",
-                    banner: "/home/featured-banner-3",
-                    avatar: "/home/featured-avatar-3",
+                    banner: placeholderImage(seed: "neon-harbor-banner", width: 1600, height: 2400),
+                    avatar: placeholderImage(seed: "neon-harbor-avatar", width: 900, height: 1350),
                     rating: "9.1",
                     year: 2025,
                     statusTitle: "Hot",
@@ -131,8 +138,8 @@ enum HomeMockData {
                     name: "Winter Glass",
                     otherName: "Mystery • 6 episodes",
                     description: "An architect finds hidden rooms inside an apartment block that should not exist.",
-                    banner: "/home/trending-banner-1",
-                    avatar: "/home/trending-avatar-1",
+                    banner: placeholderImage(seed: "winter-glass-banner", width: 1600, height: 2400),
+                    avatar: placeholderImage(seed: "winter-glass-avatar", width: 900, height: 1350),
                     rating: "8.4",
                     year: 2024,
                     statusTitle: "Series",
@@ -143,8 +150,8 @@ enum HomeMockData {
                     name: "Signal Lost",
                     otherName: "Thriller • 2024",
                     description: "A rescue pilot traces a missing flight using only fragments of a broken radio transmission.",
-                    banner: "/home/trending-banner-2",
-                    avatar: "/home/trending-avatar-2",
+                    banner: placeholderImage(seed: "signal-lost-banner", width: 1600, height: 2400),
+                    avatar: placeholderImage(seed: "signal-lost-avatar", width: 900, height: 1350),
                     rating: "8.0",
                     year: 2024,
                     statusTitle: "Completed",
@@ -155,8 +162,8 @@ enum HomeMockData {
                     name: "Paper Moon City",
                     otherName: "Animation • Family",
                     description: "A child builds a city of paper, then discovers it has its own weather system.",
-                    banner: "/home/trending-banner-3",
-                    avatar: "/home/trending-avatar-3",
+                    banner: placeholderImage(seed: "paper-moon-city-banner", width: 1600, height: 2400),
+                    avatar: placeholderImage(seed: "paper-moon-city-avatar", width: 900, height: 1350),
                     rating: "8.7",
                     year: 2023,
                     statusTitle: "Popular",
@@ -167,8 +174,8 @@ enum HomeMockData {
                     name: "Harbor Lights",
                     otherName: "Crime drama",
                     description: "A night ferry crew becomes the only witness to a perfect disappearance.",
-                    banner: "/home/trending-banner-4",
-                    avatar: "/home/trending-avatar-4",
+                    banner: placeholderImage(seed: "harbor-lights-banner", width: 1600, height: 2400),
+                    avatar: placeholderImage(seed: "harbor-lights-avatar", width: 900, height: 1350),
                     rating: "7.9",
                     year: 2022,
                     statusTitle: "Series",
@@ -185,8 +192,8 @@ enum HomeMockData {
                     name: "Blue Minute",
                     otherName: "Slice of life",
                     description: "A gentle city film about small choices and the people who keep showing up.",
-                    banner: "/home/recommended-banner-1",
-                    avatar: "/home/recommended-avatar-1",
+                    banner: placeholderImage(seed: "blue-minute-banner", width: 1600, height: 2400),
+                    avatar: placeholderImage(seed: "blue-minute-avatar", width: 900, height: 1350),
                     rating: "8.2",
                     year: 2026,
                     statusTitle: "New",
@@ -197,8 +204,8 @@ enum HomeMockData {
                     name: "Glass District",
                     otherName: "Action • Heist",
                     description: "A crew of former rivals plans one last job beneath a city of mirrored towers.",
-                    banner: "/home/recommended-banner-2",
-                    avatar: "/home/recommended-avatar-2",
+                    banner: placeholderImage(seed: "glass-district-banner", width: 1600, height: 2400),
+                    avatar: placeholderImage(seed: "glass-district-avatar", width: 900, height: 1350),
                     rating: "8.9",
                     year: 2025,
                     statusTitle: "Popular",
@@ -260,5 +267,9 @@ enum HomeMockData {
             photoUrls: [],
             previewPhotoUrls: []
         )
+    }
+
+    private static func placeholderImage(seed: String, width: Int, height: Int) -> String {
+        "https://picsum.photos/seed/\(seed)/\(width)/\(height)"
     }
 }
