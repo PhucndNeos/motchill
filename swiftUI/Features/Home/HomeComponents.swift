@@ -9,34 +9,34 @@ struct HomeScreen: View {
         ZStack {
             switch viewModel.state {
             case .loading:
-                ErrorOverlay(
-                    title: "Đang tải nội dung",
-                    message: "Chờ một lát để nạp các section nổi bật.",
-                    retryTitle: "Tải lại",
-                    errorCode: "HOME_LOADING",
-                    icon: .loading,
-                    isLoading: true,
+                FeatureStateOverlay(
+                    descriptor: .loading(
+                        title: "Đang tải nội dung",
+                        message: "Chờ một lát để nạp các section nổi bật.",
+                        errorCode: "HOME_LOADING"
+                    ),
                     onRetry: retry
                 )
             case .error(let message):
-                ErrorOverlay(
-                    title: "Không thể tải trang chủ",
-                    message: message,
-                    retryTitle: "Thử lại",
-                    errorCode: "HOME_LOAD_FAIL",
-                    icon: .server,
+                FeatureStateOverlay(
+                    descriptor: .failure(
+                        title: "Không thể tải trang chủ",
+                        message: message,
+                        errorCode: "HOME_LOAD_FAIL",
+                        icon: .server
+                    ),
                     onRetry: retry
                 )
             case .empty:
-                ErrorOverlay(
-                    title: "Chưa có nội dung",
-                    message: "Trang chủ sẽ hiển thị các section khi dữ liệu sẵn sàng. Bạn có thể thử tìm kiếm nội dung khác trong lúc chờ.",
-                    retryTitle: "Tải lại",
-                    homeTitle: "Tìm kiếm",
-                    errorCode: "HOME_EMPTY",
-                    icon: .generic,
+                FeatureStateOverlay(
+                    descriptor: .empty(
+                        title: "Chưa có nội dung",
+                        message: "Trang chủ sẽ hiển thị các section khi dữ liệu sẵn sàng. Bạn có thể thử tìm kiếm nội dung khác trong lúc chờ.",
+                        errorCode: "HOME_EMPTY",
+                        secondaryTitle: "Tìm kiếm"
+                    ),
                     onRetry: retry,
-                    onGoHome: openSearch
+                    onSecondary: openSearch
                 )
             case .loaded:
                 if viewModel.hasRenderableContent {
@@ -53,15 +53,15 @@ struct HomeScreen: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .background(HomeBackground().ignoresSafeArea())
                 } else {
-                    ErrorOverlay(
-                        title: "Chưa có nội dung",
-                        message: "Trang chủ hiện chưa có section nào để hiển thị. Bạn có thể thử tìm kiếm nội dung khác trong lúc chờ.",
-                        retryTitle: "Tải lại",
-                        homeTitle: "Tìm kiếm",
-                        errorCode: "HOME_EMPTY",
-                        icon: .generic,
+                    FeatureStateOverlay(
+                        descriptor: .empty(
+                            title: "Chưa có nội dung",
+                            message: "Trang chủ hiện chưa có section nào để hiển thị. Bạn có thể thử tìm kiếm nội dung khác trong lúc chờ.",
+                            errorCode: "HOME_EMPTY",
+                            secondaryTitle: "Tìm kiếm"
+                        ),
                         onRetry: retry,
-                        onGoHome: openSearch
+                        onSecondary: openSearch
                     )
                 }
             }
@@ -69,9 +69,9 @@ struct HomeScreen: View {
     }
 
     private func retry() {
-        Task {
+        makeAsyncAction {
             await viewModel.retry()
-        }
+        }()
     }
 
     private func openSearch() {
@@ -378,56 +378,6 @@ private struct HomeSectionRail: View {
     }
 }
 
-struct MovieCardView: View {
-    let movie: MotchillMovieCard
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 8) {
-                ZStack(alignment: .topLeading) {
-                    RemoteImageView(url: remoteURL(from: movie.displayPoster))
-                        .frame(width: 136, height: 220)
-
-                    LinearGradient(
-                        colors: [
-                            Color.black.opacity(0.45),
-                            .clear
-                        ],
-                        startPoint: .top,
-                        endPoint: .center
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-
-                    if !movie.rating.isEmpty {
-                        HomeRatingBadge(
-                            text: movie.rating
-                        )
-                        .padding(10)
-                    }
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                )
-
-                Text(movie.displayTitle)
-                    .font(AppTheme.cardTitleFont)
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .lineLimit(2)
-
-                Text(movie.displaySubtitle.isEmpty ? movie.statusTitle : movie.displaySubtitle)
-                    .font(AppTheme.captionFont)
-                    .foregroundStyle(AppTheme.textMuted)
-                    .lineLimit(1)
-            }
-            .frame(width: 136, alignment: .leading)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
 private struct HomeMetaPill: View {
     let text: String?
 
@@ -447,22 +397,6 @@ private struct HomeMetaPill: View {
                         .stroke(Color.white.opacity(0.10), lineWidth: 1)
                 )
         }
-    }
-}
-
-private struct HomeRatingBadge: View {
-    let text: String
-
-    var body: some View {
-        Text(text)
-            .font(.system(size: 10, weight: .bold, design: .rounded))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(Color.black.opacity(0.72))
-            )
     }
 }
 

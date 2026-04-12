@@ -20,25 +20,25 @@ struct DetailScreen: View {
 
             switch viewModel.state {
             case .idle, .loading:
-                ErrorOverlay(
-                    title: "Đang tải nội dung",
-                    message: "Chờ một lát để nạp thông tin chi tiết của phim.",
-                    retryTitle: "Tải lại",
-                    errorCode: "DETAIL_LOADING",
-                    icon: .loading,
-                    isLoading: true,
+                FeatureStateOverlay(
+                    descriptor: .loading(
+                        title: "Đang tải nội dung",
+                        message: "Chờ một lát để nạp thông tin chi tiết của phim.",
+                        errorCode: "DETAIL_LOADING"
+                    ),
                     onRetry: retry
                 )
             case .error(let message):
-                ErrorOverlay(
-                    title: "Không thể tải chi tiết",
-                    message: message,
-                    retryTitle: "Thử lại",
-                    homeTitle: "Quay lại",
-                    errorCode: "DETAIL_LOAD_FAIL",
-                    icon: .server,
+                FeatureStateOverlay(
+                    descriptor: .failure(
+                        title: "Không thể tải chi tiết",
+                        message: message,
+                        errorCode: "DETAIL_LOAD_FAIL",
+                        icon: .server,
+                        secondaryTitle: "Quay lại"
+                    ),
                     onRetry: retry,
-                    onGoHome: { router.pop() }
+                    onSecondary: { router.pop() }
                 )
             case .loaded:
                 if viewModel.hasRenderableContent {
@@ -60,15 +60,15 @@ struct DetailScreen: View {
                         )
                     }
                 } else {
-                    ErrorOverlay(
-                        title: "Chưa có nội dung",
-                        message: "Trang chi tiết hiện chưa có section nào để hiển thị. Bạn có thể thử quay lại hoặc tìm kiếm nội dung khác.",
-                        retryTitle: "Tải lại",
-                        homeTitle: "Tìm kiếm",
-                        errorCode: "DETAIL_EMPTY",
-                        icon: .generic,
+                    FeatureStateOverlay(
+                        descriptor: .empty(
+                            title: "Chưa có nội dung",
+                            message: "Trang chi tiết hiện chưa có section nào để hiển thị. Bạn có thể thử quay lại hoặc tìm kiếm nội dung khác.",
+                            errorCode: "DETAIL_EMPTY",
+                            secondaryTitle: "Tìm kiếm"
+                        ),
                         onRetry: retry,
-                        onGoHome: { router.push(.search) }
+                        onSecondary: { router.push(.search) }
                     )
                 }
             }
@@ -89,7 +89,7 @@ struct DetailScreen: View {
     }
 
     private func retry() {
-        Task { await viewModel.retry() }
+        makeAsyncAction { await viewModel.retry() }()
     }
 
     private func toggleLike() {
@@ -97,8 +97,7 @@ struct DetailScreen: View {
     }
 
     private func openTrailer() {
-        guard let trailer = viewModel.trailerURL(), let url = URL(string: trailer) else { return }
-        UIApplication.shared.open(url)
+        openExternalURL(viewModel.trailerURL())
     }
 
     private func openEpisode(_ episode: MotchillMovieEpisode) {
@@ -208,7 +207,7 @@ private struct DetailHeroSection: View {
 
                     HStack(spacing: 10) {
                         Button(action: onOpenEpisode) {
-                            DetailHeroAction(text: "Xem ngay", systemImage: "play.fill", filled: true)
+                            FeaturePrimaryAction(text: "Xem ngay", systemImage: "play.fill")
                         }
                         .buttonStyle(.plain)
 
@@ -290,7 +289,7 @@ private struct DetailMetadataRow: View {
         if pills.isEmpty {
             EmptyView()
         } else {
-            WrapGrid(items: pills) { pill in
+            FlowWrapLayout(items: pills) { pill in
                 DetailMetaPill(text: pill)
             }
         }
@@ -429,12 +428,12 @@ private struct DetailClassificationTab: View {
 
             if !detail.countries.isEmpty {
                 DetailMiniLabel(text: "Countries")
-                WrapGrid(items: detail.countries.map(\.name)) { DetailLabelChip(text: $0) }
+                FlowWrapLayout(items: detail.countries.map(\.name)) { DetailLabelChip(text: $0) }
             }
 
             if !detail.categories.isEmpty {
                 DetailMiniLabel(text: "Categories")
-                WrapGrid(items: detail.categories.map(\.name)) { DetailLabelChip(text: $0) }
+                FlowWrapLayout(items: detail.categories.map(\.name)) { DetailLabelChip(text: $0) }
             }
         }
     }
@@ -518,12 +517,10 @@ private struct DetailEpisodeRow: View {
                         .font(AppTheme.bodyFont.weight(.semibold))
                         .foregroundStyle(AppTheme.textPrimary)
                         .lineLimit(1)
-                    if !episode.status.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !episode.type.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Text([episode.type, episode.status].filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.joined(separator: " • "))
-                            .font(AppTheme.captionFont)
-                            .foregroundStyle(AppTheme.textSecondary)
-                            .lineLimit(1)
-                    }
+                    Text(episodeSecondaryText(episode: episode, progress: progress))
+                        .font(AppTheme.captionFont)
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .lineLimit(1)
                 }
 
                 Spacer(minLength: 8)
@@ -533,15 +530,9 @@ private struct DetailEpisodeRow: View {
                     .foregroundStyle(AppTheme.accent)
             }
 
-            if let progress, progress.durationMillis > 0 {
+            if let progress, shouldShowEpisodeProgressBar(progress) {
                 ProgressView(value: progress.progressFraction)
                     .tint(AppTheme.accent)
-            }
-
-            if let progress, progress.durationMillis > 0 {
-                Text("Played \(formatDuration(progress.positionMillis)) / \(formatDuration(progress.durationMillis))")
-                    .font(AppTheme.captionFont)
-                    .foregroundStyle(AppTheme.textSecondary)
             }
         }
         .background(
@@ -637,7 +628,7 @@ private struct DetailMetaRow: View {
     let pills: [String]
 
     var body: some View {
-        WrapGrid(items: pills) { text in
+        FlowWrapLayout(items: pills) { text in
             DetailMetaPill(text: text)
         }
     }
@@ -734,7 +725,7 @@ private struct DetailIconButton: View {
         Button(action: onTap) {
             Image(systemName: icon)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.white)
+                .foregroundStyle(Color.orange)
                 .padding(10)
                 .background(
                     Circle()
@@ -764,40 +755,6 @@ private struct DetailGalleryImage: View {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .stroke(Color.white.opacity(0.10), lineWidth: 1)
             )
-    }
-}
-
-private struct WrapGrid<Data: RandomAccessCollection, Content: View>: View where Data.Element: Hashable {
-    let items: Data
-    let minimumItemWidth: CGFloat
-    let horizontalSpacing: CGFloat
-    let verticalSpacing: CGFloat
-    @ViewBuilder let content: (Data.Element) -> Content
-
-    init(
-        items: Data,
-        minimumItemWidth: CGFloat = 100,
-        horizontalSpacing: CGFloat = 8,
-        verticalSpacing: CGFloat = 8,
-        @ViewBuilder content: @escaping (Data.Element) -> Content
-    ) {
-        self.items = items
-        self.minimumItemWidth = minimumItemWidth
-        self.horizontalSpacing = horizontalSpacing
-        self.verticalSpacing = verticalSpacing
-        self.content = content
-    }
-
-    var body: some View {
-        LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: minimumItemWidth), spacing: horizontalSpacing)],
-            alignment: .leading,
-            spacing: verticalSpacing
-        ) {
-            ForEach(Array(items), id: \.self) { item in
-                content(item)
-            }
-        }
     }
 }
 
@@ -837,23 +794,6 @@ private struct DetailInfoCard: View {
 
 private func detailURL(_ value: String) -> URL? {
     URL(string: value)
-}
-
-private func formatDuration(_ positionMs: Int64) -> String {
-    let totalSeconds = positionMs.coerceAtLeast(0) / 1000
-    let hours = totalSeconds / 3600
-    let minutes = (totalSeconds % 3600) / 60
-    let seconds = totalSeconds % 60
-    if hours > 0 {
-        return String(format: "%d:%02d:%02d", hours, minutes, seconds)
-    }
-    return String(format: "%02d:%02d", minutes, seconds)
-}
-
-private extension Int64 {
-    func coerceAtLeast(_ minimum: Int64) -> Int64 {
-        Swift.max(self, minimum)
-    }
 }
 
 #Preview("Detail") {

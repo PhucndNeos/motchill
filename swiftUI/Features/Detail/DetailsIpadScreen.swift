@@ -8,7 +8,6 @@
 
 import SwiftUI
 import UIKit
-import Flow
 
 struct DetailsIpadScreen: View {
     let viewModel: DetailViewModel
@@ -81,7 +80,7 @@ private struct IpadDetailSidebar: View {
                     
                     HStack(spacing: 14) {
                         Button(action: onOpenEpisode) {
-                            IpadPrimaryAction(text: "Watch Now", systemImage: "play.fill")
+                            FeaturePrimaryAction(text: "Watch Now", systemImage: "play.fill")
                         }
                         .buttonStyle(.plain)
                         
@@ -154,9 +153,7 @@ private struct IpadDetailContent: View {
 
                             if let trailer = viewModel.trailerURL(), !trailer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                 Button(action: {
-                                    if let url = URL(string: trailer) {
-                                        UIApplication.shared.open(url)
-                                    }
+                                    openExternalURL(trailer)
                                 }) {
                                     Text("Open Trailer")
                                         .font(AppTheme.captionFont.weight(.semibold))
@@ -196,14 +193,14 @@ private struct IpadDetailContent: View {
                             if !detail.countries.isEmpty {
                                 VStack(alignment: .leading, spacing: 12) {
                                     IpadMiniLabel(text: "Countries")
-                                    IpadWrapGrid(items: detail.countries.map(\.name)) { IpadLabelChip(text: $0) }
+                                    FlowWrapLayout(items: detail.countries.map(\.name)) { IpadLabelChip(text: $0) }
                                 }
                             }
 
                             if !detail.categories.isEmpty {
                                 VStack(alignment: .leading, spacing: 12) {
                                     IpadMiniLabel(text: "Categories")
-                                    IpadWrapGrid(items: detail.categories.map(\.name)) { IpadLabelChip(text: $0) }
+                                    FlowWrapLayout(items: detail.categories.map(\.name)) { IpadLabelChip(text: $0) }
                                 }
                             }
                         }
@@ -343,35 +340,6 @@ private struct IpadSection<Content: View>: View {
     }
 }
 
-private struct IpadPrimaryAction: View {
-    let text: String
-    let systemImage: String
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: systemImage)
-                .font(.system(size: 14, weight: .bold))
-            Text(text)
-                .font(AppTheme.captionFont.weight(.bold))
-        }
-        .foregroundStyle(Color.white)
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color(red: 0.96, green: 0.22, blue: 0.18),
-                    Color(red: 1.00, green: 0.49, blue: 0.00)
-                ],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: Color(red: 0.96, green: 0.22, blue: 0.18).opacity(0.24), radius: 22, x: 0, y: 14)
-    }
-}
-
 private struct IpadSecondaryAction: View {
     let text: String
 
@@ -397,7 +365,7 @@ private struct IpadMetaRow: View {
         if pills.isEmpty {
             EmptyView()
         } else {
-            IpadWrapGrid(items: pills) { pill in
+            FlowWrapLayout(items: pills) { pill in
                 IpadMetaPill(text: pill)
             }
         }
@@ -455,35 +423,6 @@ private struct IpadMiniLabel: View {
     }
 }
 
-private struct IpadWrapGrid<Data: RandomAccessCollection, Content: View>: View where Data.Element: Hashable {
-    let items: Data
-    let horizontalSpacing: CGFloat
-    let verticalSpacing: CGFloat
-    @ViewBuilder let content: (Data.Element) -> Content
-
-    init(
-        items: Data,
-        horizontalSpacing: CGFloat = 8,
-        verticalSpacing: CGFloat = 8,
-        @ViewBuilder content: @escaping (Data.Element) -> Content
-    ) {
-        self.items = items
-        self.horizontalSpacing = horizontalSpacing
-        self.verticalSpacing = verticalSpacing
-        self.content = content
-    }
-
-    var body: some View {
-        
-        HFlow(itemSpacing: horizontalSpacing, rowSpacing: verticalSpacing) {
-            ForEach(Array(items), id: \.self) { item in
-                content(item)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
-    }
-}
-
 private struct IpadInfoCard: View {
     let label: String
     let value: String
@@ -532,12 +471,10 @@ private struct IpadEpisodeRow: View {
                         .foregroundStyle(AppTheme.textPrimary)
                         .lineLimit(2)
 
-                    if !episode.status.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !episode.type.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Text([episode.type, episode.status].filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.joined(separator: " • "))
-                            .font(AppTheme.bodyFont)
-                            .foregroundStyle(AppTheme.textSecondary)
-                            .lineLimit(1)
-                    }
+                    Text(episodeSecondaryText(episode: episode, progress: progress))
+                        .font(AppTheme.bodyFont)
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .lineLimit(1)
                 }
 
                 Spacer(minLength: 8)
@@ -548,7 +485,7 @@ private struct IpadEpisodeRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let progress, progress.durationMillis > 0 {
+            if let progress, shouldShowEpisodeProgressBar(progress) {
                 ProgressView(value: progress.progressFraction)
                     .tint(.orange)
             }

@@ -5,8 +5,8 @@
 //  Created by Phucnd on 11/4/26.
 //  Copyright © 2026 Motchill. All rights reserved.
 //
-import SwiftUI
 import Kingfisher
+import SwiftUI
 import UIKit
 
 struct HomeIpadScreen: View {
@@ -22,47 +22,41 @@ struct HomeIpadScreen: View {
 
                 switch viewModel.state {
                 case .loading:
-                    ErrorOverlay(
-                        title: "Đang tải nội dung",
-                        message: "Chờ một lát để nạp hero feature cho iPad.",
-                        retryTitle: "Tải lại",
-                        errorCode: "HOME_LOADING",
-                        icon: .loading,
-                        isLoading: true,
-                        onRetry: {
-                            Task {
-                                await viewModel.retry()
-                            }
+                    FeatureStateOverlay(
+                        descriptor: .loading(
+                            title: "Đang tải nội dung",
+                            message: "Chờ một lát để nạp hero feature cho iPad.",
+                            errorCode: "HOME_LOADING"
+                        ),
+                        onRetry: makeAsyncAction {
+                            await viewModel.retry()
                         }
                     )
                 case .empty:
-                    ErrorOverlay(
-                        title: "Chưa có nội dung",
-                        message: "Hero sẽ xuất hiện khi dữ liệu trang chủ sẵn sàng. Bạn có thể thử tìm kiếm nội dung khác trong lúc chờ.",
-                        retryTitle: "Tải lại",
-                        homeTitle: "Tìm kiếm",
-                        errorCode: "HOME_EMPTY",
-                        icon: .generic,
-                        onRetry: {
-                            Task {
-                                await viewModel.retry()
-                            }
+                    FeatureStateOverlay(
+                        descriptor: .empty(
+                            title: "Chưa có nội dung",
+                            message: "Hero sẽ xuất hiện khi dữ liệu trang chủ sẵn sàng. Bạn có thể thử tìm kiếm nội dung khác trong lúc chờ.",
+                            errorCode: "HOME_EMPTY",
+                            secondaryTitle: "Tìm kiếm"
+                        ),
+                        onRetry: makeAsyncAction {
+                            await viewModel.retry()
                         },
-                        onGoHome: {
+                        onSecondary: {
                             router.push(.search)
                         }
                     )
                 case .error(let message):
-                    ErrorOverlay(
-                        title: "Không thể tải trang chủ",
-                        message: message,
-                        retryTitle: "Thử lại",
-                        errorCode: "HOME_LOAD_FAIL",
-                        icon: .server,
-                        onRetry: {
-                            Task {
-                                await viewModel.retry()
-                            }
+                    FeatureStateOverlay(
+                        descriptor: .failure(
+                            title: "Không thể tải trang chủ",
+                            message: message,
+                            errorCode: "HOME_LOAD_FAIL",
+                            icon: .server
+                        ),
+                        onRetry: makeAsyncAction {
+                            await viewModel.retry()
                         }
                     )
                     case .loaded(_):
@@ -75,19 +69,17 @@ struct HomeIpadScreen: View {
                             router: router
                         )
                     } else {
-                        ErrorOverlay(
-                            title: "Chưa có nội dung",
-                            message: "Trang chủ hiện chưa có section nào để hiển thị. Bạn có thể thử tìm kiếm nội dung khác trong lúc chờ.",
-                            retryTitle: "Tải lại",
-                            homeTitle: "Tìm kiếm",
-                            errorCode: "HOME_EMPTY",
-                            icon: .generic,
-                            onRetry: {
-                                Task {
-                                    await viewModel.retry()
-                                }
+                        FeatureStateOverlay(
+                            descriptor: .empty(
+                                title: "Chưa có nội dung",
+                                message: "Trang chủ hiện chưa có section nào để hiển thị. Bạn có thể thử tìm kiếm nội dung khác trong lúc chờ.",
+                                errorCode: "HOME_EMPTY",
+                                secondaryTitle: "Tìm kiếm"
+                            ),
+                            onRetry: makeAsyncAction {
+                                await viewModel.retry()
                             },
-                            onGoHome: {
+                            onSecondary: {
                                 router.push(.search)
                             }
                         )
@@ -103,12 +95,7 @@ struct HomeIpadScreen: View {
 
 @MainActor
 private func openTrailer(_ trailer: String) {
-    let trimmed = trailer.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !trimmed.isEmpty, let url = URL(string: trimmed) else {
-        return
-    }
-
-    UIApplication.shared.open(url)
+    openExternalURL(trailer)
 }
 
 private struct HomeIpadLoadedContent: View {
@@ -448,32 +435,7 @@ private struct HomeIpadPrimaryAction: View {
     let systemImage: String
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: systemImage)
-                .font(.system(size: 18, weight: .bold))
-
-            Text(text)
-                .font(.system(size: 19, weight: .bold, design: .rounded))
-        }
-        .foregroundStyle(Color(red: 0.25, green: 0.02, blue: 0.03))
-        .padding(.horizontal, 26)
-        .padding(.vertical, 16)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color(red: 1.0, green: 0.76, blue: 0.73),
-                    Color(red: 0.95, green: 0.15, blue: 0.16)
-                ],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.white.opacity(0.10), lineWidth: 1)
-        )
-        .shadow(color: Color(red: 0.92, green: 0.22, blue: 0.26).opacity(0.20), radius: 24, x: 0, y: 12)
+        FeaturePrimaryAction(text: text, systemImage: systemImage)
     }
 }
 

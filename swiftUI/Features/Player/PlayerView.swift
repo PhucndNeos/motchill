@@ -75,43 +75,44 @@ private struct PlayerScreen: View {
 
             switch viewModel.state {
             case .idle, .loading:
-                ErrorOverlay(
-                    title: "Đang tải player",
-                    message: "Chờ một lát để nạp nguồn phát cho tập này.",
-                    retryTitle: "Tải lại",
-                    errorCode: "PLAYER_LOADING",
-                    icon: .loading,
-                    isLoading: true,
-                    onRetry: {
-                        Task { await viewModel.retry() }
+                FeatureStateOverlay(
+                    descriptor: .loading(
+                        title: "Đang tải player",
+                        message: "Chờ một lát để nạp nguồn phát cho tập này.",
+                        errorCode: "PLAYER_LOADING"
+                    ),
+                    onRetry: makeAsyncAction {
+                        await viewModel.retry()
                     }
                 )
             case .error(let message):
-                ErrorOverlay(
-                    title: "Không thể mở player",
-                    message: message,
-                    retryTitle: "Thử lại",
-                    homeTitle: "Quay lại",
-                    errorCode: "PLAYER_LOAD_FAIL",
-                    icon: .playback,
-                    onRetry: {
-                        Task { await viewModel.retry() }
+                FeatureStateOverlay(
+                    descriptor: .failure(
+                        title: "Không thể mở player",
+                        message: message,
+                        errorCode: "PLAYER_LOAD_FAIL",
+                        icon: .playback,
+                        secondaryTitle: "Quay lại"
+                    ),
+                    onRetry: makeAsyncAction {
+                        await viewModel.retry()
                     },
-                    onGoHome: { router.pop() }
+                    onSecondary: { router.pop() }
                 )
             case .loaded:
                 if viewModel.selectedSource == nil {
-                    ErrorOverlay(
-                        title: "Chưa có nguồn phát",
-                        message: "Không tìm thấy nguồn phát khả dụng cho tập này. Bạn có thể quay lại hoặc thử tải lại.",
-                        retryTitle: "Tải lại",
-                        homeTitle: "Quay lại",
-                        errorCode: "PLAYER_NO_SOURCE",
-                        icon: .playback,
-                        onRetry: {
-                            Task { await viewModel.retry() }
+                    FeatureStateOverlay(
+                        descriptor: .empty(
+                            title: "Chưa có nguồn phát",
+                            message: "Không tìm thấy nguồn phát khả dụng cho tập này. Bạn có thể quay lại hoặc thử tải lại.",
+                            errorCode: "PLAYER_NO_SOURCE",
+                            icon: .playback,
+                            secondaryTitle: "Quay lại"
+                        ),
+                        onRetry: makeAsyncAction {
+                            await viewModel.retry()
                         },
-                        onGoHome: { router.pop() }
+                        onSecondary: { router.pop() }
                     )
                 }
             }
