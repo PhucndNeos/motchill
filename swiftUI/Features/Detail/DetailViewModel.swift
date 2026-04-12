@@ -69,6 +69,10 @@ final class DetailViewModel {
         detail?.availableTabs ?? []
     }
 
+    var hasRenderableContent: Bool {
+        detail?.availableTabs.isEmpty == false
+    }
+
     var effectiveSelectedTab: DetailSectionTab {
         if let selectedTab, availableTabs.contains(selectedTab) {
             return selectedTab

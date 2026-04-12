@@ -6,45 +6,66 @@ struct HomeScreen: View {
 
     var body: some View {
 
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                switch viewModel.state {
-                case .loading:
-                    HomeStatusCard(
-                        title: "Đang tải nội dung",
-                        subtitle: "Chờ một lát để nạp các section nổi bật.",
-                        showsProgress: true,
-                        actionTitle: nil,
-                        onAction: nil
-                    )
-                case .empty:
-                    HomeStatusCard(
+        ZStack {
+            switch viewModel.state {
+            case .loading:
+                ErrorOverlay(
+                    title: "Đang tải nội dung",
+                    message: "Chờ một lát để nạp các section nổi bật.",
+                    retryTitle: "Tải lại",
+                    errorCode: "HOME_LOADING",
+                    icon: .loading,
+                    isLoading: true,
+                    onRetry: retry
+                )
+            case .error(let message):
+                ErrorOverlay(
+                    title: "Không thể tải trang chủ",
+                    message: message,
+                    retryTitle: "Thử lại",
+                    errorCode: "HOME_LOAD_FAIL",
+                    icon: .server,
+                    onRetry: retry
+                )
+            case .empty:
+                ErrorOverlay(
+                    title: "Chưa có nội dung",
+                    message: "Trang chủ sẽ hiển thị các section khi dữ liệu sẵn sàng. Bạn có thể thử tìm kiếm nội dung khác trong lúc chờ.",
+                    retryTitle: "Tải lại",
+                    homeTitle: "Tìm kiếm",
+                    errorCode: "HOME_EMPTY",
+                    icon: .generic,
+                    onRetry: retry,
+                    onGoHome: openSearch
+                )
+            case .loaded:
+                if viewModel.hasRenderableContent {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
+                            HomeLoadedContent(
+                                viewModel: viewModel,
+                                router: router
+                            )
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 20)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .background(HomeBackground().ignoresSafeArea())
+                } else {
+                    ErrorOverlay(
                         title: "Chưa có nội dung",
-                        subtitle: "Trang chủ sẽ hiển thị các section khi dữ liệu sẵn sàng.",
-                        showsProgress: false,
-                        actionTitle: "Tìm kiếm",
-                        onAction: openSearch
-                    )
-                case .error(let message):
-                    HomeStatusCard(
-                        title: "Không thể tải trang chủ",
-                        subtitle: message,
-                        showsProgress: false,
-                        actionTitle: "Thử lại",
-                        onAction: retry
-                    )
-                case .loaded:
-                    HomeLoadedContent(
-                        viewModel: viewModel,
-                        router: router
+                        message: "Trang chủ hiện chưa có section nào để hiển thị. Bạn có thể thử tìm kiếm nội dung khác trong lúc chờ.",
+                        retryTitle: "Tải lại",
+                        homeTitle: "Tìm kiếm",
+                        errorCode: "HOME_EMPTY",
+                        icon: .generic,
+                        onRetry: retry,
+                        onGoHome: openSearch
                     )
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 20)
         }
-        .frame(maxWidth: .infinity, alignment: .center)
-        .background(HomeBackground().ignoresSafeArea())        
     }
 
     private func retry() {

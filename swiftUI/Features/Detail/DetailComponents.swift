@@ -18,36 +18,57 @@ struct DetailScreen: View {
             DetailBackground()
                 .ignoresSafeArea()
 
-            if viewModel.detail == nil {
-                switch viewModel.state {
-                case .idle, .loading:
-                    DetailLoadingState(movie: viewModel.movie)
-                case .error(let message):
-                    DetailErrorState(
-                        movie: viewModel.movie,
-                        message: message,
-                        onRetry: retry,
-                        onBack: { router.pop() }
-                    )
-                case .loaded:
-                    DetailLoadingState(movie: viewModel.movie)
-                }
-            } else {
-                if isPad {
-                    DetailsIpadScreen(
-                        viewModel: viewModel,
-                        router: router,
-                        onToggleLike: toggleLike,
-                        onOpenTrailer: openTrailer,
-                        onOpenEpisode: openEpisode
-                    )
+            switch viewModel.state {
+            case .idle, .loading:
+                ErrorOverlay(
+                    title: "Đang tải nội dung",
+                    message: "Chờ một lát để nạp thông tin chi tiết của phim.",
+                    retryTitle: "Tải lại",
+                    errorCode: "DETAIL_LOADING",
+                    icon: .loading,
+                    isLoading: true,
+                    onRetry: retry
+                )
+            case .error(let message):
+                ErrorOverlay(
+                    title: "Không thể tải chi tiết",
+                    message: message,
+                    retryTitle: "Thử lại",
+                    homeTitle: "Quay lại",
+                    errorCode: "DETAIL_LOAD_FAIL",
+                    icon: .server,
+                    onRetry: retry,
+                    onGoHome: { router.pop() }
+                )
+            case .loaded:
+                if viewModel.hasRenderableContent {
+                    if isPad {
+                        DetailsIpadScreen(
+                            viewModel: viewModel,
+                            router: router,
+                            onToggleLike: toggleLike,
+                            onOpenTrailer: openTrailer,
+                            onOpenEpisode: openEpisode
+                        )
+                    } else {
+                        DetailLoadedContent(
+                            viewModel: viewModel,
+                            router: router,
+                            onToggleLike: toggleLike,
+                            onOpenTrailer: openTrailer,
+                            onOpenEpisode: openEpisode
+                        )
+                    }
                 } else {
-                    DetailLoadedContent(
-                        viewModel: viewModel,
-                        router: router,
-                        onToggleLike: toggleLike,
-                        onOpenTrailer: openTrailer,
-                        onOpenEpisode: openEpisode
+                    ErrorOverlay(
+                        title: "Chưa có nội dung",
+                        message: "Trang chi tiết hiện chưa có section nào để hiển thị. Bạn có thể thử quay lại hoặc tìm kiếm nội dung khác.",
+                        retryTitle: "Tải lại",
+                        homeTitle: "Tìm kiếm",
+                        errorCode: "DETAIL_EMPTY",
+                        icon: .generic,
+                        onRetry: retry,
+                        onGoHome: { router.push(.search) }
                     )
                 }
             }
@@ -558,80 +579,6 @@ private struct DetailBackground: View {
                 endRadius: 560
             )
         }
-    }
-}
-
-private struct DetailLoadingState: View {
-    let movie: MotchillMovieCard
-
-    var body: some View {
-        VStack(spacing: 18) {
-            RemoteImageView(url: detailURL(movie.displayBanner))
-                .frame(height: 360)
-                .overlay(
-                    LinearGradient(
-                        colors: [
-                            Color.black.opacity(0.15),
-                            Color.black.opacity(0.50),
-                            Color.black.opacity(0.82)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
-
-            ProgressView()
-                .tint(AppTheme.accent)
-
-            Text("Đang tải chi tiết")
-                .font(AppTheme.sectionTitleFont)
-                .foregroundStyle(AppTheme.textPrimary)
-        }
-        .padding(24)
-    }
-}
-
-private struct DetailErrorState: View {
-    let movie: MotchillMovieCard
-    let message: String
-    let onRetry: () -> Void
-    let onBack: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack {
-                DetailIconButton(icon: "chevron.left", label: "Back", onTap: onBack)
-                Spacer()
-            }
-
-            Text(movie.displayTitle)
-                .font(AppTheme.titleFont)
-                .foregroundStyle(AppTheme.textPrimary)
-
-            Text(message)
-                .font(AppTheme.bodyFont)
-                .foregroundStyle(AppTheme.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Button(action: onRetry) {
-                Text("Thử lại")
-                    .font(AppTheme.bodyFont.weight(.semibold))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(
-                        Capsule(style: .continuous)
-                            .fill(Color.white.opacity(0.06))
-                    )
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                    )
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(24)
     }
 }
 

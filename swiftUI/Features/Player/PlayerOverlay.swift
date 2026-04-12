@@ -61,7 +61,7 @@ struct PlayerOverlay: View {
 
                 VStack(spacing: 0) {
                     topBar
-                        .padding(.horizontal, 48)
+                        .padding(.horizontal, 20)
                         .padding(.top, 28)
 
                     Spacer(minLength: 0)
@@ -233,25 +233,10 @@ struct PlayerOverlay: View {
                         spacing: 12,
                         horizontalPadding: 0
                     ) { source, isSelected in
-                        Text(source.displayName)
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundStyle(isSelected ? Color(red: 0.95, green: 0.78, blue: 0.77) : AppTheme.textPrimary.opacity(0.72))
-                            .padding(.horizontal, 22)
-                            .padding(.vertical, 12)
-                            .background(
-                                Capsule(style: .continuous)
-                                    .fill(isSelected ? Color(red: 0.95, green: 0.16, blue: 0.18).opacity(0.14) : Color.white.opacity(0.05))
-                            )
-                            .overlay(
-                                Capsule(style: .continuous)
-                                    .stroke(isSelected ? Color(red: 1.0, green: 0.67, blue: 0.64) : Color.white.opacity(0.10), lineWidth: 1)
-                            )
-                            .shadow(
-                                color: isSelected ? Color(red: 0.92, green: 0.22, blue: 0.26).opacity(0.12) : .clear,
-                                radius: 14,
-                                x: 0,
-                                y: 6
-                            )
+                        PlayerSourceChip(
+                            title: source.displayName,
+                            isSelected: isSelected
+                        )
                     }
                 }
             }
@@ -407,6 +392,35 @@ private struct PlayerOverlaySideButton: View {
             }
         }
         .buttonStyle(.plain)
+    }
+}
+
+private struct PlayerSourceChip: View {
+    let title: String
+    let isSelected: Bool
+
+    private var chipShape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: 18, style: .continuous)
+    }
+
+    var body: some View {
+        Text(title)
+            .font(.system(size: 14, weight: .semibold, design: .rounded))
+            .foregroundStyle(isSelected ? Color(red: 0.97, green: 0.84, blue: 0.83) : AppTheme.textPrimary.opacity(0.74))
+            .frame(minWidth: 0, minHeight: 44)
+            .padding(.horizontal, 22)
+            .background(
+                chipShape
+                    .fill(isSelected ? Color(red: 0.95, green: 0.16, blue: 0.18).opacity(0.18) : Color.white.opacity(0.05))
+            )
+            .overlay(
+                chipShape
+                    .strokeBorder(
+                        isSelected ? Color(red: 1.0, green: 0.70, blue: 0.68).opacity(0.95) : Color.white.opacity(0.11),
+                        lineWidth: 1
+                    )
+            )
+            .contentShape(chipShape)
     }
 }
 

@@ -45,6 +45,10 @@ final class HomeViewModel {
         return sections.filter { $0.key != "slide" }
     }
 
+    var hasRenderableContent: Bool {
+        sections.contains(where: { !$0.products.isEmpty })
+    }
+
     func load() async {
         state = .loading
 

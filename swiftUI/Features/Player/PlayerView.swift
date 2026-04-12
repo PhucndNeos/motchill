@@ -59,7 +59,7 @@ private struct PlayerScreen: View {
             Color.black
                 .ignoresSafeArea()
 
-            if let _ = viewModel.selectedSource {
+            if viewModel.state == .loaded, let _ = viewModel.selectedSource {
                 ZStack {
                     VideoPlayer(player: viewModel.player)
                         .ignoresSafeArea()
@@ -71,158 +71,55 @@ private struct PlayerScreen: View {
                     )
                     .opacity(viewModel.overlayVisible ? 1 : 0)
                 }
-            } else {
-                PlayerLoadingState(
-                    title: viewModel.movieTitle,
-                    subtitle: viewModel.episodeLabel
-                )
             }
 
-            if case let .error(message) = viewModel.state {
-                PlayerErrorOverlay(
+            switch viewModel.state {
+            case .idle, .loading:
+                ErrorOverlay(
+                    title: "Đang tải player",
+                    message: "Chờ một lát để nạp nguồn phát cho tập này.",
+                    retryTitle: "Tải lại",
+                    errorCode: "PLAYER_LOADING",
+                    icon: .loading,
+                    isLoading: true,
+                    onRetry: {
+                        Task { await viewModel.retry() }
+                    }
+                )
+            case .error(let message):
+                ErrorOverlay(
+                    title: "Không thể mở player",
                     message: message,
+                    retryTitle: "Thử lại",
+                    homeTitle: "Quay lại",
+                    errorCode: "PLAYER_LOAD_FAIL",
+                    icon: .playback,
                     onRetry: {
                         Task { await viewModel.retry() }
                     },
-                    onBack: { router.pop() }
+                    onGoHome: { router.pop() }
                 )
-            } else if viewModel.state == .loading && viewModel.sources.isEmpty {
-                PlayerLoadingOverlay(
-                    title: viewModel.movieTitle,
-                    subtitle: viewModel.episodeLabel
-                )
+            case .loaded:
+                if viewModel.selectedSource == nil {
+                    ErrorOverlay(
+                        title: "Chưa có nguồn phát",
+                        message: "Không tìm thấy nguồn phát khả dụng cho tập này. Bạn có thể quay lại hoặc thử tải lại.",
+                        retryTitle: "Tải lại",
+                        homeTitle: "Quay lại",
+                        errorCode: "PLAYER_NO_SOURCE",
+                        icon: .playback,
+                        onRetry: {
+                            Task { await viewModel.retry() }
+                        },
+                        onGoHome: { router.pop() }
+                    )
+                }
             }
         }
         .onTapGesture {
             viewModel.handleOverlayTap()
         }
         .toolbar(.hidden, for: .navigationBar)
-    }
-}
-
-private struct PlayerLoadingState: View {
-    let title: String
-    let subtitle: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(title)
-                .font(AppTheme.titleFont)
-                .foregroundStyle(AppTheme.textPrimary)
-            Text(subtitle)
-                .font(AppTheme.bodyFont)
-                .foregroundStyle(AppTheme.textSecondary)
-            ProgressView()
-                .tint(AppTheme.accent)
-        }
-        .padding(24)
-    }
-}
-
-private struct PlayerLoadingOverlay: View {
-    let title: String
-    let subtitle: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            ProgressView()
-                .tint(AppTheme.accent)
-            Text("Đang tải player")
-                .font(AppTheme.sectionTitleFont)
-                .foregroundStyle(AppTheme.textPrimary)
-            Text(title)
-                .font(AppTheme.bodyFont)
-                .foregroundStyle(AppTheme.textSecondary)
-            Text(subtitle)
-                .font(AppTheme.captionFont)
-                .foregroundStyle(AppTheme.textMuted)
-        }
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.black.opacity(0.48))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color.white.opacity(0.10), lineWidth: 1)
-        )
-        .padding(24)
-    }
-}
-
-private struct PlayerErrorOverlay: View {
-    let message: String
-    let onRetry: () -> Void
-    let onBack: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                PlayerIconButton(icon: "chevron.left", label: "Back", onTap: onBack)
-                Spacer()
-            }
-
-            Text("Không thể mở player")
-                .font(AppTheme.titleFont)
-                .foregroundStyle(AppTheme.textPrimary)
-
-            Text(message)
-                .font(AppTheme.bodyFont)
-                .foregroundStyle(AppTheme.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Button(action: onRetry) {
-                Text("Thử lại")
-                    .font(AppTheme.bodyFont.weight(.semibold))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(
-                        Capsule(style: .continuous)
-                            .fill(Color.white.opacity(0.06))
-                    )
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                    )
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.black.opacity(0.44))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.white.opacity(0.10), lineWidth: 1)
-        )
-        .padding(24)
-    }
-}
-
-private struct PlayerIconButton: View {
-    let icon: String
-    let label: String
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            Image(systemName: icon)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(Color.white)
-                .padding(10)
-                .background(
-                    Circle()
-                        .fill(Color.black.opacity(0.56))
-                )
-                .overlay(
-                    Circle()
-                        .stroke(Color.white.opacity(0.50), lineWidth: 1)
-                )
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
     }
 }
 

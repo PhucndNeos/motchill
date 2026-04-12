@@ -22,48 +22,73 @@ struct HomeIpadScreen: View {
 
                 switch viewModel.state {
                 case .loading:
-                    HomeIpadStateView(
+                    ErrorOverlay(
                         title: "Đang tải nội dung",
-                        subtitle: "Chờ một lát để nạp hero feature cho iPad."
-                    )
-                case .empty:
-                    HomeIpadStateView(
-                        title: "Chưa có nội dung",
-                        subtitle: "Hero sẽ xuất hiện khi dữ liệu trang chủ sẵn sàng.",
+                        message: "Chờ một lát để nạp hero feature cho iPad.",
                         retryTitle: "Tải lại",
+                        errorCode: "HOME_LOADING",
+                        icon: .loading,
+                        isLoading: true,
                         onRetry: {
                             Task {
                                 await viewModel.retry()
                             }
+                        }
+                    )
+                case .empty:
+                    ErrorOverlay(
+                        title: "Chưa có nội dung",
+                        message: "Hero sẽ xuất hiện khi dữ liệu trang chủ sẵn sàng. Bạn có thể thử tìm kiếm nội dung khác trong lúc chờ.",
+                        retryTitle: "Tải lại",
+                        homeTitle: "Tìm kiếm",
+                        errorCode: "HOME_EMPTY",
+                        icon: .generic,
+                        onRetry: {
+                            Task {
+                                await viewModel.retry()
+                            }
+                        },
+                        onGoHome: {
+                            router.push(.search)
                         }
                     )
                 case .error(let message):
-                    HomeIpadStateView(
+                    ErrorOverlay(
                         title: "Không thể tải trang chủ",
-                        subtitle: message,
+                        message: message,
                         retryTitle: "Thử lại",
+                        errorCode: "HOME_LOAD_FAIL",
+                        icon: .server,
                         onRetry: {
                             Task {
                                 await viewModel.retry()
                             }
                         }
                     )
-                    case .loaded(_):                        
-                        if let section = viewModel.selectedSection, !section.products.isEmpty {
+                    case .loaded(_):
+                        if viewModel.hasRenderableContent,
+                           let section = viewModel.selectedSection,
+                           !section.products.isEmpty {
                         HomeIpadLoadedContent(
                             viewModel: viewModel,
                             heroMovies: section.products,
                             router: router
                         )
                     } else {
-                        HomeIpadStateView(
-                            title: "Chưa có hero movie",
-                            subtitle: "Section slide hiện tại chưa có dữ liệu để hiển thị.",
+                        ErrorOverlay(
+                            title: "Chưa có nội dung",
+                            message: "Trang chủ hiện chưa có section nào để hiển thị. Bạn có thể thử tìm kiếm nội dung khác trong lúc chờ.",
                             retryTitle: "Tải lại",
+                            homeTitle: "Tìm kiếm",
+                            errorCode: "HOME_EMPTY",
+                            icon: .generic,
                             onRetry: {
                                 Task {
                                     await viewModel.retry()
                                 }
+                            },
+                            onGoHome: {
+                                router.push(.search)
                             }
                         )
                     }
