@@ -3,6 +3,7 @@ import Foundation
 
 enum MotchillAPIError: Error, LocalizedError {
     case invalidURL
+    case remoteConfigUnavailable
     case invalidResponse
     case httpStatus(code: Int, url: URL)
     case emptyBody
@@ -11,6 +12,8 @@ enum MotchillAPIError: Error, LocalizedError {
         switch self {
         case .invalidURL:
             return "The requested URL could not be built."
+        case .remoteConfigUnavailable:
+            return "Remote config has not been loaded yet."
         case .invalidResponse:
             return "The server returned an invalid response."
         case let .httpStatus(code, url):
@@ -168,15 +171,16 @@ final class MotchillAPIClient {
 
     private func requestData(path: String, query: [String: String] = [:]) async throws -> Data {
         guard let url = makeURL(path: path, query: query) else {
+            let error = configuration.apiBaseURL == nil ? MotchillAPIError.remoteConfigUnavailable : MotchillAPIError.invalidURL
             MotchillLogger.shared.error(
-                MotchillAPIError.invalidURL,
+                error,
                 message: "Invalid API URL",
                 metadata: [
                     "path": path,
                     "query": queryText(query),
                 ]
             )
-            throw MotchillAPIError.invalidURL
+            throw error
         }
 
         let request = session
@@ -215,15 +219,16 @@ final class MotchillAPIClient {
 
     private func requestText(path: String, query: [String: String] = [:]) async throws -> String {
         guard let url = makeURL(path: path, query: query) else {
+            let error = configuration.apiBaseURL == nil ? MotchillAPIError.remoteConfigUnavailable : MotchillAPIError.invalidURL
             MotchillLogger.shared.error(
-                MotchillAPIError.invalidURL,
+                error,
                 message: "Invalid API URL",
                 metadata: [
                     "path": path,
                     "query": queryText(query),
                 ]
             )
-            throw MotchillAPIError.invalidURL
+            throw error
         }
 
         let request = session
@@ -262,11 +267,15 @@ final class MotchillAPIClient {
     }
 
     private func makeURL(path: String, query: [String: String]) -> URL? {
-        guard var components = URLComponents(url: configuration.apiBaseURL, resolvingAgainstBaseURL: false) else {
+        guard let apiBaseURL = configuration.apiBaseURL else {
             return nil
         }
 
-        components.path = configuration.apiBaseURL.path + path
+        guard var components = URLComponents(url: apiBaseURL, resolvingAgainstBaseURL: false) else {
+            return nil
+        }
+
+        components.path = apiBaseURL.path + path
         if !query.isEmpty {
             components.queryItems = query.map { URLQueryItem(name: $0.key, value: $0.value) }
         }

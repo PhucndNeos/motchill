@@ -3,7 +3,20 @@ import UIKit
 
 struct AppConfiguration {
     let appName: String = "Motchill"
-    let apiBaseURL: URL = URL(string: "https://motchilltv.date")!
+    private let remoteConfigStore: MotchillRemoteConfigStoring
+
+    init(remoteConfigStore: MotchillRemoteConfigStoring = MotchillRemoteConfigStore.shared) {
+        self.remoteConfigStore = remoteConfigStore
+    }
+
+    var apiBaseURL: URL? {
+        remoteConfigStore.current?.apiBaseURL
+    }
+
+    var passphrase: String? {
+        remoteConfigStore.current?.key
+    }
+
     let minimumIOSVersion: String = "18.0"
     let requestTimeout: TimeInterval = 20
     @MainActor

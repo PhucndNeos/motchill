@@ -4,19 +4,41 @@ import XCTest
 @MainActor
 final class HomeViewModelTests: XCTestCase {
     func testLoadPopulatesLoadedState() async {
-        let repository = StubHomeRepository(result: .success(HomeMockData.loadedSections))
-        let viewModel = HomeViewModel(repository: repository)
+        let store = StubRemoteConfigStore()
+        let client = StubRemoteConfigClient(
+            result: .success(
+                MotchillRemoteConfig(
+                    domain: "https://motchilltv.date",
+                    key: "sB7hP!c9X3@rVn$5mGqT1eLzK!fU8dA2"
+                )
+            )
+        )
+        let repository = StubHomeRepository(
+            result: .success(HomeMockData.loadedSections),
+            onLoadHome: {
+                XCTAssertEqual(client.loadCount, 1)
+                XCTAssertNotNil(store.current)
+            }
+        )
+        let viewModel = HomeViewModel(
+            repository: repository,
+            remoteConfigClient: client,
+            remoteConfigStore: store
+        )
 
         await viewModel.load()
 
         XCTAssertEqual(viewModel.sections.count, HomeMockData.loadedSections.count)
         XCTAssertEqual(viewModel.heroMovies.count, 6)
         XCTAssertFalse(viewModel.contentSections.isEmpty)
+        XCTAssertEqual(client.loadCount, 1)
+        XCTAssertEqual(store.current?.domain, "https://motchilltv.date")
     }
 
     func testLoadShowsErrorStateOnFailure() async {
+        let client = StubRemoteConfigClient()
         let repository = StubHomeRepository(result: .failure(StubError.failed))
-        let viewModel = HomeViewModel(repository: repository)
+        let viewModel = HomeViewModel(repository: repository, remoteConfigClient: client)
 
         await viewModel.load()
 
@@ -25,6 +47,22 @@ final class HomeViewModelTests: XCTestCase {
         } else {
             XCTFail("Expected error state")
         }
+    }
+
+    func testLoadStopsWhenRemoteConfigFails() async {
+        let client = StubRemoteConfigClient(result: .failure(StubError.failed))
+        let repository = StubHomeRepository(result: .success(HomeMockData.loadedSections)) {
+            XCTFail("Repository should not be called when remote config fails")
+        }
+        let viewModel = HomeViewModel(repository: repository, remoteConfigClient: client)
+
+        await viewModel.load()
+
+        if case .error = viewModel.state {
+        } else {
+            XCTFail("Expected error state")
+        }
+        XCTAssertEqual(client.loadCount, 1)
     }
 
     func testPreviewLoadedProvidesHeroMovies() {
@@ -53,12 +91,15 @@ private final class StubHomeRepository: MotchillRepository, @unchecked Sendable 
     }
 
     let result: Result
+    let onLoadHome: () -> Void
 
-    init(result: Result) {
+    init(result: Result, onLoadHome: @escaping () -> Void = {}) {
         self.result = result
+        self.onLoadHome = onLoadHome
     }
 
     func loadHome() async throws -> [MotchillHomeSection] {
+        onLoadHome()
         switch result {
         case let .success(sections):
             return sections
@@ -92,4 +133,35 @@ private final class StubHomeRepository: MotchillRepository, @unchecked Sendable 
 
 private enum StubError: Error {
     case failed
+}
+
+private final class StubRemoteConfigClient: MotchillRemoteConfigLoading {
+    private(set) var loadCount = 0
+    let result: Swift.Result<MotchillRemoteConfig, Error>
+
+    init(result: Swift.Result<MotchillRemoteConfig, Error> = .success(
+        MotchillRemoteConfig(
+            domain: "https://motchilltv.date",
+            key: "sB7hP!c9X3@rVn$5mGqT1eLzK!fU8dA2"
+        )
+    )) {
+        self.result = result
+    }
+
+    func fetchRemoteConfig() async throws -> MotchillRemoteConfig {
+        loadCount += 1
+        return try result.get()
+    }
+}
+
+private final class StubRemoteConfigStore: MotchillRemoteConfigStoring {
+    private(set) var current: MotchillRemoteConfig?
+
+    func update(_ config: MotchillRemoteConfig?) {
+        current = config
+    }
+
+    func reset() {
+        current = nil
+    }
 }

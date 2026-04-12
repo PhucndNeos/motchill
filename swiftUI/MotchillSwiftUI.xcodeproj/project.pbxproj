@@ -37,6 +37,7 @@
 		68A94BC92F88906100C59159 /* MotchillStores.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BB32F88906100C59159 /* MotchillStores.swift */; };
 		68A94BCA2F88906100C59159 /* MotchillPayloadCipher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BB52F88906100C59159 /* MotchillPayloadCipher.swift */; };
 		68A94BCB2F88906100C59159 /* DefaultMotchillRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BBA2F88906100C59159 /* DefaultMotchillRepository.swift */; };
+		B7D1A1A1A1A1A1A1A1A1A1A1 /* MotchillRemoteConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D1A1A1A1A1A1A1A1A1A1A2 /* MotchillRemoteConfig.swift */; };
 		68A94BEF2F889C5600C59159 /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = 68A94BEE2F889C5600C59159 /* SwiftyBeaver */; };
 		68A94BF12F889C5600C59159 /* MotchillLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BF02F889C5600C59159 /* MotchillLogger.swift */; };
 		68A94BFC2F88A80B00C59159 /* ACarousel in Frameworks */ = {isa = PBXBuildFile; productRef = 68A94BFB2F88A80B00C59159 /* ACarousel */; };
@@ -86,6 +87,7 @@
 		68A94BBA2F88906100C59159 /* DefaultMotchillRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultMotchillRepository.swift; sourceTree = "<group>"; };
 		68A94BBB2F88906100C59159 /* MotchillRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotchillRepository.swift; sourceTree = "<group>"; };
 		68A94BBE2F88906100C59159 /* MotchillModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotchillModels.swift; sourceTree = "<group>"; };
+		B7D1A1A1A1A1A1A1A1A1A1A2 /* MotchillRemoteConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotchillRemoteConfig.swift; sourceTree = "<group>"; };
 		68A94BD02F8895C700C59159 /* MotchillSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotchillSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		68A94BF02F889C5600C59159 /* MotchillLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotchillLogger.swift; sourceTree = "<group>"; };
 		6E536999F6E49408D2EC499F /* MotchillSwiftUIApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MotchillSwiftUIApp.swift; sourceTree = "<group>"; };
@@ -194,6 +196,7 @@
 			isa = PBXGroup;
 			children = (
 				68A94BAA2F88906100C59159 /* AppConfiguration.swift */,
+				B7D1A1A1A1A1A1A1A1A1A1A2 /* MotchillRemoteConfig.swift */,
 			);
 			path = Configuration;
 			sourceTree = "<group>";
@@ -520,6 +523,7 @@
 				68A94BCA2F88906100C59159 /* MotchillPayloadCipher.swift in Sources */,
 				5E8AC1D82F8A480F008F0316 /* PlayerOverlay.swift in Sources */,
 				68A94BCB2F88906100C59159 /* DefaultMotchillRepository.swift in Sources */,
+				B7D1A1A1A1A1A1A1A1A1A1A1 /* MotchillRemoteConfig.swift in Sources */,
 				68A94BF12F889C5600C59159 /* MotchillLogger.swift in Sources */,
 				5212D2E2B0AE4E3DAA3A3A21 /* HomeComponents.swift in Sources */,
 				5212D2E2B0AE4E3DAA3A3A22 /* HomeMockData.swift in Sources */,

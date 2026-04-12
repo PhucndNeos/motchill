@@ -6,16 +6,24 @@ import Observation
 final class HomeViewModel {
     @ObservationIgnored
     private let repository: MotchillRepository
+    @ObservationIgnored
+    private let remoteConfigClient: MotchillRemoteConfigLoading
+    @ObservationIgnored
+    private let remoteConfigStore: MotchillRemoteConfigStoring
     var selectedMovie: MotchillMovieCard?
     var selectedSection: MotchillHomeSection?
     var state: HomeScreenState
 
     init(
         repository: MotchillRepository,
-        state: HomeScreenState = .loading
+        state: HomeScreenState = .loading,
+        remoteConfigClient: MotchillRemoteConfigLoading = MotchillRemoteConfigClient(),
+        remoteConfigStore: MotchillRemoteConfigStoring = MotchillRemoteConfigStore.shared
     ) {
         self.repository = repository
         self.state = state
+        self.remoteConfigClient = remoteConfigClient
+        self.remoteConfigStore = remoteConfigStore
     }
 
     var loadedContent: HomeFeedContent? {
@@ -53,6 +61,8 @@ final class HomeViewModel {
         state = .loading
 
         do {
+            let remoteConfig = try await remoteConfigClient.fetchRemoteConfig()
+            remoteConfigStore.update(remoteConfig)
             let sections = try await repository.loadHome()
             if sections.isEmpty {
                 state = .empty

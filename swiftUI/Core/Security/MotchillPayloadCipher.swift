@@ -5,6 +5,7 @@ enum MotchillPayloadCipherError: Error, LocalizedError {
     case invalidBase64
     case tooShort
     case missingSaltedHeader
+    case missingPassphrase
     case decryptionFailed
 
     var errorDescription: String? {
@@ -15,6 +16,8 @@ enum MotchillPayloadCipherError: Error, LocalizedError {
             return "Encrypted payload is too short."
         case .missingSaltedHeader:
             return "Encrypted payload is missing the Salted__ header."
+        case .missingPassphrase:
+            return "Remote config passphrase is not available."
         case .decryptionFailed:
             return "Encrypted payload could not be decrypted."
         }
@@ -22,8 +25,6 @@ enum MotchillPayloadCipherError: Error, LocalizedError {
 }
 
 enum MotchillPayloadCipher {
-    static let passphrase = "sB7hP!c9X3@rVn$5mGqT1eLzK!fU8dA2"
-
     static func decrypt(_ encryptedPayload: String) throws -> String {
         let trimmed = encryptedPayload.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let data = Data(base64Encoded: trimmed, options: [.ignoreUnknownCharacters]) else {
@@ -41,6 +42,9 @@ enum MotchillPayloadCipher {
 
         let salt = Data(data[8..<16])
         let ciphertext = Data(data[16...])
+        guard let passphrase = AppConfiguration().passphrase else {
+            throw MotchillPayloadCipherError.missingPassphrase
+        }
         let keyAndIV = evpBytesToKey(
             passphrase: Array(passphrase.utf8),
             salt: [UInt8](salt),
