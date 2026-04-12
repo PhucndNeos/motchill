@@ -476,15 +476,19 @@ internal fun HomeErrorState(
     message: String?,
     onRetry: () -> Unit,
 ) {
+    val displayMessage = message?.trim().orEmpty().ifBlank {
+        "An error occurred. Please retry."
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-    ) {
+        ) {
         Text(
-            text = message.orEmpty(),
+            text = displayMessage,
             color = Color.White,
             fontSize = 16.sp,
         )

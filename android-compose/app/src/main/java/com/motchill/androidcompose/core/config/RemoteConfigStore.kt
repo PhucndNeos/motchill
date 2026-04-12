@@ -29,21 +29,10 @@ object RemoteConfigStore {
             .build()
     }
 
-    suspend fun refreshFromRemote(): RemoteConfig {
-        val configText = withContext(Dispatchers.IO) {
-            val request = Request.Builder()
-                .url(CONFIG_URL)
-                .get()
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    throw IOException("HTTP ${response.code} for ${response.request.url}")
-                }
-                response.body?.string().orEmpty()
-            }
-        }
-
+    suspend fun refreshFromRemote(
+        fetchRemoteConfigText: suspend () -> String = ::fetchRemoteConfigText,
+    ): RemoteConfig {
+        val configText = fetchRemoteConfigText()
         val config = parse(configText)
         setCurrentConfig(config)
         return config
@@ -67,6 +56,22 @@ object RemoteConfigStore {
 
     internal fun setCurrentConfig(remoteConfig: RemoteConfig) {
         currentConfig = remoteConfig
+    }
+
+    private suspend fun fetchRemoteConfigText(): String {
+        return withContext(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url(CONFIG_URL)
+                .get()
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw IOException("HTTP ${response.code} for ${response.request.url}")
+                }
+                response.body?.string().orEmpty()
+            }
+        }
     }
 
     internal fun parse(jsonText: String): RemoteConfig {
