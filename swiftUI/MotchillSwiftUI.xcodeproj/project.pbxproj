@@ -25,6 +25,7 @@
 		5EB4882C2F8A8133007251E8 /* DetailsIpadScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB4882B2F8A8129007251E8 /* DetailsIpadScreen.swift */; };
 		5EB4882F2F8A8A88007251E8 /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = 5EB4882E2F8A8A88007251E8 /* Flow */; };
 		5EF698182F8B3B06003CDE04 /* ErrorOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EF698172F8B3B00003CDE04 /* ErrorOverlay.swift */; };
+		5EF698AC2F8BB0B4003CDE04 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5EF698AB2F8BB0B4003CDE04 /* Launch Screen.storyboard */; };
 		60DB0856335866207AE13DF1 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F0A6691C77B0663E0581353 /* HomeView.swift */; };
 		6492485EC75DFE1953CE7F77 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB872D063E20972755D7D68 /* SearchViewModel.swift */; };
 		67DE089DB2859C6E04455F33 /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1BBC2CEE4330D9EFF54F410 /* AppRoute.swift */; };
@@ -89,6 +90,8 @@
 		5E8AC1D72F8A4809008F0316 /* PlayerOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerOverlay.swift; sourceTree = "<group>"; };
 		5EB4882B2F8A8129007251E8 /* DetailsIpadScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsIpadScreen.swift; sourceTree = "<group>"; };
 		5EF698172F8B3B00003CDE04 /* ErrorOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorOverlay.swift; sourceTree = "<group>"; };
+		5EF698AB2F8BB0B4003CDE04 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
+		5EF698AD2F8BB1BC003CDE04 /* MotchillSwiftUI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "MotchillSwiftUI-Info.plist"; sourceTree = "<group>"; };
 		60E35DF450A83DEA5F566362 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		68A94BAA2F88906100C59159 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		68A94BAC2F88906100C59159 /* AppContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainer.swift; sourceTree = "<group>"; };
@@ -389,6 +392,8 @@
 		DDB99B17EB9E16F530163415 = {
 			isa = PBXGroup;
 			children = (
+				5EF698AD2F8BB1BC003CDE04 /* MotchillSwiftUI-Info.plist */,
+				5EF698AB2F8BB0B4003CDE04 /* Launch Screen.storyboard */,
 				6AC200000000000000000021 /* Assets.xcassets */,
 				ACEFC3480ADB54016DB46690 /* App */,
 				68A94BB72F88906100C59159 /* Core */,
@@ -509,6 +514,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5EF698AC2F8BB0B4003CDE04 /* Launch Screen.storyboard in Resources */,
 				6AC200000000000000000020 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -610,7 +616,7 @@
 				DEVELOPMENT_TEAM = 7V4HFL737W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_FILE = "MotchillSwiftUI-Info.plist";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -694,7 +700,7 @@
 				DEVELOPMENT_TEAM = 7V4HFL737W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_FILE = "MotchillSwiftUI-Info.plist";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
