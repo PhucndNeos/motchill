@@ -7,66 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0E35015989413977A8A494EE /* AppShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DF5A246B4C338C8B029D34D /* AppShellView.swift */; };
-		1A2B3C4D5E6F708192A3B4C5 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708192A3B4C4 /* AppRouter.swift */; };
-		28C8A905C95B3E48B51BE02D /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25D1DCCD752344925DA3A644 /* SearchView.swift */; };
-		2ADE81018F407143CA9A4637 /* PlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D4E882AB801EC0ED8296E9 /* PlayerViewModel.swift */; };
-		2ADE81028F407143CA9A4637 /* PlayerSubtitleSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D4E883AB801EC0ED8296E9 /* PlayerSubtitleSupport.swift */; };
-		2D4E6F8091A2B3C4D5E6F708 /* SearchPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4E6F8091A2B3C4D5E6F707 /* SearchPresentation.swift */; };
-		3A4B5C6D7E8F901234567890 /* FeaturePagingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4B5C6D7E8F901234567891 /* FeaturePagingView.swift */; };
 		44275316F121033B65345D97 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60E35DF450A83DEA5F566362 /* Foundation.framework */; };
-		4C87F70336716F4DAA583870 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC453A95299B261DFCB25A8E /* HomeViewModel.swift */; };
-		5212D2E2B0AE4E3DAA3A3A21 /* HomeComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5212D2E2B0AE4E3DAA3A3A11 /* HomeComponents.swift */; };
-		5212D2E2B0AE4E3DAA3A3A22 /* HomeMockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5212D2E2B0AE4E3DAA3A3A12 /* HomeMockData.swift */; };
-		5212D2E2B0AE4E3DAA3A3A23 /* HomeScreenState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5212D2E2B0AE4E3DAA3A3A13 /* HomeScreenState.swift */; };
-		58EA0E06425B4CEEB1F55CCF /* DetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECEEF25F11216CE5C55AAAE3 /* DetailViewModel.swift */; };
 		5E312E562F8BDC5D00C90FED /* SwiftSubtitles in Frameworks */ = {isa = PBXBuildFile; productRef = 5E312E552F8BDC5D00C90FED /* SwiftSubtitles */; };
-		5E8AC1D42F8A23E3008F0316 /* HomeIpadComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8AC1D32F8A23D8008F0316 /* HomeIpadComponents.swift */; };
-		5E8AC1D62F8A3F9D008F0316 /* TabSegmentedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8AC1D52F8A3F91008F0316 /* TabSegmentedView.swift */; };
-		5E8AC1D82F8A480F008F0316 /* PlayerOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8AC1D72F8A4809008F0316 /* PlayerOverlay.swift */; };
-		5E8D1D902F8BCF4400AA4764 /* ScreenIdeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8D1D8F2F8BCF2A00AA4764 /* ScreenIdeManager.swift */; };
-		5EB4882C2F8A8133007251E8 /* DetailsIpadScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB4882B2F8A8129007251E8 /* DetailsIpadScreen.swift */; };
 		5EB4882F2F8A8A88007251E8 /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = 5EB4882E2F8A8A88007251E8 /* Flow */; };
-		5EF698182F8B3B06003CDE04 /* ErrorOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EF698172F8B3B00003CDE04 /* ErrorOverlay.swift */; };
 		5EF698AC2F8BB0B4003CDE04 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5EF698AB2F8BB0B4003CDE04 /* Launch Screen.storyboard */; };
-		60DB0856335866207AE13DF1 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F0A6691C77B0663E0581353 /* HomeView.swift */; };
-		6492485EC75DFE1953CE7F77 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB872D063E20972755D7D68 /* SearchViewModel.swift */; };
-		67DE089DB2859C6E04455F33 /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1BBC2CEE4330D9EFF54F410 /* AppRoute.swift */; };
-		68A94BC12F88906100C59159 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BAE2F88906100C59159 /* AppTheme.swift */; };
-		68A94BC22F88906100C59159 /* PhucTvRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BBB2F88906100C59159 /* PhucTvRepository.swift */; };
-		68A94BC32F88906100C59159 /* PhucTvJSONMappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BB82F88906100C59159 /* PhucTvJSONMappers.swift */; };
-		68A94BC42F88906100C59159 /* AppContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BAC2F88906100C59159 /* AppContainer.swift */; };
-		68A94BC52F88906100C59159 /* RemoteImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BAF2F88906100C59159 /* RemoteImageView.swift */; };
-		68A94BC62F88906100C59159 /* PhucTvModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BBE2F88906100C59159 /* PhucTvModels.swift */; };
-		68A94BC72F88906100C59159 /* PhucTvAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BB12F88906100C59159 /* PhucTvAPIClient.swift */; };
-		68A94BC82F88906100C59159 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BAA2F88906100C59159 /* AppConfiguration.swift */; };
-		68A94BC92F88906100C59159 /* PhucTvStores.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BB32F88906100C59159 /* PhucTvStores.swift */; };
-		68A94BCA2F88906100C59159 /* PhucTvPayloadCipher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BB52F88906100C59159 /* PhucTvPayloadCipher.swift */; };
-		68A94BCB2F88906100C59159 /* DefaultPhucTvRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BBA2F88906100C59159 /* DefaultPhucTvRepository.swift */; };
 		68A94BEF2F889C5600C59159 /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = 68A94BEE2F889C5600C59159 /* SwiftyBeaver */; };
-		68A94BF12F889C5600C59159 /* PhucTvLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A94BF02F889C5600C59159 /* PhucTvLogger.swift */; };
 		68A94BFC2F88A80B00C59159 /* ACarousel in Frameworks */ = {isa = PBXBuildFile; productRef = 68A94BFB2F88A80B00C59159 /* ACarousel */; };
-		6AC200000000000000000001 /* MovieCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC200000000000000000011 /* MovieCardView.swift */; };
-		6AC200000000000000000002 /* FeaturePrimaryAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC200000000000000000012 /* FeaturePrimaryAction.swift */; };
-		6AC200000000000000000003 /* EpisodePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC200000000000000000013 /* EpisodePresentation.swift */; };
-		6AC200000000000000000004 /* FlowWrapLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC200000000000000000014 /* FlowWrapLayout.swift */; };
-		6AC200000000000000000005 /* FeatureMetaPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC200000000000000000015 /* FeatureMetaPill.swift */; };
-		6AC200000000000000000006 /* FeatureSecondaryAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC200000000000000000016 /* FeatureSecondaryAction.swift */; };
 		6AC200000000000000000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6AC200000000000000000021 /* Assets.xcassets */; };
-		7AB100000000000000000001 /* FeatureOverlayDescriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AB100000000000000000011 /* FeatureOverlayDescriptor.swift */; };
-		7AB100000000000000000002 /* FeatureViewActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AB100000000000000000012 /* FeatureViewActions.swift */; };
-		7AB100000000000000000003 /* FeatureStateOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AB100000000000000000013 /* FeatureStateOverlay.swift */; };
-		9F64097F8CDAECBFBBB5F389 /* AppRootViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961DF5795FC832D0B5B3FF9F /* AppRootViewModel.swift */; };
 		A0A0A0A0A0A0A0A0A0A0A0A0 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = C0C0C0C0C0C0C0C0C0C0C0C0 /* Alamofire */; };
-		AA1111111111111111111112 /* DetailPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1111111111111111111111 /* DetailPresentation.swift */; };
-		AA1111111111111111111114 /* DetailComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1111111111111111111113 /* DetailComponents.swift */; };
-		AA1111111111111111111116 /* DetailMockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1111111111111111111115 /* DetailMockData.swift */; };
-		B7D1A1A1A1A1A1A1A1A1A1A1 /* PhucTvRemoteConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D1A1A1A1A1A1A1A1A1A1A2 /* PhucTvRemoteConfig.swift */; };
-		BC3F44E3B078EDAF90A6096F /* FeaturePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D14468AF0A7F30897D3BC7E /* FeaturePlaceholderView.swift */; };
 		BD7123923FB4CC70C416690A /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 33C6D38FEB06E2F321451C7A /* Kingfisher */; };
-		D4BEAA024707B4B9F6DA0C43 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2981A3E66B7D4A996B21761 /* DetailView.swift */; };
-		D60B2B0057645A5F31CFEC95 /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2548B599515D6C9A2A28FE54 /* PlayerView.swift */; };
-		E6CDF0837CB057E668BDBB76 /* PhucTvSwiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E536999F6E49408D2EC499F /* PhucTvSwiftUIApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -80,67 +29,21 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		1A2B3C4D5E6F708192A3B4C4 /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
-		2548B599515D6C9A2A28FE54 /* PlayerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
-		25D1DCCD752344925DA3A644 /* SearchView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
-		2D4E6F8091A2B3C4D5E6F707 /* SearchPresentation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchPresentation.swift; sourceTree = "<group>"; };
-		3A4B5C6D7E8F901234567891 /* FeaturePagingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeaturePagingView.swift; sourceTree = "<group>"; };
-		5212D2E2B0AE4E3DAA3A3A11 /* HomeComponents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeComponents.swift; sourceTree = "<group>"; };
-		5212D2E2B0AE4E3DAA3A3A12 /* HomeMockData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeMockData.swift; sourceTree = "<group>"; };
-		5212D2E2B0AE4E3DAA3A3A13 /* HomeScreenState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeScreenState.swift; sourceTree = "<group>"; };
-		5E8AC1D32F8A23D8008F0316 /* HomeIpadComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeIpadComponents.swift; sourceTree = "<group>"; };
-		5E8AC1D52F8A3F91008F0316 /* TabSegmentedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabSegmentedView.swift; sourceTree = "<group>"; };
-		5E8AC1D72F8A4809008F0316 /* PlayerOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerOverlay.swift; sourceTree = "<group>"; };
-		5E8D1D8F2F8BCF2A00AA4764 /* ScreenIdeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenIdeManager.swift; sourceTree = "<group>"; };
-		5EB4882B2F8A8129007251E8 /* DetailsIpadScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsIpadScreen.swift; sourceTree = "<group>"; };
-		5EF698172F8B3B00003CDE04 /* ErrorOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorOverlay.swift; sourceTree = "<group>"; };
 		5EF698AB2F8BB0B4003CDE04 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		5EF698AD2F8BB1BC003CDE04 /* PhucTvSwiftUI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "PhucTvSwiftUI-Info.plist"; sourceTree = "<group>"; };
 		60E35DF450A83DEA5F566362 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		68A94BAA2F88906100C59159 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
-		68A94BAC2F88906100C59159 /* AppContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainer.swift; sourceTree = "<group>"; };
-		68A94BAE2F88906100C59159 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
-		68A94BAF2F88906100C59159 /* RemoteImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteImageView.swift; sourceTree = "<group>"; };
-		68A94BB12F88906100C59159 /* PhucTvAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhucTvAPIClient.swift; sourceTree = "<group>"; };
-		68A94BB32F88906100C59159 /* PhucTvStores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhucTvStores.swift; sourceTree = "<group>"; };
-		68A94BB52F88906100C59159 /* PhucTvPayloadCipher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhucTvPayloadCipher.swift; sourceTree = "<group>"; };
-		68A94BB82F88906100C59159 /* PhucTvJSONMappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhucTvJSONMappers.swift; sourceTree = "<group>"; };
-		68A94BBA2F88906100C59159 /* DefaultPhucTvRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultPhucTvRepository.swift; sourceTree = "<group>"; };
-		68A94BBB2F88906100C59159 /* PhucTvRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhucTvRepository.swift; sourceTree = "<group>"; };
-		68A94BBE2F88906100C59159 /* PhucTvModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhucTvModels.swift; sourceTree = "<group>"; };
 		68A94BD02F8895C700C59159 /* PhucTvSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PhucTvSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		68A94BF02F889C5600C59159 /* PhucTvLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhucTvLogger.swift; sourceTree = "<group>"; };
-		6AC200000000000000000011 /* MovieCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieCardView.swift; sourceTree = "<group>"; };
-		6AC200000000000000000012 /* FeaturePrimaryAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeaturePrimaryAction.swift; sourceTree = "<group>"; };
-		6AC200000000000000000013 /* EpisodePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodePresentation.swift; sourceTree = "<group>"; };
-		6AC200000000000000000014 /* FlowWrapLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowWrapLayout.swift; sourceTree = "<group>"; };
-		6AC200000000000000000015 /* FeatureMetaPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMetaPill.swift; sourceTree = "<group>"; };
-		6AC200000000000000000016 /* FeatureSecondaryAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureSecondaryAction.swift; sourceTree = "<group>"; };
 		6AC200000000000000000021 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		6E536999F6E49408D2EC499F /* PhucTvSwiftUIApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PhucTvSwiftUIApp.swift; sourceTree = "<group>"; };
-		6F0A6691C77B0663E0581353 /* HomeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		7AB100000000000000000011 /* FeatureOverlayDescriptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureOverlayDescriptor.swift; sourceTree = "<group>"; };
-		7AB100000000000000000012 /* FeatureViewActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureViewActions.swift; sourceTree = "<group>"; };
-		7AB100000000000000000013 /* FeatureStateOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureStateOverlay.swift; sourceTree = "<group>"; };
-		7D14468AF0A7F30897D3BC7E /* FeaturePlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FeaturePlaceholderView.swift; sourceTree = "<group>"; };
-		7DF5A246B4C338C8B029D34D /* AppShellView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppShellView.swift; sourceTree = "<group>"; };
-		8FB872D063E20972755D7D68 /* SearchViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchViewModel.swift; sourceTree = "<group>"; };
-		961DF5795FC832D0B5B3FF9F /* AppRootViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRootViewModel.swift; sourceTree = "<group>"; };
-		AA1111111111111111111111 /* DetailPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailPresentation.swift; sourceTree = "<group>"; };
-		AA1111111111111111111113 /* DetailComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailComponents.swift; sourceTree = "<group>"; };
-		AA1111111111111111111115 /* DetailMockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailMockData.swift; sourceTree = "<group>"; };
-		AC453A95299B261DFCB25A8E /* HomeViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
-		B1BBC2CEE4330D9EFF54F410 /* AppRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
-		B7D1A1A1A1A1A1A1A1A1A1A2 /* PhucTvRemoteConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhucTvRemoteConfig.swift; sourceTree = "<group>"; };
-		C5D4E882AB801EC0ED8296E9 /* PlayerViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlayerViewModel.swift; sourceTree = "<group>"; };
-		C5D4E883AB801EC0ED8296E9 /* PlayerSubtitleSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlayerSubtitleSupport.swift; sourceTree = "<group>"; };
 		C6D71A602C00353F1003A1BD /* PhucTvSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhucTvSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		ECEEF25F11216CE5C55AAAE3 /* DetailViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DetailViewModel.swift; sourceTree = "<group>"; };
-		F2981A3E66B7D4A996B21761 /* DetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		413A8F81BD9B7F93E38FA080 /* Features */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Features; sourceTree = "<group>"; };
+		68A94BB72F88906100C59159 /* Core */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Core; sourceTree = "<group>"; };
+		68A94BBD2F88906100C59159 /* Data */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Data; sourceTree = "<group>"; };
+		68A94BC02F88906100C59159 /* Domain */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Domain; sourceTree = "<group>"; };
 		68A94BD12F8895C700C59159 /* PhucTvSwiftUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PhucTvSwiftUITests; sourceTree = "<group>"; };
+		ACEFC3480ADB54016DB46690 /* App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = App; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -185,210 +88,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		413A8F81BD9B7F93E38FA080 /* Features */ = {
-			isa = PBXGroup;
-			children = (
-				5EB488302F8A92DC007251E8 /* Common */,
-				5E0CEBAB2F89228300FD087E /* SharedUI */,
-				C89EEE7963347CFB1E3DD038 /* Detail */,
-				7D14468AF0A7F30897D3BC7E /* FeaturePlaceholderView.swift */,
-				778FF947E0EE6CDFEB5A0255 /* Home */,
-				41F41E57870C9B6EB176BE05 /* Player */,
-				E52FA9C656CE8D7A075A26C1 /* Search */,
-			);
-			path = Features;
-			sourceTree = "<group>";
-		};
-		41F41E57870C9B6EB176BE05 /* Player */ = {
-			isa = PBXGroup;
-			children = (
-				5E8AC1D72F8A4809008F0316 /* PlayerOverlay.swift */,
-				C5D4E883AB801EC0ED8296E9 /* PlayerSubtitleSupport.swift */,
-				2548B599515D6C9A2A28FE54 /* PlayerView.swift */,
-				C5D4E882AB801EC0ED8296E9 /* PlayerViewModel.swift */,
-			);
-			path = Player;
-			sourceTree = "<group>";
-		};
-		5E0CEBAB2F89228300FD087E /* SharedUI */ = {
-			isa = PBXGroup;
-			children = (
-				5EF698172F8B3B00003CDE04 /* ErrorOverlay.swift */,
-				3A4B5C6D7E8F901234567891 /* FeaturePagingView.swift */,
-				7AB100000000000000000013 /* FeatureStateOverlay.swift */,
-				6AC200000000000000000012 /* FeaturePrimaryAction.swift */,
-				6AC200000000000000000016 /* FeatureSecondaryAction.swift */,
-				6AC200000000000000000011 /* MovieCardView.swift */,
-				6AC200000000000000000014 /* FlowWrapLayout.swift */,
-				6AC200000000000000000015 /* FeatureMetaPill.swift */,
-				5E8AC1D52F8A3F91008F0316 /* TabSegmentedView.swift */,
-			);
-			path = SharedUI;
-			sourceTree = "<group>";
-		};
-		5EB488302F8A92DC007251E8 /* Common */ = {
-			isa = PBXGroup;
-			children = (
-				6AC200000000000000000013 /* EpisodePresentation.swift */,
-				7AB100000000000000000011 /* FeatureOverlayDescriptor.swift */,
-				7AB100000000000000000012 /* FeatureViewActions.swift */,
-				5E8D1D8F2F8BCF2A00AA4764 /* ScreenIdeManager.swift */,
-			);
-			path = Common;
-			sourceTree = "<group>";
-		};
-		68A94BAB2F88906100C59159 /* Configuration */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BAA2F88906100C59159 /* AppConfiguration.swift */,
-				B7D1A1A1A1A1A1A1A1A1A1A2 /* PhucTvRemoteConfig.swift */,
-			);
-			path = Configuration;
-			sourceTree = "<group>";
-		};
-		68A94BAD2F88906100C59159 /* Dependency */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BAC2F88906100C59159 /* AppContainer.swift */,
-			);
-			path = Dependency;
-			sourceTree = "<group>";
-		};
-		68A94BB02F88906100C59159 /* DesignSystem */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BAE2F88906100C59159 /* AppTheme.swift */,
-				68A94BAF2F88906100C59159 /* RemoteImageView.swift */,
-			);
-			path = DesignSystem;
-			sourceTree = "<group>";
-		};
-		68A94BB22F88906100C59159 /* Networking */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BB12F88906100C59159 /* PhucTvAPIClient.swift */,
-			);
-			path = Networking;
-			sourceTree = "<group>";
-		};
-		68A94BB42F88906100C59159 /* Persistence */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BB32F88906100C59159 /* PhucTvStores.swift */,
-			);
-			path = Persistence;
-			sourceTree = "<group>";
-		};
-		68A94BB62F88906100C59159 /* Security */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BB52F88906100C59159 /* PhucTvPayloadCipher.swift */,
-			);
-			path = Security;
-			sourceTree = "<group>";
-		};
-		68A94BB72F88906100C59159 /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BAB2F88906100C59159 /* Configuration */,
-				68A94BAD2F88906100C59159 /* Dependency */,
-				68A94BB02F88906100C59159 /* DesignSystem */,
-				68A94BF22F889C5600C59159 /* Logging */,
-				68A94BB22F88906100C59159 /* Networking */,
-				68A94BB42F88906100C59159 /* Persistence */,
-				68A94BB62F88906100C59159 /* Security */,
-			);
-			path = Core;
-			sourceTree = "<group>";
-		};
-		68A94BB92F88906100C59159 /* Mappers */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BB82F88906100C59159 /* PhucTvJSONMappers.swift */,
-			);
-			path = Mappers;
-			sourceTree = "<group>";
-		};
-		68A94BBC2F88906100C59159 /* Repositories */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BBA2F88906100C59159 /* DefaultPhucTvRepository.swift */,
-				68A94BBB2F88906100C59159 /* PhucTvRepository.swift */,
-			);
-			path = Repositories;
-			sourceTree = "<group>";
-		};
-		68A94BBD2F88906100C59159 /* Data */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BB92F88906100C59159 /* Mappers */,
-				68A94BBC2F88906100C59159 /* Repositories */,
-			);
-			path = Data;
-			sourceTree = "<group>";
-		};
-		68A94BBF2F88906100C59159 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BBE2F88906100C59159 /* PhucTvModels.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		68A94BC02F88906100C59159 /* Domain */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BBF2F88906100C59159 /* Models */,
-			);
-			path = Domain;
-			sourceTree = "<group>";
-		};
-		68A94BF22F889C5600C59159 /* Logging */ = {
-			isa = PBXGroup;
-			children = (
-				68A94BF02F889C5600C59159 /* PhucTvLogger.swift */,
-			);
-			path = Logging;
-			sourceTree = "<group>";
-		};
-		778FF947E0EE6CDFEB5A0255 /* Home */ = {
-			isa = PBXGroup;
-			children = (
-				5212D2E2B0AE4E3DAA3A3A11 /* HomeComponents.swift */,
-				5E8AC1D32F8A23D8008F0316 /* HomeIpadComponents.swift */,
-				5212D2E2B0AE4E3DAA3A3A12 /* HomeMockData.swift */,
-				5212D2E2B0AE4E3DAA3A3A13 /* HomeScreenState.swift */,
-				6F0A6691C77B0663E0581353 /* HomeView.swift */,
-				AC453A95299B261DFCB25A8E /* HomeViewModel.swift */,
-			);
-			path = Home;
-			sourceTree = "<group>";
-		};
-		ACEFC3480ADB54016DB46690 /* App */ = {
-			isa = PBXGroup;
-			children = (
-				961DF5795FC832D0B5B3FF9F /* AppRootViewModel.swift */,
-				B1BBC2CEE4330D9EFF54F410 /* AppRoute.swift */,
-				1A2B3C4D5E6F708192A3B4C4 /* AppRouter.swift */,
-				7DF5A246B4C338C8B029D34D /* AppShellView.swift */,
-				6E536999F6E49408D2EC499F /* PhucTvSwiftUIApp.swift */,
-			);
-			path = App;
-			sourceTree = "<group>";
-		};
-		C89EEE7963347CFB1E3DD038 /* Detail */ = {
-			isa = PBXGroup;
-			children = (
-				AA1111111111111111111111 /* DetailPresentation.swift */,
-				AA1111111111111111111113 /* DetailComponents.swift */,
-				5EB4882B2F8A8129007251E8 /* DetailsIpadScreen.swift */,
-				AA1111111111111111111115 /* DetailMockData.swift */,
-				F2981A3E66B7D4A996B21761 /* DetailView.swift */,
-				ECEEF25F11216CE5C55AAAE3 /* DetailViewModel.swift */,
-			);
-			path = Detail;
-			sourceTree = "<group>";
-		};
 		CF6002ED3B7B5D77B40C466E /* iOS */ = {
 			isa = PBXGroup;
 			children = (
@@ -414,16 +113,6 @@
 			);
 			sourceTree = "<group>";
 		};
-		E52FA9C656CE8D7A075A26C1 /* Search */ = {
-			isa = PBXGroup;
-			children = (
-				2D4E6F8091A2B3C4D5E6F707 /* SearchPresentation.swift */,
-				25D1DCCD752344925DA3A644 /* SearchView.swift */,
-				8FB872D063E20972755D7D68 /* SearchViewModel.swift */,
-			);
-			path = Search;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -438,6 +127,13 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				413A8F81BD9B7F93E38FA080 /* Features */,
+				68A94BB72F88906100C59159 /* Core */,
+				68A94BBD2F88906100C59159 /* Data */,
+				68A94BC02F88906100C59159 /* Domain */,
+				ACEFC3480ADB54016DB46690 /* App */,
 			);
 			name = PhucTvSwiftUI;
 			packageProductDependencies = (
@@ -550,57 +246,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9F64097F8CDAECBFBBB5F389 /* AppRootViewModel.swift in Sources */,
-				5E8AC1D42F8A23E3008F0316 /* HomeIpadComponents.swift in Sources */,
-				67DE089DB2859C6E04455F33 /* AppRoute.swift in Sources */,
-				1A2B3C4D5E6F708192A3B4C5 /* AppRouter.swift in Sources */,
-				0E35015989413977A8A494EE /* AppShellView.swift in Sources */,
-				D4BEAA024707B4B9F6DA0C43 /* DetailView.swift in Sources */,
-				58EA0E06425B4CEEB1F55CCF /* DetailViewModel.swift in Sources */,
-				AA1111111111111111111112 /* DetailPresentation.swift in Sources */,
-				AA1111111111111111111114 /* DetailComponents.swift in Sources */,
-				AA1111111111111111111116 /* DetailMockData.swift in Sources */,
-				BC3F44E3B078EDAF90A6096F /* FeaturePlaceholderView.swift in Sources */,
-				5EF698182F8B3B06003CDE04 /* ErrorOverlay.swift in Sources */,
-				3A4B5C6D7E8F901234567890 /* FeaturePagingView.swift in Sources */,
-				7AB100000000000000000003 /* FeatureStateOverlay.swift in Sources */,
-				6AC200000000000000000002 /* FeaturePrimaryAction.swift in Sources */,
-				6AC200000000000000000006 /* FeatureSecondaryAction.swift in Sources */,
-				6AC200000000000000000001 /* MovieCardView.swift in Sources */,
-				6AC200000000000000000004 /* FlowWrapLayout.swift in Sources */,
-				6AC200000000000000000005 /* FeatureMetaPill.swift in Sources */,
-				6AC200000000000000000003 /* EpisodePresentation.swift in Sources */,
-				7AB100000000000000000001 /* FeatureOverlayDescriptor.swift in Sources */,
-				7AB100000000000000000002 /* FeatureViewActions.swift in Sources */,
-				5E8AC1D62F8A3F9D008F0316 /* TabSegmentedView.swift in Sources */,
-				68A94BC12F88906100C59159 /* AppTheme.swift in Sources */,
-				68A94BC22F88906100C59159 /* PhucTvRepository.swift in Sources */,
-				5EB4882C2F8A8133007251E8 /* DetailsIpadScreen.swift in Sources */,
-				68A94BC32F88906100C59159 /* PhucTvJSONMappers.swift in Sources */,
-				68A94BC42F88906100C59159 /* AppContainer.swift in Sources */,
-				68A94BC52F88906100C59159 /* RemoteImageView.swift in Sources */,
-				68A94BC62F88906100C59159 /* PhucTvModels.swift in Sources */,
-				68A94BC72F88906100C59159 /* PhucTvAPIClient.swift in Sources */,
-				68A94BC82F88906100C59159 /* AppConfiguration.swift in Sources */,
-				68A94BC92F88906100C59159 /* PhucTvStores.swift in Sources */,
-				68A94BCA2F88906100C59159 /* PhucTvPayloadCipher.swift in Sources */,
-				5E8AC1D82F8A480F008F0316 /* PlayerOverlay.swift in Sources */,
-				2ADE81028F407143CA9A4637 /* PlayerSubtitleSupport.swift in Sources */,
-				68A94BCB2F88906100C59159 /* DefaultPhucTvRepository.swift in Sources */,
-				B7D1A1A1A1A1A1A1A1A1A1A1 /* PhucTvRemoteConfig.swift in Sources */,
-				68A94BF12F889C5600C59159 /* PhucTvLogger.swift in Sources */,
-				5E8D1D902F8BCF4400AA4764 /* ScreenIdeManager.swift in Sources */,
-				5212D2E2B0AE4E3DAA3A3A21 /* HomeComponents.swift in Sources */,
-				5212D2E2B0AE4E3DAA3A3A22 /* HomeMockData.swift in Sources */,
-				5212D2E2B0AE4E3DAA3A3A23 /* HomeScreenState.swift in Sources */,
-				60DB0856335866207AE13DF1 /* HomeView.swift in Sources */,
-				4C87F70336716F4DAA583870 /* HomeViewModel.swift in Sources */,
-				E6CDF0837CB057E668BDBB76 /* PhucTvSwiftUIApp.swift in Sources */,
-				D60B2B0057645A5F31CFEC95 /* PlayerView.swift in Sources */,
-				2ADE81018F407143CA9A4637 /* PlayerViewModel.swift in Sources */,
-				2D4E6F8091A2B3C4D5E6F708 /* SearchPresentation.swift in Sources */,
-				28C8A905C95B3E48B51BE02D /* SearchView.swift in Sources */,
-				6492485EC75DFE1953CE7F77 /* SearchViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
