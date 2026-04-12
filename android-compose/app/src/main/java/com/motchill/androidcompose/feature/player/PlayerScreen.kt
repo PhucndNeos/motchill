@@ -3,6 +3,7 @@ package com.motchill.androidcompose.feature.player
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.view.WindowManager
 import androidx.annotation.OptIn
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -49,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -59,10 +61,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -71,6 +75,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
@@ -105,6 +112,7 @@ fun PlayerScreen(
     )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val view = LocalView.current
     val activity = remember(context) { context.findActivity() }
     val engine = remember(movieId, episodeId) {
         PlayerPlaybackEngine(
@@ -115,6 +123,12 @@ fun PlayerScreen(
         )
     }
     val runtimeState by engine.state.collectAsStateWithLifecycle()
+
+    PlayerSystemUiEffect(
+        activity = activity,
+        view = view,
+    )
+
     val coroutineScope = rememberCoroutineScope()
     var controlsVisible by remember { mutableStateOf(true) }
     var interactionNonce by remember { mutableStateOf(0L) }
@@ -261,6 +275,38 @@ fun PlayerScreen(
     }
 }
 
+@Composable
+private fun PlayerSystemUiEffect(
+    activity: Activity?,
+    view: android.view.View,
+) {
+    DisposableEffect(activity, view) {
+        val window = activity?.window
+        if (window == null) {
+            onDispose { }
+        } else {
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            val previousKeepScreenOn = window.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON != 0
+
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            insetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            insetsController.hide(WindowInsetsCompat.Type.systemBars())
+
+            onDispose {
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
+                WindowCompat.setDecorFitsSystemWindows(window, true)
+                if (previousKeepScreenOn) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                } else {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
+            }
+        }
+    }
+}
+
 @OptIn(UnstableApi::class)
 @Composable
 private fun PlayerContent(
@@ -288,6 +334,7 @@ private fun PlayerContent(
     val selectedSource = uiState.selectedSource ?: return
     val sourceCount = uiState.playableSources.size
     val backgroundShape = RoundedCornerShape(28.dp)
+    var playerSurfaceWidthPx by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(controlsVisible, controlFocusEpoch, sourceCount, uiState.selectedSourceIndex) {
         focusedControl = if (controlsVisible) {
@@ -312,6 +359,7 @@ private fun PlayerContent(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .onSizeChanged { playerSurfaceWidthPx = it.width }
                 .focusRequester(hostFocusRequester)
                 .focusable()
                 .onPreviewKeyEvent { event ->
@@ -321,13 +369,24 @@ private fun PlayerContent(
 
                     val remoteKey = event.toPlayerRemoteKey()
                     if (!controlsVisible) {
-                        return@onPreviewKeyEvent if (remoteKey == PlayerRemoteKey.Activate) {
-                            onShowControls()
-                            focusedControl = playerFocusAfterShowingControls()
-                            true
-                        } else {
-                            false
+                        val decision = playerHandleHiddenKey(remoteKey) ?: return@onPreviewKeyEvent false
+
+                        when (val effect = decision.effect) {
+                            PlayerRemoteEffect.NoOp -> {
+                                onShowControls()
+                                focusedControl = decision.nextFocus
+                            }
+                            is PlayerRemoteEffect.SeekBy -> {
+                                onTouchControls()
+                                onSeekBy(effect.deltaMs)
+                            }
+                            PlayerRemoteEffect.Back,
+                            PlayerRemoteEffect.TogglePlayback,
+                            is PlayerRemoteEffect.SelectSource,
+                            -> Unit
                         }
+
+                        true
                     }
 
                     val decision = playerHandleVisibleKey(
@@ -352,9 +411,17 @@ private fun PlayerContent(
                     }
                     true
                 }
-                .pointerInput(Unit) {
+                .pointerInput(playerSurfaceWidthPx) {
                     detectTapGestures(
                         onTap = { onSurfaceTapped() },
+                        onDoubleTap = { offset ->
+                            val deltaMs = playerDoubleTapSeekDelta(
+                                tapX = offset.x,
+                                surfaceWidthPx = playerSurfaceWidthPx,
+                            ) ?: return@detectTapGestures
+                            onTouchControls()
+                            onSeekBy(deltaMs)
+                        },
                     )
                 },
         )

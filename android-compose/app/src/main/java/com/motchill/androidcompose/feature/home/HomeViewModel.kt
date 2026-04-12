@@ -3,7 +3,6 @@ package com.motchill.androidcompose.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.motchill.androidcompose.core.config.RemoteConfigStore
 import com.motchill.androidcompose.data.repository.MotchillRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -14,6 +13,10 @@ import kotlinx.coroutines.launch
 
 internal class HomeViewModel(
     private val repository: MotchillRepository,
+    private val remoteConfigLoader: suspend () -> Unit = {
+        com.motchill.androidcompose.core.config.RemoteConfigStore.refreshFromRemote()
+        Unit
+    },
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -30,12 +33,11 @@ internal class HomeViewModel(
             )
 
             runCatching {
-                RemoteConfigStore.clear()
-                RemoteConfigStore.refreshFromRemote()
+                remoteConfigLoader()
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = error.message ?: error::class.java.simpleName,
+                    errorMessage = remoteConfigFailureMessage(error),
                 )
                 return@launch
             }
@@ -57,7 +59,7 @@ internal class HomeViewModel(
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = error.message ?: error::class.java.simpleName,
+                    errorMessage = homeDataFailureMessage(error),
                 )
             }
         }
@@ -68,6 +70,24 @@ internal class HomeViewModel(
         val nextIndex = movies.indexOfFirst { it.id == movieId }
         if (nextIndex == -1) return
         _uiState.value = _uiState.value.copy(selectedHeroIndex = nextIndex)
+    }
+
+    private fun remoteConfigFailureMessage(error: Throwable): String {
+        val detail = error.message?.trim().orEmpty()
+        return if (detail.isBlank()) {
+            "Failed to load remote config. Please retry."
+        } else {
+            "Failed to load remote config: $detail"
+        }
+    }
+
+    private fun homeDataFailureMessage(error: Throwable): String {
+        val detail = error.message?.trim().orEmpty()
+        return if (detail.isBlank()) {
+            "Failed to load home data. Please retry."
+        } else {
+            "Failed to load home data: $detail"
+        }
     }
 
     companion object {

@@ -149,6 +149,45 @@ class PlayerRemoteNavigationTest {
     }
 
     @Test
+    fun `hidden left seeks backward by ten seconds`() {
+        val decision = playerHandleHiddenKey(PlayerRemoteKey.Left)
+
+        assertEquals(PlayerFocusedControl.Transport(index = 1), decision?.nextFocus)
+        assertEquals(PlayerRemoteEffect.SeekBy(deltaMs = -10_000L), decision?.effect)
+    }
+
+    @Test
+    fun `hidden right seeks forward by ten seconds`() {
+        val decision = playerHandleHiddenKey(PlayerRemoteKey.Right)
+
+        assertEquals(PlayerFocusedControl.Transport(index = 1), decision?.nextFocus)
+        assertEquals(PlayerRemoteEffect.SeekBy(deltaMs = 10_000L), decision?.effect)
+    }
+
+    @Test
+    fun `hidden activate shows controls without seeking`() {
+        val decision = playerHandleHiddenKey(PlayerRemoteKey.Activate)
+
+        assertEquals(PlayerFocusedControl.Transport(index = 1), decision?.nextFocus)
+        assertEquals(PlayerRemoteEffect.NoOp, decision?.effect)
+    }
+
+    @Test
+    fun `double tap left seeks backward`() {
+        assertEquals(-10_000L, playerDoubleTapSeekDelta(tapX = 120f, surfaceWidthPx = 400))
+    }
+
+    @Test
+    fun `double tap right seeks forward`() {
+        assertEquals(10_000L, playerDoubleTapSeekDelta(tapX = 320f, surfaceWidthPx = 400))
+    }
+
+    @Test
+    fun `double tap without width does nothing`() {
+        assertEquals(null, playerDoubleTapSeekDelta(tapX = 10f, surfaceWidthPx = 0))
+    }
+
+    @Test
     fun `player requested orientation locks to sensor landscape`() {
         assertEquals(
             ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE,

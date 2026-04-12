@@ -74,6 +74,41 @@ fun playerHandleVisibleKey(
     }
 }
 
+fun playerHandleHiddenKey(key: PlayerRemoteKey): PlayerRemoteDecision? {
+    return when (key) {
+        PlayerRemoteKey.Activate -> PlayerRemoteDecision(
+            nextFocus = playerDefaultFocusedControl(),
+        )
+
+        PlayerRemoteKey.Left -> PlayerRemoteDecision(
+            nextFocus = playerDefaultFocusedControl(),
+            effect = PlayerRemoteEffect.SeekBy(deltaMs = -10_000L),
+        )
+
+        PlayerRemoteKey.Right -> PlayerRemoteDecision(
+            nextFocus = playerDefaultFocusedControl(),
+            effect = PlayerRemoteEffect.SeekBy(deltaMs = 10_000L),
+        )
+
+        PlayerRemoteKey.Up,
+        PlayerRemoteKey.Down,
+        PlayerRemoteKey.Other,
+        -> null
+    }
+}
+
+fun playerDoubleTapSeekDelta(
+    tapX: Float,
+    surfaceWidthPx: Int,
+): Long? {
+    if (surfaceWidthPx <= 0) return null
+    return if (tapX < surfaceWidthPx / 2f) {
+        -10_000L
+    } else {
+        10_000L
+    }
+}
+
 private fun handleBackKey(
     key: PlayerRemoteKey,
     sourceCount: Int,
