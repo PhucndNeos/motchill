@@ -12,7 +12,6 @@ import UIKit
 struct HomeIpadScreen: View {
     let viewModel: HomeViewModel
     let router: AppRouter
-    @State private var activeHeroIndex: Int = 0
 
     var body: some View {
         GeometryReader { proxy in
@@ -44,7 +43,7 @@ struct HomeIpadScreen: View {
                             await viewModel.retry()
                         },
                         onSecondary: {
-                            router.push(.search)
+                            router.push(.search())
                         }
                     )
                 case .error(let message):
@@ -80,7 +79,7 @@ struct HomeIpadScreen: View {
                                 await viewModel.retry()
                             },
                             onSecondary: {
-                                router.push(.search)
+                                router.push(.search())
                             }
                         )
                     }
@@ -118,25 +117,31 @@ private struct HomeIpadLoadedContent: View {
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            TabView(selection: selectedHeroID) {
-                ForEach(heroMovies, id: \.id) { currentMovie in
-                    HomeIpadHeroCardView(
-                        movie: currentMovie,
-                        onWatchNow: {
-                            router.push(.detail(currentMovie))
-                        },
-                        onTrailer: {
-                            openTrailer(currentMovie.trailer)
-                        }
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .ignoresSafeArea()
-                    .tag(Optional(currentMovie.id))
+            FeaturePagingView(
+                selectedID: selectedHeroID,
+                items: heroMovies,
+                spacing: 0,
+                horizontalPadding: 0,
+                onSelectionChanged: { newID in
+                    guard let newID else {
+                        viewModel.selectedMovie = nil
+                        return
+                    }
+                    viewModel.selectedMovie = heroMovies.first(where: { $0.id == newID })
                 }
+            ) { currentMovie in
+                HomeIpadHeroCardView(
+                    movie: currentMovie,
+                    onWatchNow: {
+                        router.push(.detail(currentMovie))
+                    },
+                    onTrailer: {
+                        openTrailer(currentMovie.trailer)
+                    }
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .id(viewModel.selectedSection?.id ?? "home-ipad-hero")
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .ignoresSafeArea()
             .onAppear {
                 syncSelectionIfNeeded()
             }
@@ -271,7 +276,6 @@ private struct HomeIpadHeroCardView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .ignoresSafeArea()
     }
 }
 

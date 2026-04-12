@@ -62,7 +62,9 @@ struct HomeView: View {
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {}) {
+                Button(action: {
+                    router.push(.search())
+                }) {
                     HStack(spacing: 6) {
                         Image(systemName: "magnifyingglass")
                         Text("Tìm kiếm")

@@ -13,8 +13,13 @@ struct AppShellView: View {
                 switch route {
                 case .home:
                     HomeView(repository: AppContainer.shared.repository, router: router)
-                case .search:
-                    SearchView()
+                case .search(let routeInput):
+                    SearchView(
+                        repository: AppContainer.shared.repository,
+                        likedMovieStore: AppContainer.shared.likedMovieStore,
+                        router: router,
+                        routeInput: routeInput
+                    )
                 case .detail(let movie):
                     DetailView(
                         movie: movie,

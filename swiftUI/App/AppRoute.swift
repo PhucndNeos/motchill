@@ -2,7 +2,7 @@ import Foundation
 
 enum AppRoute: Hashable {
     case home
-    case search
+    case search(SearchRouteInput = SearchRouteInput())
     case detail(MotchillMovieCard)
     case player(
         movieID: Int,

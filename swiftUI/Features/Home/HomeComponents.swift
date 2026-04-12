@@ -75,7 +75,7 @@ struct HomeScreen: View {
     }
 
     private func openSearch() {
-        router.push(.search)
+        router.push(.search())
     }
 }
 
@@ -341,7 +341,7 @@ private struct HomeSectionRail: View {
                     Spacer()
 
                     Button(action: {
-                        router.push(.search)
+                        router.push(.search())
                     }) {
                         Text("Xem thêm")
                             .font(AppTheme.captionFont.weight(.semibold))

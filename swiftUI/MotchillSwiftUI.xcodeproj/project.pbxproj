@@ -11,6 +11,8 @@
 		1A2B3C4D5E6F708192A3B4C5 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708192A3B4C4 /* AppRouter.swift */; };
 		28C8A905C95B3E48B51BE02D /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25D1DCCD752344925DA3A644 /* SearchView.swift */; };
 		2ADE81018F407143CA9A4637 /* PlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D4E882AB801EC0ED8296E9 /* PlayerViewModel.swift */; };
+		2D4E6F8091A2B3C4D5E6F708 /* SearchPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4E6F8091A2B3C4D5E6F707 /* SearchPresentation.swift */; };
+		3A4B5C6D7E8F901234567890 /* FeaturePagingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4B5C6D7E8F901234567891 /* FeaturePagingView.swift */; };
 		44275316F121033B65345D97 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60E35DF450A83DEA5F566362 /* Foundation.framework */; };
 		4C87F70336716F4DAA583870 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC453A95299B261DFCB25A8E /* HomeViewModel.swift */; };
 		5212D2E2B0AE4E3DAA3A3A21 /* HomeComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5212D2E2B0AE4E3DAA3A3A11 /* HomeComponents.swift */; };
@@ -77,6 +79,8 @@
 		1A2B3C4D5E6F708192A3B4C4 /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
 		2548B599515D6C9A2A28FE54 /* PlayerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
 		25D1DCCD752344925DA3A644 /* SearchView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		2D4E6F8091A2B3C4D5E6F707 /* SearchPresentation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchPresentation.swift; sourceTree = "<group>"; };
+		3A4B5C6D7E8F901234567891 /* FeaturePagingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeaturePagingView.swift; sourceTree = "<group>"; };
 		5212D2E2B0AE4E3DAA3A3A11 /* HomeComponents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeComponents.swift; sourceTree = "<group>"; };
 		5212D2E2B0AE4E3DAA3A3A12 /* HomeMockData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeMockData.swift; sourceTree = "<group>"; };
 		5212D2E2B0AE4E3DAA3A3A13 /* HomeScreenState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeScreenState.swift; sourceTree = "<group>"; };
@@ -200,6 +204,7 @@
 			isa = PBXGroup;
 			children = (
 				5EF698172F8B3B00003CDE04 /* ErrorOverlay.swift */,
+				3A4B5C6D7E8F901234567891 /* FeaturePagingView.swift */,
 				7AB100000000000000000013 /* FeatureStateOverlay.swift */,
 				6AC200000000000000000012 /* FeaturePrimaryAction.swift */,
 				6AC200000000000000000016 /* FeatureSecondaryAction.swift */,
@@ -399,6 +404,7 @@
 		E52FA9C656CE8D7A075A26C1 /* Search */ = {
 			isa = PBXGroup;
 			children = (
+				2D4E6F8091A2B3C4D5E6F707 /* SearchPresentation.swift */,
 				25D1DCCD752344925DA3A644 /* SearchView.swift */,
 				8FB872D063E20972755D7D68 /* SearchViewModel.swift */,
 			);
@@ -540,6 +546,7 @@
 				AA1111111111111111111116 /* DetailMockData.swift in Sources */,
 				BC3F44E3B078EDAF90A6096F /* FeaturePlaceholderView.swift in Sources */,
 				5EF698182F8B3B06003CDE04 /* ErrorOverlay.swift in Sources */,
+				3A4B5C6D7E8F901234567890 /* FeaturePagingView.swift in Sources */,
 				7AB100000000000000000003 /* FeatureStateOverlay.swift in Sources */,
 				6AC200000000000000000002 /* FeaturePrimaryAction.swift in Sources */,
 				6AC200000000000000000006 /* FeatureSecondaryAction.swift in Sources */,
@@ -573,6 +580,7 @@
 				E6CDF0837CB057E668BDBB76 /* MotchillSwiftUIApp.swift in Sources */,
 				D60B2B0057645A5F31CFEC95 /* PlayerView.swift in Sources */,
 				2ADE81018F407143CA9A4637 /* PlayerViewModel.swift in Sources */,
+				2D4E6F8091A2B3C4D5E6F708 /* SearchPresentation.swift in Sources */,
 				28C8A905C95B3E48B51BE02D /* SearchView.swift in Sources */,
 				6492485EC75DFE1953CE7F77 /* SearchViewModel.swift in Sources */,
 			);
@@ -602,6 +610,7 @@
 				DEVELOPMENT_TEAM = 7V4HFL737W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -685,6 +694,7 @@
 				DEVELOPMENT_TEAM = 7V4HFL737W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (

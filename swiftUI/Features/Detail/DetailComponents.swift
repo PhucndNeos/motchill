@@ -68,18 +68,24 @@ struct DetailScreen: View {
                             secondaryTitle: "Tìm kiếm"
                         ),
                         onRetry: retry,
-                        onSecondary: { router.push(.search) }
+                        onSecondary: { router.push(.search()) }
                     )
                 }
             }
         }
-        .toolbar {
+        .toolbar {            
             ToolbarItem(placement: .topBarTrailing) {
-                DetailIconButton(
-                    icon: viewModel.isLiked ? "heart.fill" : "heart",
-                    label: "Like",
-                    onTap: toggleLike
-                )
+                Button(action: toggleLike) {
+                    Image(systemName: viewModel.isLiked ? "heart.fill" : "heart")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(viewModel.isLiked ? Color.red.opacity(0.95) : AppTheme.textPrimary)
+                        .frame(width: 42, height: 42)
+                        .background(
+                            (viewModel.isLiked ? Color.red.opacity(0.18) : Color.white.opacity(0.06)),
+                            in: Circle()
+                        )
+                }
+                .buttonStyle(.plain)
             }
         }
         .task(id: viewModel.movie.id) {
@@ -153,7 +159,7 @@ private struct DetailLoadedContent: View {
                                 episodeProgressById: viewModel.episodeProgressById,
                                 onOpenEpisode: onOpenEpisode,
                                 onOpenDetail: { router.push(.detail($0)) },
-                                onOpenSearch: { router.push(.search) }
+                                onOpenSearch: { router.push(.search()) }
                             )
                         }
                     }
