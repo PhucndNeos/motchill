@@ -45,7 +45,7 @@ struct PlayerView: View {
                 ScreenIdeManager.shared.disableAutoLock()
             }
             .onDisappear {
-                ScreenIdeManager.shared.disableAutoLock()
+                ScreenIdeManager.shared.enableAutoLock()
                 Task {
                     await viewModel.persistProgress()
                     viewModel.stop()
@@ -64,11 +64,11 @@ private struct PlayerScreen: View {
                 .ignoresSafeArea()
 
             if viewModel.state == .loaded, let _ = viewModel.selectedSource {
-                ZStack {
+                ZStack(alignment: .bottom) {
                     VideoPlayer(player: viewModel.player)
                         .ignoresSafeArea()
                         .allowsHitTesting(false)
-
+                    PlayerSubtitleOverlay(text: viewModel.currentSubtitleText)
                     PlayerOverlay(
                         viewModel: viewModel,
                         onBack: { router.pop() }

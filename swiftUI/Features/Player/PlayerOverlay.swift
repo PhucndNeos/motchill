@@ -8,6 +8,28 @@
 
 import SwiftUI
 
+struct PlayerSubtitleOverlay: View {
+    let text: String?
+    
+    var body: some View {
+        if let text {            
+            Text(text)
+                .font(.system(size: 30, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.yellow.opacity(0.95))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(Color.black.opacity(0.48))
+                )
+                .shadow(color: Color.black.opacity(0.32), radius: 12, x: 0, y: 4)
+        } else {
+            EmptyView()
+        }
+    }
+}
+
+
 struct PlayerOverlay: View {
     @Bindable var viewModel: PlayerViewModel
     let onBack: () -> Void
@@ -51,7 +73,7 @@ struct PlayerOverlay: View {
     }
 
     private var subtitleLabel: String {
-        viewModel.selectedSubtitleTrack?.displayLabel ?? "SUBS"
+        viewModel.isSubtitleEnabled ? (viewModel.selectedSubtitleTrack?.displayLabel ?? "SUBS") : "SUBS"
     }
 
     var body: some View {
@@ -160,7 +182,7 @@ struct PlayerOverlay: View {
         HStack(spacing: 26) {
             PlayerOverlayControlButton(
                 icon: "goforward.10",
-                size: 18,
+                size: 30,
                 onTap: {
                     viewModel.seek(by: -viewModel.seekStepMillis)
                 }
@@ -191,7 +213,7 @@ struct PlayerOverlay: View {
 
             PlayerOverlayControlButton(
                 icon: "goforward.10",
-                size: 18,
+                size: 30,
                 flipped: true,
                 onTap: {
                     viewModel.seek(by: viewModel.seekStepMillis)
@@ -293,13 +315,17 @@ struct PlayerOverlay: View {
                     }
                 )
 
-                PlayerOverlaySideButton(
-                    icon: "captions.bubble.fill",
-                    label: subtitleLabel,
-                    onTap: {
-                        viewModel.showOverlayTemporarily()
-                    }
-                )
+                if viewModel.hasSubtitleTracks {
+                    PlayerOverlaySideButton(
+                        icon: "captions.bubble.fill",
+                        label: subtitleLabel,
+                        isActive: viewModel.isSubtitleEnabled,
+                        onTap: {
+                            viewModel.toggleSubtitle()
+                            viewModel.showOverlayTemporarily()
+                        }
+                    )
+                }
 
                 PlayerOverlaySideButton(
                     icon: "speedometer",
@@ -353,7 +379,7 @@ private struct PlayerOverlayControlButton: View {
                 .frame(width: 64, height: 64)
                 .background(
                     Circle()
-                        .fill(Color.white.opacity(0.08))
+                        .fill(Color.white.opacity(0.28))
                 )
                 .overlay(
                     Circle()
@@ -368,6 +394,7 @@ private struct PlayerOverlayControlButton: View {
 private struct PlayerOverlaySideButton: View {
     let icon: String
     let label: String
+    var isActive: Bool = false
     let onTap: () -> Void
 
     var body: some View {
@@ -375,22 +402,33 @@ private struct PlayerOverlaySideButton: View {
             VStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(Color.white.opacity(0.08))
-                        .background(.ultraThinMaterial)
+                        .fill(isActive ? Color(red: 0.98, green: 0.77, blue: 0.28).opacity(0.28) : Color.white.opacity(0.08))
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(isActive ? Color(red: 1.0, green: 0.78, blue: 0.76).opacity(0.18) : Color.clear)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(
+                                    isActive ? Color(red: 1.0, green: 0.86, blue: 0.46).opacity(0.95) : Color.white.opacity(0.08),
+                                    lineWidth: 1
+                                )
+                        )
 
                     Image(systemName: icon)
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(AppTheme.textPrimary)
+                        .foregroundStyle(isActive ? Color(red: 1.0, green: 0.90, blue: 0.55) : AppTheme.textPrimary)
                 }
                 .frame(width: 56, height: 56)
 
                 Text(label.uppercased())
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.textMuted.opacity(0.55))
+                    .foregroundStyle(isActive ? Color(red: 1.0, green: 0.88, blue: 0.52) : AppTheme.textMuted.opacity(0.55))
                     .tracking(1.6)
                     .lineLimit(1)
             }
         }
+        .cornerRadius(14)
         .buttonStyle(.plain)
     }
 }
@@ -442,3 +480,9 @@ private func clampFraction(_ value: Double) -> Double {
     )
     .preferredColorScheme(.dark)
 }
+
+#Preview("Subtitle Overlay") {
+    PlayerSubtitleOverlay(text: "This is a subtitle example")
+        .preferredColorScheme(.dark)
+}
+    

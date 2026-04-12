@@ -13,5 +13,6 @@ Native iOS workspace for PhucTv.
 ## Current status
 
 - Phase 0: scaffold and foundation docs
-- Phase 1: data foundation is being wired in
-- Next: connect the feature shells to the new repository and storage layers
+- Phase 1: data foundation and primary feature flows are being wired in
+- Player supports direct stream playback, source switching, resume, and sidecar subtitle overlay for external subtitle files
+- Next: continue hardening player/runtime behavior and expand native feature parity

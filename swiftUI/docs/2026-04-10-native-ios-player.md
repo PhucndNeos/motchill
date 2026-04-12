@@ -55,6 +55,41 @@ That separation keeps source selection and playback side effects easy to test in
 
 - Subtitle tracks appear only when the selected source exposes subtitle metadata or a fallback subtitle file.
 - Default subtitle should be selected from explicit track defaults first.
+- Subtitle rendering runs as a sidecar pipeline and does not use `AVPlayerItem` legible media tracks for this iteration.
+- The selected subtitle file should be downloaded separately, decoded with `SwiftSubtitles`, and mapped into normalized cue ranges.
+- Subtitle text should stay in lightweight runtime state so high-frequency time updates do not fan out across the entire player UI.
+
+## Subtitle Runtime
+
+The current iOS implementation mirrors Android behavior for direct stream subtitles while keeping playback and subtitle handling loosely coupled.
+
+### Runtime flow
+
+1. When the selected source changes, the player picks the default subtitle track if present, otherwise the first subtitle track.
+2. If the source has no subtitle track, the subtitle button is hidden and subtitle runtime state is cleared immediately.
+3. If a subtitle track is selected, the app downloads the sidecar subtitle file and decodes it with `SwiftSubtitles`.
+4. Parsed cues are normalized into millisecond ranges and cached in memory for the active source.
+5. The player time observer ticks every `0.25s` and resolves the active cue using an incremental cursor with binary-search fallback.
+6. `currentSubtitleText` is published only when the rendered text actually changes.
+
+### Toggle behavior
+
+- Subtitle is enabled by default when the selected source has a default track or any subtitle track.
+- The subtitle side button is shown only when the selected source exposes subtitle tracks.
+- Tapping the button toggles subtitle on and off without reconfiguring `AVPlayer`.
+- Disabling subtitle clears selected track, loaded cues, current text, and in-flight subtitle loading work.
+
+### Performance notes
+
+- Subtitle download and parsing should stay off the main actor.
+- Only minimal UI-facing subtitle state should remain observable.
+- Cue lookup should never linearly rescan the full subtitle list on every tick.
+
+### Current scope
+
+- Formats validated in tests: `.vtt`, `.srt`
+- Subtitle UI scope: toggle only
+- Not yet implemented: subtitle picker, styling settings, track language menu, embedded subtitle support
 
 ## Error Handling
 
@@ -78,4 +113,6 @@ User-facing responses should be specific enough that the user can tell whether t
 - Unit test source filtering.
 - Unit test default track selection.
 - Unit test playback state transitions.
+- Unit test subtitle cue decoding and lookup behavior.
+- Unit test subtitle default selection and toggle behavior.
 - Run simulator playback checks against at least one direct stream source.

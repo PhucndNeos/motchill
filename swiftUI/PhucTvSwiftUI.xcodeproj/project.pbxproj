@@ -11,6 +11,7 @@
 		1A2B3C4D5E6F708192A3B4C5 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708192A3B4C4 /* AppRouter.swift */; };
 		28C8A905C95B3E48B51BE02D /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25D1DCCD752344925DA3A644 /* SearchView.swift */; };
 		2ADE81018F407143CA9A4637 /* PlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D4E882AB801EC0ED8296E9 /* PlayerViewModel.swift */; };
+		2ADE81028F407143CA9A4637 /* PlayerSubtitleSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D4E883AB801EC0ED8296E9 /* PlayerSubtitleSupport.swift */; };
 		2D4E6F8091A2B3C4D5E6F708 /* SearchPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4E6F8091A2B3C4D5E6F707 /* SearchPresentation.swift */; };
 		3A4B5C6D7E8F901234567890 /* FeaturePagingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4B5C6D7E8F901234567891 /* FeaturePagingView.swift */; };
 		44275316F121033B65345D97 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60E35DF450A83DEA5F566362 /* Foundation.framework */; };
@@ -19,6 +20,7 @@
 		5212D2E2B0AE4E3DAA3A3A22 /* HomeMockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5212D2E2B0AE4E3DAA3A3A12 /* HomeMockData.swift */; };
 		5212D2E2B0AE4E3DAA3A3A23 /* HomeScreenState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5212D2E2B0AE4E3DAA3A3A13 /* HomeScreenState.swift */; };
 		58EA0E06425B4CEEB1F55CCF /* DetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECEEF25F11216CE5C55AAAE3 /* DetailViewModel.swift */; };
+		5E312E562F8BDC5D00C90FED /* SwiftSubtitles in Frameworks */ = {isa = PBXBuildFile; productRef = 5E312E552F8BDC5D00C90FED /* SwiftSubtitles */; };
 		5E8AC1D42F8A23E3008F0316 /* HomeIpadComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8AC1D32F8A23D8008F0316 /* HomeIpadComponents.swift */; };
 		5E8AC1D62F8A3F9D008F0316 /* TabSegmentedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8AC1D52F8A3F91008F0316 /* TabSegmentedView.swift */; };
 		5E8AC1D82F8A480F008F0316 /* PlayerOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8AC1D72F8A4809008F0316 /* PlayerOverlay.swift */; };
@@ -131,6 +133,7 @@
 		B1BBC2CEE4330D9EFF54F410 /* AppRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
 		B7D1A1A1A1A1A1A1A1A1A1A2 /* PhucTvRemoteConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhucTvRemoteConfig.swift; sourceTree = "<group>"; };
 		C5D4E882AB801EC0ED8296E9 /* PlayerViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlayerViewModel.swift; sourceTree = "<group>"; };
+		C5D4E883AB801EC0ED8296E9 /* PlayerSubtitleSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlayerSubtitleSupport.swift; sourceTree = "<group>"; };
 		C6D71A602C00353F1003A1BD /* PhucTvSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhucTvSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECEEF25F11216CE5C55AAAE3 /* DetailViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DetailViewModel.swift; sourceTree = "<group>"; };
 		F2981A3E66B7D4A996B21761 /* DetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
@@ -157,6 +160,7 @@
 				5EB4882F2F8A8A88007251E8 /* Flow in Frameworks */,
 				BD7123923FB4CC70C416690A /* Kingfisher in Frameworks */,
 				68A94BEF2F889C5600C59159 /* SwiftyBeaver in Frameworks */,
+				5E312E562F8BDC5D00C90FED /* SwiftSubtitles in Frameworks */,
 				68A94BFC2F88A80B00C59159 /* ACarousel in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -199,6 +203,7 @@
 			isa = PBXGroup;
 			children = (
 				5E8AC1D72F8A4809008F0316 /* PlayerOverlay.swift */,
+				C5D4E883AB801EC0ED8296E9 /* PlayerSubtitleSupport.swift */,
 				2548B599515D6C9A2A28FE54 /* PlayerView.swift */,
 				C5D4E882AB801EC0ED8296E9 /* PlayerViewModel.swift */,
 			);
@@ -441,6 +446,7 @@
 				68A94BEE2F889C5600C59159 /* SwiftyBeaver */,
 				68A94BFB2F88A80B00C59159 /* ACarousel */,
 				5EB4882E2F8A8A88007251E8 /* Flow */,
+				5E312E552F8BDC5D00C90FED /* SwiftSubtitles */,
 			);
 			productName = PhucTvSwiftUI;
 			productReference = C6D71A602C00353F1003A1BD /* PhucTvSwiftUI.app */;
@@ -501,6 +507,7 @@
 				68A94BED2F889C5600C59159 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
 				68A94BFA2F88A80B00C59159 /* XCRemoteSwiftPackageReference "ACarousel" */,
 				5EB4882D2F8A8A88007251E8 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
+				5E312E542F8BDC5D00C90FED /* XCRemoteSwiftPackageReference "SwiftSubtitles" */,
 			);
 			productRefGroup = 24B62C632F1E5C474C2029A7 /* Products */;
 			projectDirPath = "";
@@ -578,6 +585,7 @@
 				68A94BC92F88906100C59159 /* PhucTvStores.swift in Sources */,
 				68A94BCA2F88906100C59159 /* PhucTvPayloadCipher.swift in Sources */,
 				5E8AC1D82F8A480F008F0316 /* PlayerOverlay.swift in Sources */,
+				2ADE81028F407143CA9A4637 /* PlayerSubtitleSupport.swift in Sources */,
 				68A94BCB2F88906100C59159 /* DefaultPhucTvRepository.swift in Sources */,
 				B7D1A1A1A1A1A1A1A1A1A1A1 /* PhucTvRemoteConfig.swift in Sources */,
 				68A94BF12F889C5600C59159 /* PhucTvLogger.swift in Sources */,
@@ -886,6 +894,14 @@
 				minimumVersion = 8.0.0;
 			};
 		};
+		5E312E542F8BDC5D00C90FED /* XCRemoteSwiftPackageReference "SwiftSubtitles" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dagronf/SwiftSubtitles";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.2.0;
+			};
+		};
 		5EB4882D2F8A8A88007251E8 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tevelee/SwiftUI-Flow";
@@ -925,6 +941,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 398B5E19506E6BD979D22D5C /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		5E312E552F8BDC5D00C90FED /* SwiftSubtitles */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5E312E542F8BDC5D00C90FED /* XCRemoteSwiftPackageReference "SwiftSubtitles" */;
+			productName = SwiftSubtitles;
 		};
 		5EB4882E2F8A8A88007251E8 /* Flow */ = {
 			isa = XCSwiftPackageProductDependency;

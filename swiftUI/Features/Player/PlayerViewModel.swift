@@ -18,6 +18,8 @@ final class PlayerViewModel {
     @ObservationIgnored
     private let playbackPositionStore: PhucTvPlaybackPositionStoring
     @ObservationIgnored
+    private let subtitleLoader: PlayerSubtitleLoading
+    @ObservationIgnored
     let player = AVPlayer()
     @ObservationIgnored
     private var timeObserverToken: Any?
@@ -25,6 +27,14 @@ final class PlayerViewModel {
     private var lastPersistedProgressBucket: Int64 = 0
     @ObservationIgnored
     private var overlayAutoHideTask: Task<Void, Never>?
+    @ObservationIgnored
+    private var subtitleLoadTask: Task<Void, Never>?
+    @ObservationIgnored
+    private var subtitleCues: [PlayerSubtitleCue] = []
+    @ObservationIgnored
+    private var currentSubtitleCueIndex: Int?
+    @ObservationIgnored
+    private var lastSubtitleText: String?
 
     let movieID: Int
     let episodeID: Int
@@ -41,6 +51,7 @@ final class PlayerViewModel {
     var durationMillis: Int64 = 0
     var isPlaying = false
     var overlayVisible = true
+    var currentSubtitleText: String?
 
     init(
         movieID: Int,
@@ -48,7 +59,8 @@ final class PlayerViewModel {
         movieTitle: String,
         episodeLabel: String,
         repository: PhucTvRepository,
-        playbackPositionStore: PhucTvPlaybackPositionStoring
+        playbackPositionStore: PhucTvPlaybackPositionStoring,
+        subtitleLoader: PlayerSubtitleLoading = PlayerSubtitleLoader()
     ) {
         self.movieID = movieID
         self.episodeID = episodeID
@@ -56,6 +68,7 @@ final class PlayerViewModel {
         self.episodeLabel = episodeLabel
         self.repository = repository
         self.playbackPositionStore = playbackPositionStore
+        self.subtitleLoader = subtitleLoader
         player.automaticallyWaitsToMinimizeStalling = true
     }
 
@@ -80,6 +93,18 @@ final class PlayerViewModel {
         selectedSource?.subtitleTracks ?? []
     }
 
+    var hasSubtitleTracks: Bool {
+        !availableSubtitleTracks.isEmpty
+    }
+
+    var isSubtitleEnabled: Bool {
+        selectedSubtitleTrack != nil
+    }
+
+    var defaultSubtitleTrackForSelectedSource: PhucTvPlayTrack? {
+        selectedSource?.defaultSubtitleTrack ?? selectedSource?.subtitleTracks.first
+    }
+
     var progressFraction: Double {
         guard durationMillis > 0 else { return 0 }
         return min(max(Double(currentPositionMillis) / Double(durationMillis), 0), 1)
@@ -94,6 +119,7 @@ final class PlayerViewModel {
     func load() async {
         state = .loading
         errorMessage = nil
+        clearSubtitleRuntime(clearSelection: true)
 
         do {
             let fetchedSources = try await repository.loadEpisodeSources(
@@ -110,11 +136,7 @@ final class PlayerViewModel {
 
             sources = playable
             selectedSourceIndex = 0
-
-            if let selectedSource {
-                selectedAudioTrack = selectedSource.defaultAudioTrack
-                selectedSubtitleTrack = selectedSource.defaultSubtitleTrack
-            }
+            applyTrackSelectionDefaultsForSelectedSource()
 
             let resume = try? await playbackPositionStore.load(movieID: movieID, episodeID: episodeID)
             await loadPlayerItem(startingAt: resume?.positionMillis ?? 0)
@@ -141,12 +163,10 @@ final class PlayerViewModel {
     func selectSource(_ index: Int) {
         guard playableSources.indices.contains(index) else { return }
         selectedSourceIndex = index
-        if let selectedSource {
-            selectedAudioTrack = selectedSource.defaultAudioTrack
-            selectedSubtitleTrack = selectedSource.defaultSubtitleTrack
-            Task { [position = currentPositionMillis] in
-                await loadPlayerItem(startingAt: position)
-            }
+        applyTrackSelectionDefaultsForSelectedSource()
+
+        Task { [position = currentPositionMillis] in
+            await loadPlayerItem(startingAt: position)
         }
     }
 
@@ -179,7 +199,22 @@ final class PlayerViewModel {
         if let track, !availableSubtitleTracks.contains(track) {
             return
         }
-        selectedSubtitleTrack = track
+
+        if let track {
+            selectedSubtitleTrack = track
+            loadSubtitleCues(for: track)
+        } else {
+            clearSubtitleRuntime(clearSelection: true)
+        }
+    }
+
+    func toggleSubtitle() {
+        if isSubtitleEnabled {
+            clearSubtitleRuntime(clearSelection: true)
+        } else if let track = defaultSubtitleTrackForSelectedSource {
+            selectedSubtitleTrack = track
+            loadSubtitleCues(for: track)
+        }
     }
 
     func togglePlayback() {
@@ -209,9 +244,11 @@ final class PlayerViewModel {
                     self.player.play()
                     self.isPlaying = true
                 }
+                self.syncSubtitleTextIfNeeded(at: clamped)
             }
         }
         currentPositionMillis = clamped
+        syncSubtitleTextIfNeeded(at: clamped)
     }
 
     func stop() {
@@ -219,6 +256,7 @@ final class PlayerViewModel {
         isPlaying = false
         detachTimeObserver()
         cancelOverlayAutoHide()
+        clearSubtitleRuntime(clearSelection: true)
     }
 
     func persistProgress() async {
@@ -239,6 +277,17 @@ final class PlayerViewModel {
                     "episode_id": String(episodeID),
                 ]
             )
+        }
+    }
+
+    func applyTrackSelectionDefaultsForSelectedSource() {
+        selectedAudioTrack = selectedSource?.defaultAudioTrack
+
+        if let track = defaultSubtitleTrackForSelectedSource {
+            selectedSubtitleTrack = track
+            loadSubtitleCues(for: track)
+        } else {
+            clearSubtitleRuntime(clearSelection: true)
         }
     }
 
@@ -263,13 +312,14 @@ final class PlayerViewModel {
 
         player.play()
         isPlaying = true
+        syncSubtitleTextIfNeeded(at: currentPositionMillis)
         showOverlayTemporarily()
     }
 
     private func attachTimeObserver() {
         guard timeObserverToken == nil else { return }
         timeObserverToken = player.addPeriodicTimeObserver(
-            forInterval: CMTime(seconds: 1, preferredTimescale: 600),
+            forInterval: CMTime(seconds: 0.25, preferredTimescale: 600),
             queue: .main
         ) { [weak self] time in
             guard let self else { return }
@@ -284,6 +334,8 @@ final class PlayerViewModel {
                         self.durationMillis = max(Int64((itemDuration * 1000).rounded()), 0)
                     }
                 }
+
+                self.syncSubtitleTextIfNeeded(at: self.currentPositionMillis)
 
                 let bucket = self.currentPositionMillis / 10_000
                 if bucket != self.lastPersistedProgressBucket {
@@ -323,6 +375,73 @@ final class PlayerViewModel {
     private func cancelOverlayAutoHide() {
         overlayAutoHideTask?.cancel()
         overlayAutoHideTask = nil
+    }
+
+    private func loadSubtitleCues(for track: PhucTvPlayTrack) {
+        subtitleLoadTask?.cancel()
+        subtitleCues = []
+        currentSubtitleCueIndex = nil
+        publishSubtitleText(nil)
+
+        let trackToLoad = track
+        subtitleLoadTask = Task { [weak self] in
+            guard let self else { return }
+
+            do {
+                let cues = try await self.subtitleLoader.loadCues(for: trackToLoad)
+                guard !Task.isCancelled else { return }
+                guard self.selectedSubtitleTrack == trackToLoad else { return }
+
+                self.subtitleCues = cues
+                self.currentSubtitleCueIndex = nil
+                self.lastSubtitleText = nil
+                self.syncSubtitleTextIfNeeded(at: self.currentPositionMillis)
+            } catch {
+                guard !Task.isCancelled else { return }
+                guard self.selectedSubtitleTrack == trackToLoad else { return }
+
+                PhucTvLogger.shared.error(
+                    error,
+                    message: "Subtitle load failed",
+                    metadata: [
+                        "movie_id": String(self.movieID),
+                        "episode_id": String(self.episodeID),
+                        "subtitle_label": trackToLoad.displayLabel,
+                        "subtitle_url": trackToLoad.file,
+                    ]
+                )
+                self.clearSubtitleRuntime(clearSelection: false)
+                self.selectedSubtitleTrack = nil
+            }
+        }
+    }
+
+    private func syncSubtitleTextIfNeeded(at positionMillis: Int64) {
+        let resolution = PlayerSubtitleResolver.resolve(
+            positionMillis: positionMillis,
+            cues: subtitleCues,
+            hintIndex: currentSubtitleCueIndex
+        )
+        currentSubtitleCueIndex = resolution.cueIndex
+        publishSubtitleText(resolution.text)
+    }
+
+    private func clearSubtitleRuntime(clearSelection: Bool) {
+        subtitleLoadTask?.cancel()
+        subtitleLoadTask = nil
+        subtitleCues = []
+        currentSubtitleCueIndex = nil
+        publishSubtitleText(nil)
+
+        if clearSelection {
+            selectedSubtitleTrack = nil
+        }
+    }
+
+    private func publishSubtitleText(_ text: String?) {
+        guard lastSubtitleText != text else { return }
+        lastSubtitleText = text
+        currentSubtitleText = text
     }
 
     static func previewLoaded() -> PlayerViewModel {

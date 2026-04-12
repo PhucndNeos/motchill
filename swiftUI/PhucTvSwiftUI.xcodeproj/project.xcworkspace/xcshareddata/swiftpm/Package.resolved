@@ -1,5 +1,5 @@
 {
-  "originHash" : "e0891bf62d70b84f72e794919bbc7edc6634362b3600894517691bda36749a01",
+  "originHash" : "535537e04e5493ac1e826528dc6473439ac18ff6d39fe3247768c1a6cb4e7486",
   "pins" : [
     {
       "identity" : "acarousel",
@@ -20,12 +20,39 @@
       }
     },
     {
+      "identity" : "bytesparser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dagronf/BytesParser",
+      "state" : {
+        "revision" : "a091513c4059d336c8cbf0b9485fcba63bcba83a",
+        "version" : "3.2.1"
+      }
+    },
+    {
+      "identity" : "dsfregex",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dagronf/DSFRegex",
+      "state" : {
+        "revision" : "c576aab25f88bcb4b549862e6269b6f90b917e0c",
+        "version" : "4.0.0"
+      }
+    },
+    {
       "identity" : "kingfisher",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/onevcat/Kingfisher.git",
       "state" : {
         "revision" : "c152c1915f60c51e4afa0752656993ee5b3c63db",
         "version" : "8.8.1"
+      }
+    },
+    {
+      "identity" : "swiftsubtitles",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dagronf/SwiftSubtitles",
+      "state" : {
+        "revision" : "485c6f1fc71235041198a8bb893fa22f807451a6",
+        "version" : "2.2.0"
       }
     },
     {
@@ -44,6 +71,15 @@
       "state" : {
         "revision" : "8cba041db09596183331d123f337d0eb2e6e8e91",
         "version" : "2.1.1"
+      }
+    },
+    {
+      "identity" : "tinycsv",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dagronf/TinyCSV",
+      "state" : {
+        "revision" : "05d691ee7bab64f5ff075b97f47ef41d36a81f6f",
+        "version" : "1.0.1"
       }
     }
   ],
