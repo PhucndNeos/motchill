@@ -85,7 +85,7 @@ private struct IpadDetailSidebar: View {
                         .buttonStyle(.plain)
                         
                         Button(action: onOpenTrailer) {
-                            IpadSecondaryAction(text: "Watch Trailer")
+                            FeatureSecondaryAction(text: "Trailer", systemImage: "film")
                         }
                         .buttonStyle(.plain)
                     }
@@ -340,24 +340,6 @@ private struct IpadSection<Content: View>: View {
     }
 }
 
-private struct IpadSecondaryAction: View {
-    let text: String
-
-    var body: some View {
-        Text(text)
-            .font(AppTheme.captionFont.weight(.bold))
-            .foregroundStyle(AppTheme.textPrimary)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-            .background(Color.white.opacity(0.04))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(Color.white.opacity(0.10), lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-    }
-}
-
 private struct IpadMetaRow: View {
     let pills: [String]
 
@@ -376,19 +358,7 @@ private struct IpadMetaPill: View {
     let text: String
 
     var body: some View {
-        Text(text)
-            .font(AppTheme.captionFont.weight(.semibold))
-            .foregroundStyle(AppTheme.textPrimary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(Color.white.opacity(0.05))
-            )
-            .overlay(
-                Capsule(style: .continuous)
-                    .stroke(Color.white.opacity(0.10), lineWidth: 1)
-            )
+        FeatureMetaPill(text: text)
     }
 }
 

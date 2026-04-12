@@ -122,15 +122,7 @@ private struct HomeIpadLoadedContent: View {
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .ignoresSafeArea()
-            .onChange(of: heroMovies) { _, newValue in
-                if let m = viewModel.selectedMovie, heroMovies.contains(where: { $0.id == m.id }) {
-                    // Current selected movie is still valid, do nothing
-                } else {
-                    // Reset selection if current selected movie is no longer in the new hero movies list
-                    viewModel.selectedMovie = nil
-                }
-            }
+            .ignoresSafeArea()            
             
             HomeIpadIndicator(selectedMovie: $viewModel.selectedMovie, items: heroMovies)
                 .padding()
@@ -153,21 +145,12 @@ private struct HomeIpadHeroCardView: View {
 
                 LinearGradient(
                     colors: [
-                        Color(red: 0.05, green: 0.05, blue: 0.07).opacity(0.92),
-                        Color(red: 0.05, green: 0.05, blue: 0.07).opacity(0.82),
-                        Color(red: 0.05, green: 0.05, blue: 0.07).opacity(0.18)
+                        .black,
+                        .black.opacity(0.5),
+                        .black.opacity(0.02)
                     ],
                     startPoint: .leading,
                     endPoint: .trailing
-                )
-
-                LinearGradient(
-                    colors: [
-                        .clear,
-                        Color.black.opacity(0.74)
-                    ],
-                    startPoint: .center,
-                    endPoint: .bottom
                 )
                 
                 HStack(alignment: .center, spacing: 56) {
@@ -209,7 +192,7 @@ private struct HomeIpadHeroCardView: View {
                             .buttonStyle(.plain)
                             
                             Button(action: onTrailer) {
-                                HomeIpadSecondaryAction(text: "Trailer", systemImage: "film")
+                                FeatureSecondaryAction(text: "Trailer", systemImage: "film")
                             }
                             .buttonStyle(.plain)
                         }
@@ -305,21 +288,10 @@ private struct HomeIpadHeroBackdrop: View {
                     LinearGradient(
                         colors: [
                             Color.black.opacity(0.50),
-                            Color.black.opacity(0.16),
-                            Color.black.opacity(0.72)
+                            Color.black.opacity(0.16)
                         ],
                         startPoint: .leading,
                         endPoint: .trailing
-                    )
-                )
-                .overlay(
-                    LinearGradient(
-                        colors: [
-                            .clear,
-                            Color.black.opacity(0.82)
-                        ],
-                        startPoint: .center,
-                        endPoint: .bottom
                     )
                 )
 
@@ -436,33 +408,6 @@ private struct HomeIpadPrimaryAction: View {
 
     var body: some View {
         FeaturePrimaryAction(text: text, systemImage: systemImage)
-    }
-}
-
-private struct HomeIpadSecondaryAction: View {
-    let text: String
-    let systemImage: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: systemImage)
-                .font(.system(size: 18, weight: .semibold))
-
-            Text(text)
-                .font(.system(size: 19, weight: .bold, design: .rounded))
-        }
-        .foregroundStyle(AppTheme.textPrimary)
-        .padding(.horizontal, 26)
-        .padding(.vertical, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.white.opacity(0.05))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.white.opacity(0.10), lineWidth: 1)
-        )
-        .shadow(color: Color.black.opacity(0.12), radius: 16, x: 0, y: 10)
     }
 }
 

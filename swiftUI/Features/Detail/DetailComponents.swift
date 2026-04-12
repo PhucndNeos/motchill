@@ -212,7 +212,7 @@ private struct DetailHeroSection: View {
                         .buttonStyle(.plain)
 
                         Button(action: onOpenTrailer) {
-                            DetailHeroAction(text: "Trailer", systemImage: "play.circle", filled: false)
+                            FeatureSecondaryAction(text: "Trailer", systemImage: "film")
                         }
                         .buttonStyle(.plain)
 
@@ -638,19 +638,7 @@ private struct DetailMetaPill: View {
     let text: String
 
     var body: some View {
-        Text(text)
-            .font(AppTheme.captionFont.weight(.semibold))
-            .foregroundStyle(AppTheme.textPrimary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(Color.white.opacity(0.05))
-            )
-            .overlay(
-                Capsule(style: .continuous)
-                    .stroke(Color.white.opacity(0.10), lineWidth: 1)
-            )
+        FeatureMetaPill(text: text)
     }
 }
 

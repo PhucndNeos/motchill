@@ -383,19 +383,7 @@ private struct HomeMetaPill: View {
 
     var body: some View {
         if let text, !text.isEmpty {
-            Text(text)
-                .font(AppTheme.captionFont.weight(.semibold))
-                .foregroundStyle(AppTheme.textPrimary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(
-                    Capsule(style: .continuous)
-                        .fill(Color.red.opacity(0.3))
-                )
-                .overlay(
-                    Capsule(style: .continuous)
-                        .stroke(Color.white.opacity(0.10), lineWidth: 1)
-                )
+            FeatureMetaPill(text: text)
         }
     }
 }

@@ -11,8 +11,37 @@ final class HomeViewModel {
     @ObservationIgnored
     private let remoteConfigStore: MotchillRemoteConfigStoring
     var selectedMovie: MotchillMovieCard?
-    var selectedSection: MotchillHomeSection?
-    var state: HomeScreenState
+    var selectedSection: MotchillHomeSection? {
+        didSet {
+            guard let selectedSection = selectedSection else {
+                selectedMovie = nil
+                return
+            }
+
+            guard let selectedMovieID = selectedMovie?.id else {
+                selectedMovie = selectedSection.products.first
+                return
+            }
+
+            // Rebind selection to the current section's instance so TabView selection
+            // keeps matching `.tag(currentMovie)` and does not jump back to first tab.
+            selectedMovie = selectedSection.products.first(where: { $0.id == selectedMovieID })
+                ?? selectedSection.products.first
+        }
+    }
+    var state: HomeScreenState {
+        didSet {
+            guard case .loaded = state else { return }
+
+            if let selectedSection,
+               let selectedMovieID = selectedMovie?.id,
+               let refreshedSection = sections.first(where: { $0.id == selectedSection.id }),
+               let refreshedMovie = refreshedSection.products.first(where: { $0.id == selectedMovieID }) {
+                self.selectedSection = refreshedSection
+                self.selectedMovie = refreshedMovie
+            }
+        }
+    }
 
     init(
         repository: MotchillRepository,
