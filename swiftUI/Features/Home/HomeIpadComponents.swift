@@ -102,10 +102,23 @@ private struct HomeIpadLoadedContent: View {
     @Bindable var viewModel: HomeViewModel
     let heroMovies: [MotchillMovieCard]
     let router: AppRouter
+
+    private var selectedHeroID: Binding<Int?> {
+        Binding<Int?>(
+            get: { viewModel.selectedMovie?.id },
+            set: { newID in
+                guard let newID else {
+                    viewModel.selectedMovie = nil
+                    return
+                }
+                viewModel.selectedMovie = heroMovies.first(where: { $0.id == newID })
+            }
+        )
+    }
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            TabView(selection: $viewModel.selectedMovie) {
+            TabView(selection: selectedHeroID) {
                 ForEach(heroMovies, id: \.id) { currentMovie in
                     HomeIpadHeroCardView(
                         movie: currentMovie,
@@ -118,15 +131,37 @@ private struct HomeIpadLoadedContent: View {
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .ignoresSafeArea()
-                    .tag(currentMovie)
+                    .tag(Optional(currentMovie.id))
                 }
             }
+            .id(viewModel.selectedSection?.id ?? "home-ipad-hero")
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .ignoresSafeArea()            
+            .ignoresSafeArea()
+            .onAppear {
+                syncSelectionIfNeeded()
+            }
+            .onChange(of: heroMovies.map(\.id)) { _, _ in
+                syncSelectionIfNeeded()
+            }
             
             HomeIpadIndicator(selectedMovie: $viewModel.selectedMovie, items: heroMovies)
                 .padding()
         }
+    }
+
+    private func syncSelectionIfNeeded() {
+        guard !heroMovies.isEmpty else {
+            viewModel.selectedMovie = nil
+            return
+        }
+
+        if let selectedID = viewModel.selectedMovie?.id,
+           let matched = heroMovies.first(where: { $0.id == selectedID }) {
+            viewModel.selectedMovie = matched
+            return
+        }
+
+        viewModel.selectedMovie = heroMovies.first
     }
 }
 
