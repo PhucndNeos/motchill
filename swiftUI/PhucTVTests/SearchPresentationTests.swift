@@ -1,5 +1,5 @@
 import XCTest
-@testable import PhucTvSwiftUI
+@testable import PhucTV
 
 final class SearchPresentationTests: XCTestCase {
     func testFindPresetPrefersCategoryAndCountryMatches() {

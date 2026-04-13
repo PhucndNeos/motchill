@@ -12,7 +12,6 @@
 		5EB4882F2F8A8A88007251E8 /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = 5EB4882E2F8A8A88007251E8 /* Flow */; };
 		5EF698AC2F8BB0B4003CDE04 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5EF698AB2F8BB0B4003CDE04 /* Launch Screen.storyboard */; };
 		68A94BEF2F889C5600C59159 /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = 68A94BEE2F889C5600C59159 /* SwiftyBeaver */; };
-		68A94BFC2F88A80B00C59159 /* ACarousel in Frameworks */ = {isa = PBXBuildFile; productRef = 68A94BFB2F88A80B00C59159 /* ACarousel */; };
 		6AC200000000000000000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6AC200000000000000000021 /* Assets.xcassets */; };
 		A0A0A0A0A0A0A0A0A0A0A0A0 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = C0C0C0C0C0C0C0C0C0C0C0C0 /* Alamofire */; };
 		BD7123923FB4CC70C416690A /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 33C6D38FEB06E2F321451C7A /* Kingfisher */; };
@@ -37,30 +36,12 @@
 		C6D71A602C00353F1003A1BD /* PhucTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhucTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		68E6342C2F8CCB3F00865FCA /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				HomeViewModelTests.swift,
-				PhucTvJSONMappersTests.swift,
-				PhucTvPayloadCipherTests.swift,
-				PhucTvPersistenceTests.swift,
-				PhucTvRemoteConfigTests.swift,
-				PhucTvSwiftUITests.swift,
-				PlayerSubtitleSupportTests.swift,
-				SearchPresentationTests.swift,
-				SearchViewModelTests.swift,
-			);
-			target = 68E634222F8CCB2D00865FCA /* PhucTVTests */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		413A8F81BD9B7F93E38FA080 /* Features */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Features; sourceTree = "<group>"; };
 		68A94BB72F88906100C59159 /* Core */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Core; sourceTree = "<group>"; };
 		68A94BBD2F88906100C59159 /* Data */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Data; sourceTree = "<group>"; };
 		68A94BC02F88906100C59159 /* Domain */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Domain; sourceTree = "<group>"; };
-		68E634242F8CCB2D00865FCA /* PhucTVTests */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (68E6342C2F8CCB3F00865FCA /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = PhucTVTests; sourceTree = "<group>"; };
+		68E634242F8CCB2D00865FCA /* PhucTVTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PhucTVTests; sourceTree = "<group>"; };
 		ACEFC3480ADB54016DB46690 /* App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = App; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -82,7 +63,6 @@
 				BD7123923FB4CC70C416690A /* Kingfisher in Frameworks */,
 				68A94BEF2F889C5600C59159 /* SwiftyBeaver in Frameworks */,
 				5E312E562F8BDC5D00C90FED /* SwiftSubtitles in Frameworks */,
-				68A94BFC2F88A80B00C59159 /* ACarousel in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,7 +138,6 @@
 				C0C0C0C0C0C0C0C0C0C0C0C0 /* Alamofire */,
 				33C6D38FEB06E2F321451C7A /* Kingfisher */,
 				68A94BEE2F889C5600C59159 /* SwiftyBeaver */,
-				68A94BFB2F88A80B00C59159 /* ACarousel */,
 				5EB4882E2F8A8A88007251E8 /* Flow */,
 				5E312E552F8BDC5D00C90FED /* SwiftSubtitles */,
 			);
@@ -219,7 +198,6 @@
 				B0B0B0B0B0B0B0B0B0B0B0B0 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				398B5E19506E6BD979D22D5C /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				68A94BED2F889C5600C59159 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
-				68A94BFA2F88A80B00C59159 /* XCRemoteSwiftPackageReference "ACarousel" */,
 				5EB4882D2F8A8A88007251E8 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
 				5E312E542F8BDC5D00C90FED /* XCRemoteSwiftPackageReference "SwiftSubtitles" */,
 			);
@@ -583,14 +561,6 @@
 				minimumVersion = 2.1.1;
 			};
 		};
-		68A94BFA2F88A80B00C59159 /* XCRemoteSwiftPackageReference "ACarousel" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/JWAutumn/ACarousel";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.2.0;
-			};
-		};
 		B0B0B0B0B0B0B0B0B0B0B0B0 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
@@ -621,11 +591,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 68A94BED2F889C5600C59159 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */;
 			productName = SwiftyBeaver;
-		};
-		68A94BFB2F88A80B00C59159 /* ACarousel */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 68A94BFA2F88A80B00C59159 /* XCRemoteSwiftPackageReference "ACarousel" */;
-			productName = ACarousel;
 		};
 		C0C0C0C0C0C0C0C0C0C0C0C0 /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;

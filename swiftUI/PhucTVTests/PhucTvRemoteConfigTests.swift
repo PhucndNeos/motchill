@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import PhucTvSwiftUI
+@testable import PhucTV
 
 @MainActor
 final class PhucTvRemoteConfigTests: XCTestCase {

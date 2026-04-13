@@ -42,17 +42,6 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "68A94BCF2F8895C700C59159"
-               BuildableName = "PhucTvSwiftUITests.xctest"
-               BlueprintName = "PhucTvSwiftUITests"
-               ReferencedContainer = "container:PhucTvSwiftUI.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "68E634222F8CCB2D00865FCA"
                BuildableName = "PhucTVTests.xctest"
                BlueprintName = "PhucTVTests"

@@ -439,7 +439,10 @@ final class PlayerViewModel {
     }
 
     private func publishSubtitleText(_ text: String?) {
-        guard lastSubtitleText != text else { return }
+        guard currentSubtitleText != text else {
+            lastSubtitleText = text
+            return
+        }
         lastSubtitleText = text
         currentSubtitleText = text
     }
