@@ -9,6 +9,7 @@ final class AppContainer {
     let repository: PhucTvRepository
     let likedMovieStore: PhucTvLikedMovieStoring
     let playbackPositionStore: PhucTvPlaybackPositionStoring
+    let screenIdleManager: ScreenIdleManaging
 
     private init() {
         _ = PhucTvLogger.shared
@@ -16,5 +17,6 @@ final class AppContainer {
         repository = DefaultPhucTvRepository(apiClient: apiClient)
         likedMovieStore = UserDefaultsPhucTvLikedMovieStore()
         playbackPositionStore = UserDefaultsPhucTvPlaybackPositionStore()
+        screenIdleManager = LiveScreenIdleManager()
     }
 }

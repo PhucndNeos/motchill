@@ -1,10 +1,13 @@
 import SwiftUI
 
 struct SearchView: View {
-    @State private var viewModel: SearchViewModel
     let router: AppRouter
+
+    @Environment(\.appDependencies) private var dependencies
+
+    private let routeInput: SearchRouteInput
+    private let initialViewModel: SearchViewModel?
     private let shouldLoadOnAppear: Bool
-    @State private var activePicker: SearchPickerKind?
 
     init(
         repository: PhucTvRepository,
@@ -12,118 +15,210 @@ struct SearchView: View {
         router: AppRouter,
         routeInput: SearchRouteInput = SearchRouteInput()
     ) {
-        _viewModel = State(
-            initialValue: SearchViewModel(
-                repository: repository,
-                likedMovieStore: likedMovieStore,
-                routeInput: routeInput
-            )
-        )
         self.router = router
+        self.routeInput = routeInput
+        self.initialViewModel = SearchViewModel(
+            repository: repository,
+            likedMovieStore: likedMovieStore,
+            routeInput: routeInput
+        )
         self.shouldLoadOnAppear = true
     }
 
     init(viewModel: SearchViewModel, router: AppRouter) {
-        _viewModel = State(initialValue: viewModel)
         self.router = router
+        self.routeInput = SearchRouteInput()
+        self.initialViewModel = viewModel
         self.shouldLoadOnAppear = false
     }
 
     var body: some View {
+        SearchRootView(
+            viewModel: initialViewModel ?? SearchViewModel(
+                repository: dependencies.repository,
+                likedMovieStore: dependencies.likedMovieStore,
+                routeInput: routeInput
+            ),
+            router: router,
+            shouldLoadOnAppear: shouldLoadOnAppear
+        )
+    }
+}
+
+private struct SearchRootView: View {
+    let router: AppRouter
+
+    @State private var viewModel: SearchViewModel
+    @State private var activePicker: SearchPickerKind?
+    @State private var shouldLoadOnAppear: Bool
+
+    init(
+        viewModel: SearchViewModel,
+        router: AppRouter,
+        shouldLoadOnAppear: Bool
+    ) {
+        _viewModel = State(initialValue: viewModel)
+        self.router = router
+        _shouldLoadOnAppear = State(initialValue: shouldLoadOnAppear)
+    }
+
+    var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    AppTheme.background,
-                    AppTheme.surface.opacity(0.96),
-                    Color.black.opacity(0.94),
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    SearchFieldSection(
-                        text: Binding(
-                            get: { viewModel.uiState.searchInputValue },
-                            set: { viewModel.onSearchTextChanged($0) }
-                        ),
-                        onSubmit: { Task { await viewModel.submitSearch() } },
-                        onClear: { Task { await viewModel.clearSearch() } }
-                    )
-
-                    SearchFilterStrip(
-                        uiState: viewModel.uiState,
-                        onOpenPicker: { activePicker = $0 }
-                    )
-
-                    SearchResultsSection(
-                        uiState: viewModel.uiState,
-                        onOpenDetail: { movie in
-                            router.push(.detail(movie))
-                        },
-                        onPrevious: {
-                            Task { await viewModel.goToPage(viewModel.uiState.currentPage - 1) }
-                        },
-                        onNext: {
-                            Task { await viewModel.goToPage(viewModel.uiState.currentPage + 1) }
-                        }
-                    )
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 24)
-                .padding(.bottom, 40)
-            }
-            .overlay {
-                if let descriptor = viewModel.uiState.overlayDescriptor {
-                    FeatureStateOverlay(
-                        descriptor: descriptor,
-                        onRetry: { Task { await viewModel.refresh() } },
-                        onSecondary: descriptor.isLoading ? nil : { router.pop() }
-                    )
-                    .background(Color.black.opacity(0.28).ignoresSafeArea())
-                }
-            }
+            background
+            content
         }
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar(content: {
-            ToolbarItem(placement: .title) {
-                Text(viewModel.uiState.screenTitle).font(.largeTitle)
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(action: viewModel.toggleLikedOnly) {
-                    Image(systemName: viewModel.uiState.showLikedOnly ? "heart.fill" : "heart")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(viewModel.uiState.showLikedOnly ? Color.red.opacity(0.95) : AppTheme.textPrimary)
-                        .frame(width: 42, height: 42)
-                        .background(
-                            (viewModel.uiState.showLikedOnly ? Color.red.opacity(0.18) : Color.white.opacity(0.06)),
-                            in: Circle()
-                        )
-                }
-                .buttonStyle(.plain)
-            }
-        })
-        .sheet(item: $activePicker) { picker in
-            SearchPickerSheet(
-                title: picker.title,
-                options: viewModel.pickerOptions(for: picker),
-                onSelect: { optionID in
-                    Task {
-                        await handleSelection(optionID: optionID, for: picker)
-                        activePicker = nil
-                    }
-                }
-            )
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
+        .toolbar {
+            titleToolbar
+            likedOnlyToolbar
         }
+        .sheet(item: $activePicker, content: pickerSheet)
         .task {
-            guard shouldLoadOnAppear else { return }
-            await viewModel.load()
+            await loadIfNeeded()
         }
-        
+    }
+
+    private var background: some View {
+        LinearGradient(
+            colors: [
+                AppTheme.background,
+                AppTheme.surface.opacity(0.96),
+                Color.black.opacity(0.94),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
+    }
+
+    private var content: some View {
+        ScrollView(.vertical, showsIndicators: true) {
+            VStack(alignment: .leading, spacing: 24) {
+                SearchFieldSection(
+                    text: searchTextBinding,
+                    onSubmit: submitSearch,
+                    onClear: clearSearch
+                )
+
+                SearchFilterStrip(
+                    uiState: viewModel.uiState,
+                    onOpenPicker: openPicker
+                )
+
+                SearchResultsSection(
+                    uiState: viewModel.uiState,
+                    onOpenDetail: openDetail,
+                    onPrevious: goToPreviousPage,
+                    onNext: goToNextPage
+                )
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 24)
+            .padding(.bottom, 40)
+        }
+        .overlay { overlayView }
+    }
+
+    private var searchTextBinding: Binding<String> {
+        Binding(
+            get: { viewModel.uiState.searchInputValue },
+            set: { viewModel.onSearchTextChanged($0) }
+        )
+    }
+
+    @ViewBuilder
+    private var overlayView: some View {
+        if let descriptor = viewModel.uiState.overlayDescriptor {
+            if descriptor.isLoading {
+                SearchOverlay(
+                    descriptor: descriptor,
+                    onRetry: refresh,
+                    onSecondary: nil
+                )
+            } else {
+                SearchOverlay(
+                    descriptor: descriptor,
+                    onRetry: refresh,
+                    onSecondary: closeSearch
+                )
+            }
+        }
+    }
+
+    private var titleToolbar: ToolbarItem<(), some View> {
+        ToolbarItem(placement: .title) {
+            Text(viewModel.uiState.screenTitle)
+                .font(.largeTitle)
+        }
+    }
+
+    private var likedOnlyToolbar: ToolbarItem<(), some View> {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button(action: viewModel.toggleLikedOnly) {
+                Image(systemName: viewModel.uiState.showLikedOnly ? "heart.fill" : "heart")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(viewModel.uiState.showLikedOnly ? Color.red.opacity(0.95) : AppTheme.textPrimary)
+                    .frame(width: 42, height: 42)
+                    .background(
+                        (viewModel.uiState.showLikedOnly ? Color.red.opacity(0.18) : Color.white.opacity(0.06)),
+                        in: Circle()
+                    )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func pickerSheet(for picker: SearchPickerKind) -> some View {
+        SearchPickerSheet(
+            title: picker.title,
+            options: viewModel.pickerOptions(for: picker),
+            onSelect: { optionID in
+                Task {
+                    await handleSelection(optionID: optionID, for: picker)
+                    activePicker = nil
+                }
+            }
+        )
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+
+    private func openPicker(_ picker: SearchPickerKind) {
+        activePicker = picker
+    }
+
+    private func openDetail(_ movie: PhucTvMovieCard) {
+        router.push(.detail(movie))
+    }
+
+    private func closeSearch() {
+        router.pop()
+    }
+
+    private func submitSearch() {
+        Task { await viewModel.submitSearch() }
+    }
+
+    private func clearSearch() {
+        Task { await viewModel.clearSearch() }
+    }
+
+    private func refresh() {
+        Task { await viewModel.refresh() }
+    }
+
+    private func goToPreviousPage() {
+        Task { await viewModel.goToPage(viewModel.uiState.currentPage - 1) }
+    }
+
+    private func goToNextPage() {
+        Task { await viewModel.goToPage(viewModel.uiState.currentPage + 1) }
+    }
+
+    private func loadIfNeeded() async {
+        guard shouldLoadOnAppear else { return }
+        await viewModel.load()
+        shouldLoadOnAppear = false
     }
 
     private func handleSelection(optionID: String, for picker: SearchPickerKind) async {
@@ -148,6 +243,21 @@ struct SearchView: View {
                 await viewModel.selectOrderBy(option.value)
             }
         }
+    }
+}
+
+private struct SearchOverlay: View {
+    let descriptor: FeatureOverlayDescriptor
+    let onRetry: () -> Void
+    let onSecondary: (() -> Void)?
+
+    var body: some View {
+        FeatureStateOverlay(
+            descriptor: descriptor,
+            onRetry: onRetry,
+            onSecondary: onSecondary
+        )
+        .background(Color.black.opacity(0.28).ignoresSafeArea())
     }
 }
 
@@ -463,4 +573,3 @@ private enum SearchPreviewData {
         )
     }
 }
-

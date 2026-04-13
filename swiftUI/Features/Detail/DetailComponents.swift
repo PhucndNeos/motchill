@@ -18,60 +18,8 @@ struct DetailScreen: View {
             DetailBackground()
                 .ignoresSafeArea()
 
-            switch viewModel.state {
-            case .idle, .loading:
-                FeatureStateOverlay(
-                    descriptor: .loading(
-                        title: "Đang tải nội dung",
-                        message: "Chờ một lát để nạp thông tin chi tiết của phim.",
-                        errorCode: "DETAIL_LOADING"
-                    ),
-                    onRetry: retry
-                )
-            case .error(let message):
-                FeatureStateOverlay(
-                    descriptor: .failure(
-                        title: "Không thể tải chi tiết",
-                        message: message,
-                        errorCode: "DETAIL_LOAD_FAIL",
-                        icon: .server,
-                        secondaryTitle: "Quay lại"
-                    ),
-                    onRetry: retry,
-                    onSecondary: { router.pop() }
-                )
-            case .loaded:
-                if viewModel.hasRenderableContent {
-                    if isPad {
-                        DetailsIpadScreen(
-                            viewModel: viewModel,
-                            router: router,
-                            onToggleLike: toggleLike,
-                            onOpenTrailer: openTrailer,
-                            onOpenEpisode: openEpisode
-                        )
-                    } else {
-                        DetailLoadedContent(
-                            viewModel: viewModel,
-                            router: router,
-                            onToggleLike: toggleLike,
-                            onOpenTrailer: openTrailer,
-                            onOpenEpisode: openEpisode
-                        )
-                    }
-                } else {
-                    FeatureStateOverlay(
-                        descriptor: .empty(
-                            title: "Chưa có nội dung",
-                            message: "Trang chi tiết hiện chưa có section nào để hiển thị. Bạn có thể thử quay lại hoặc tìm kiếm nội dung khác.",
-                            errorCode: "DETAIL_EMPTY",
-                            secondaryTitle: "Tìm kiếm"
-                        ),
-                        onRetry: retry,
-                        onSecondary: { router.push(.search()) }
-                    )
-                }
-            }
+            loadedContent
+            stateOverlay
         }
         .toolbar {            
             ToolbarItem(placement: .topBarTrailing) {
@@ -94,12 +42,83 @@ struct DetailScreen: View {
         }
     }
 
+    @ViewBuilder
+    private var loadedContent: some View {
+        if viewModel.state == .loaded, viewModel.hasRenderableContent {
+            if isPad {
+                DetailsIpadScreen(
+                    viewModel: viewModel,
+                    router: router,
+                    onToggleLike: toggleLike,
+                    onOpenTrailer: openTrailer,
+                    onOpenEpisode: openEpisode
+                )
+            } else {
+                DetailLoadedContent(
+                    viewModel: viewModel,
+                    router: router,
+                    onToggleLike: toggleLike,
+                    onOpenTrailer: openTrailer,
+                    onOpenEpisode: openEpisode
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var stateOverlay: some View {
+        switch viewModel.state {
+        case .idle, .loading:
+            FeatureStateOverlay(
+                descriptor: .loading(
+                    title: "Đang tải nội dung",
+                    message: "Chờ một lát để nạp thông tin chi tiết của phim.",
+                    errorCode: "DETAIL_LOADING"
+                ),
+                onRetry: retry
+            )
+        case .error(let message):
+            FeatureStateOverlay(
+                descriptor: .failure(
+                    title: "Không thể tải chi tiết",
+                    message: message,
+                    errorCode: "DETAIL_LOAD_FAIL",
+                    icon: .server,
+                    secondaryTitle: "Quay lại"
+                ),
+                onRetry: retry,
+                onSecondary: closeDetail
+            )
+        case .loaded:
+            if !viewModel.hasRenderableContent {
+                FeatureStateOverlay(
+                    descriptor: .empty(
+                        title: "Chưa có nội dung",
+                        message: "Trang chi tiết hiện chưa có section nào để hiển thị. Bạn có thể thử quay lại hoặc tìm kiếm nội dung khác.",
+                        errorCode: "DETAIL_EMPTY",
+                        secondaryTitle: "Tìm kiếm"
+                    ),
+                    onRetry: retry,
+                    onSecondary: openSearch
+                )
+            }
+        }
+    }
+
     private func retry() {
         makeAsyncAction { await viewModel.retry() }()
     }
 
     private func toggleLike() {
         Task { await viewModel.toggleLike() }
+    }
+
+    private func closeDetail() {
+        router.pop()
+    }
+
+    private func openSearch() {
+        router.push(.search())
     }
 
     private func openTrailer() {
@@ -166,7 +185,7 @@ private struct DetailLoadedContent: View {
                 }
             }
             .padding(.horizontal, 16)
-            .frame(width: AppContainer.shared.configuration.screenSize.width)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

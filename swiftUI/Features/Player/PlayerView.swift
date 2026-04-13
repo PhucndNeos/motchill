@@ -2,8 +2,12 @@ import AVKit
 import SwiftUI
 
 struct PlayerView: View {
-    @State private var viewModel: PlayerViewModel
     let router: AppRouter
+
+    @Environment(\.appDependencies) private var dependencies
+
+    private let playerInput: PlayerInput?
+    private let initialViewModel: PlayerViewModel?
     private let shouldLoadOnAppear: Bool
 
     init(
@@ -15,42 +19,109 @@ struct PlayerView: View {
         playbackPositionStore: PhucTvPlaybackPositionStoring,
         router: AppRouter
     ) {
-        _viewModel = State(
-            initialValue: PlayerViewModel(
-                movieID: movieID,
-                episodeID: episodeID,
-                movieTitle: movieTitle,
-                episodeLabel: episodeLabel,
-                repository: repository,
-                playbackPositionStore: playbackPositionStore
-            )
-        )
         self.router = router
+        self.playerInput = PlayerInput(
+            movieID: movieID,
+            episodeID: episodeID,
+            movieTitle: movieTitle,
+            episodeLabel: episodeLabel
+        )
+        self.initialViewModel = PlayerViewModel(
+            movieID: movieID,
+            episodeID: episodeID,
+            movieTitle: movieTitle,
+            episodeLabel: episodeLabel,
+            repository: repository,
+            playbackPositionStore: playbackPositionStore
+        )
         self.shouldLoadOnAppear = true
     }
 
     init(viewModel: PlayerViewModel, router: AppRouter) {
+        self.router = router
+        self.playerInput = nil
+        self.initialViewModel = viewModel
+        self.shouldLoadOnAppear = false
+    }
+
+    var body: some View {
+        PlayerRootView(
+            viewModel: resolvedViewModel,
+            router: router,
+            shouldLoadOnAppear: shouldLoadOnAppear
+        )
+    }
+
+    private var resolvedViewModel: PlayerViewModel {
+        if let initialViewModel {
+            return initialViewModel
+        }
+
+        guard let playerInput else {
+            preconditionFailure("PlayerView requires either playback input or an injected view model.")
+        }
+
+        return PlayerViewModel(
+            movieID: playerInput.movieID,
+            episodeID: playerInput.episodeID,
+            movieTitle: playerInput.movieTitle,
+            episodeLabel: playerInput.episodeLabel,
+            repository: dependencies.repository,
+            playbackPositionStore: dependencies.playbackPositionStore
+        )
+    }
+}
+
+private struct PlayerInput {
+    let movieID: Int
+    let episodeID: Int
+    let movieTitle: String
+    let episodeLabel: String
+}
+
+private struct PlayerRootView: View {
+    let router: AppRouter
+
+    @Environment(\.appDependencies) private var dependencies
+
+    @State private var viewModel: PlayerViewModel
+    @State private var shouldLoadOnAppear: Bool
+
+    init(
+        viewModel: PlayerViewModel,
+        router: AppRouter,
+        shouldLoadOnAppear: Bool
+    ) {
         _viewModel = State(initialValue: viewModel)
         self.router = router
-        self.shouldLoadOnAppear = false
+        _shouldLoadOnAppear = State(initialValue: shouldLoadOnAppear)
     }
 
     var body: some View {
         PlayerScreen(viewModel: viewModel, router: router)
             .task {
-                guard shouldLoadOnAppear else { return }
-                await viewModel.load()
+                await loadIfNeeded()
             }
-            .onAppear {
-                ScreenIdeManager.shared.disableAutoLock()
-            }
-            .onDisappear {
-                ScreenIdeManager.shared.enableAutoLock()
-                Task {
-                    await viewModel.persistProgress()
-                    viewModel.stop()
-                }
-            }
+            .onAppear(perform: handleAppear)
+            .onDisappear(perform: handleDisappear)
+    }
+
+    private func loadIfNeeded() async {
+        guard shouldLoadOnAppear else { return }
+        await viewModel.load()
+        shouldLoadOnAppear = false
+    }
+
+    private func handleAppear() {
+        dependencies.screenIdleManager.disableAutoLock()
+    }
+
+    private func handleDisappear() {
+        dependencies.screenIdleManager.enableAutoLock()
+        Task {
+            await viewModel.persistProgress()
+            viewModel.stop()
+        }
     }
 }
 
@@ -59,85 +130,104 @@ private struct PlayerScreen: View {
     let router: AppRouter
 
     var body: some View {
-        ZStack {
-            Color.black
-                .ignoresSafeArea()
+        GeometryReader { proxy in
+            ZStack {
+                Color.black
+                    .ignoresSafeArea()
 
-            if viewModel.state == .loaded, let _ = viewModel.selectedSource {
-                ZStack(alignment: .bottom) {
-                    VideoPlayer(player: viewModel.player)
-                        .ignoresSafeArea()
-                        .allowsHitTesting(false)
-                    PlayerSubtitleOverlay(text: viewModel.currentSubtitleText)
-                    PlayerOverlay(
-                        viewModel: viewModel,
-                        onBack: { router.pop() }
-                    )
-                    .opacity(viewModel.overlayVisible ? 1 : 0)
-                }
+                playerContent
+                playerStateOverlay
             }
-
-            switch viewModel.state {
-            case .idle, .loading:
-                FeatureStateOverlay(
-                    descriptor: .loading(
-                        title: "Đang tải player",
-                        message: "Chờ một lát để nạp nguồn phát cho tập này.",
-                        errorCode: "PLAYER_LOADING"
-                    ),
-                    onRetry: makeAsyncAction {
-                        await viewModel.retry()
+            .contentShape(Rectangle())
+            .gesture(
+                SpatialTapGesture(count: 2)
+                    .onEnded { value in
+                        handleSeekGesture(at: value.location.x, width: proxy.size.width)
                     }
+            )
+            .onTapGesture {
+                viewModel.handleOverlayTap()
+            }
+        }
+        .toolbar(.hidden, for: .navigationBar)
+    }
+
+    @ViewBuilder
+    private var playerContent: some View {
+        if viewModel.state == .loaded, viewModel.selectedSource != nil {
+            ZStack(alignment: .bottom) {
+                VideoPlayer(player: viewModel.player)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                PlayerSubtitleOverlay(text: viewModel.currentSubtitleText)
+                PlayerOverlay(
+                    viewModel: viewModel,
+                    onBack: { router.pop() }
                 )
-            case .error(let message):
+                .opacity(viewModel.overlayVisible ? 1 : 0)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var playerStateOverlay: some View {
+        switch viewModel.state {
+        case .idle, .loading:
+            FeatureStateOverlay(
+                descriptor: .loading(
+                    title: "Đang tải player",
+                    message: "Chờ một lát để nạp nguồn phát cho tập này.",
+                    errorCode: "PLAYER_LOADING"
+                ),
+                onRetry: retry
+            )
+        case .error(let message):
+            FeatureStateOverlay(
+                descriptor: .failure(
+                    title: "Không thể mở player",
+                    message: message,
+                    errorCode: "PLAYER_LOAD_FAIL",
+                    icon: .playback,
+                    secondaryTitle: "Quay lại"
+                ),
+                onRetry: retry,
+                onSecondary: closePlayer
+            )
+        case .loaded:
+            if viewModel.selectedSource == nil {
                 FeatureStateOverlay(
-                    descriptor: .failure(
-                        title: "Không thể mở player",
-                        message: message,
-                        errorCode: "PLAYER_LOAD_FAIL",
+                    descriptor: .empty(
+                        title: "Chưa có nguồn phát",
+                        message: "Không tìm thấy nguồn phát khả dụng cho tập này. Bạn có thể quay lại hoặc thử tải lại.",
+                        errorCode: "PLAYER_NO_SOURCE",
                         icon: .playback,
                         secondaryTitle: "Quay lại"
                     ),
-                    onRetry: makeAsyncAction {
-                        await viewModel.retry()
-                    },
-                    onSecondary: { router.pop() }
+                    onRetry: retry,
+                    onSecondary: closePlayer
                 )
-            case .loaded:
-                if viewModel.selectedSource == nil {
-                    FeatureStateOverlay(
-                        descriptor: .empty(
-                            title: "Chưa có nguồn phát",
-                            message: "Không tìm thấy nguồn phát khả dụng cho tập này. Bạn có thể quay lại hoặc thử tải lại.",
-                            errorCode: "PLAYER_NO_SOURCE",
-                            icon: .playback,
-                            secondaryTitle: "Quay lại"
-                        ),
-                        onRetry: makeAsyncAction {
-                            await viewModel.retry()
-                        },
-                        onSecondary: { router.pop() }
-                    )
-                }
             }
         }
-        .gesture(
-            SpatialTapGesture(count: 2)
-                .onEnded { value in
-                    let x = value.location.x
-                    let screenWidth = UIScreen.main.bounds.width
-                    
-                    if x < screenWidth / 3 {
-                        viewModel.seek(by: -viewModel.seekStepMillis)
-                    } else if x > screenWidth * 0.75 {
-                        viewModel.seek(by: viewModel.seekStepMillis)
-                    }
-                }
-        )
-        .onTapGesture {
-            viewModel.handleOverlayTap()
+    }
+
+    private func retry() {
+        makeAsyncAction {
+            await viewModel.retry()
+        }()
+    }
+
+    private func closePlayer() {
+        router.pop()
+    }
+
+    private func handleSeekGesture(at positionX: CGFloat, width: CGFloat) {
+        guard width > 0 else { return }
+
+        if positionX < width / 3 {
+            viewModel.seek(by: -viewModel.seekStepMillis)
+        } else if positionX > width * 0.75 {
+            viewModel.seek(by: viewModel.seekStepMillis)
         }
-        .toolbar(.hidden, for: .navigationBar)
     }
 }
 

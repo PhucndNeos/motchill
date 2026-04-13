@@ -34,7 +34,7 @@
 		60E35DF450A83DEA5F566362 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		68A94BD02F8895C700C59159 /* PhucTvSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PhucTvSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6AC200000000000000000021 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		C6D71A602C00353F1003A1BD /* PhucTvSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhucTvSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6D71A602C00353F1003A1BD /* PhucTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhucTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -74,7 +74,7 @@
 		24B62C632F1E5C474C2029A7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C6D71A602C00353F1003A1BD /* PhucTvSwiftUI.app */,
+				C6D71A602C00353F1003A1BD /* PhucTV.app */,
 				68A94BD02F8895C700C59159 /* PhucTvSwiftUITests.xctest */,
 			);
 			name = Products;
@@ -145,7 +145,7 @@
 				5E312E552F8BDC5D00C90FED /* SwiftSubtitles */,
 			);
 			productName = PhucTvSwiftUI;
-			productReference = C6D71A602C00353F1003A1BD /* PhucTvSwiftUI.app */;
+			productReference = C6D71A602C00353F1003A1BD /* PhucTV.app */;
 			productType = "com.apple.product-type.application";
 		};
 		68A94BCF2F8895C700C59159 /* PhucTvSwiftUITests */ = {
@@ -284,6 +284,7 @@
 				);
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.finblue.iosbase;
+				PRODUCT_NAME = PhucTV;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "finblue-dev";
 				SDKROOT = iphoneos;
@@ -371,6 +372,7 @@
 				);
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.finblue.iosbase;
+				PRODUCT_NAME = PhucTV;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 6.0;

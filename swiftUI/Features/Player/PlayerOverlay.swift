@@ -299,7 +299,7 @@ struct PlayerOverlay: View {
                     }
             )
         }
-        .frame(height: 6)
+        .frame(height: 16)
     }
 
     private var sidePanel: some View {
