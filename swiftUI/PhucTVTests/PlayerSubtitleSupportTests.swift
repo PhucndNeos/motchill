@@ -52,6 +52,22 @@ final class PlayerSubtitleSupportTests: XCTestCase {
         XCTAssertEqual(second.cueIndex, 1)
         XCTAssertEqual(second.text, "Second")
     }
+
+    func testResolverCombinesAllOverlappingCueTextAtSamePosition() {
+        let cues = [
+            PlayerSubtitleCue(startMillis: 0, endMillis: 10_000, text: "[Music]"),
+            PlayerSubtitleCue(startMillis: 2_000, endMillis: 4_000, text: "Hello there"),
+            PlayerSubtitleCue(startMillis: 6_000, endMillis: 8_000, text: "Another line"),
+        ]
+
+        let overlapping = PlayerSubtitleResolver.resolve(positionMillis: 2_500, cues: cues, hintIndex: nil)
+        XCTAssertEqual(overlapping.cueIndex, 1)
+        XCTAssertEqual(overlapping.text, "[Music]\nHello there")
+
+        let laterOverlap = PlayerSubtitleResolver.resolve(positionMillis: 6_500, cues: cues, hintIndex: overlapping.cueIndex)
+        XCTAssertEqual(laterOverlap.cueIndex, 2)
+        XCTAssertEqual(laterOverlap.text, "[Music]\nAnother line")
+    }
 }
 
 @MainActor

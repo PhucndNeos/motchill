@@ -19,7 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		68A94BD42F8895C700C59159 /* PBXContainerItemProxy */ = {
+		68E634272F8CCB2D00865FCA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 883813612B25D2DFEC509CD1 /* Project object */;
 			proxyType = 1;
@@ -32,22 +32,40 @@
 		5EF698AB2F8BB0B4003CDE04 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		5EF698AD2F8BB1BC003CDE04 /* PhucTvSwiftUI-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "PhucTvSwiftUI-Info.plist"; sourceTree = "<group>"; };
 		60E35DF450A83DEA5F566362 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		68A94BD02F8895C700C59159 /* PhucTvSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PhucTvSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		68E634232F8CCB2D00865FCA /* PhucTVTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PhucTVTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6AC200000000000000000021 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C6D71A602C00353F1003A1BD /* PhucTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhucTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		68E6342C2F8CCB3F00865FCA /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				HomeViewModelTests.swift,
+				PhucTvJSONMappersTests.swift,
+				PhucTvPayloadCipherTests.swift,
+				PhucTvPersistenceTests.swift,
+				PhucTvRemoteConfigTests.swift,
+				PhucTvSwiftUITests.swift,
+				PlayerSubtitleSupportTests.swift,
+				SearchPresentationTests.swift,
+				SearchViewModelTests.swift,
+			);
+			target = 68E634222F8CCB2D00865FCA /* PhucTVTests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		413A8F81BD9B7F93E38FA080 /* Features */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Features; sourceTree = "<group>"; };
 		68A94BB72F88906100C59159 /* Core */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Core; sourceTree = "<group>"; };
 		68A94BBD2F88906100C59159 /* Data */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Data; sourceTree = "<group>"; };
 		68A94BC02F88906100C59159 /* Domain */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Domain; sourceTree = "<group>"; };
-		68A94BD12F8895C700C59159 /* PhucTvSwiftUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PhucTvSwiftUITests; sourceTree = "<group>"; };
+		68E634242F8CCB2D00865FCA /* PhucTVTests */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (68E6342C2F8CCB3F00865FCA /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = PhucTVTests; sourceTree = "<group>"; };
 		ACEFC3480ADB54016DB46690 /* App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = App; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		68A94BCD2F8895C700C59159 /* Frameworks */ = {
+		68E634202F8CCB2D00865FCA /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -75,7 +93,7 @@
 			isa = PBXGroup;
 			children = (
 				C6D71A602C00353F1003A1BD /* PhucTV.app */,
-				68A94BD02F8895C700C59159 /* PhucTvSwiftUITests.xctest */,
+				68E634232F8CCB2D00865FCA /* PhucTVTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -107,7 +125,7 @@
 				68A94BBD2F88906100C59159 /* Data */,
 				68A94BC02F88906100C59159 /* Domain */,
 				413A8F81BD9B7F93E38FA080 /* Features */,
-				68A94BD12F8895C700C59159 /* PhucTvSwiftUITests */,
+				68E634242F8CCB2D00865FCA /* PhucTVTests */,
 				2C522A0C5EE97845CE37C5A9 /* Frameworks */,
 				24B62C632F1E5C474C2029A7 /* Products */,
 			);
@@ -148,27 +166,27 @@
 			productReference = C6D71A602C00353F1003A1BD /* PhucTV.app */;
 			productType = "com.apple.product-type.application";
 		};
-		68A94BCF2F8895C700C59159 /* PhucTvSwiftUITests */ = {
+		68E634222F8CCB2D00865FCA /* PhucTVTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 68A94BD82F8895C700C59159 /* Build configuration list for PBXNativeTarget "PhucTvSwiftUITests" */;
+			buildConfigurationList = 68E634292F8CCB2D00865FCA /* Build configuration list for PBXNativeTarget "PhucTVTests" */;
 			buildPhases = (
-				68A94BCC2F8895C700C59159 /* Sources */,
-				68A94BCD2F8895C700C59159 /* Frameworks */,
-				68A94BCE2F8895C700C59159 /* Resources */,
+				68E6341F2F8CCB2D00865FCA /* Sources */,
+				68E634202F8CCB2D00865FCA /* Frameworks */,
+				68E634212F8CCB2D00865FCA /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				68A94BD52F8895C700C59159 /* PBXTargetDependency */,
+				68E634282F8CCB2D00865FCA /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				68A94BD12F8895C700C59159 /* PhucTvSwiftUITests */,
+				68E634242F8CCB2D00865FCA /* PhucTVTests */,
 			);
-			name = PhucTvSwiftUITests;
+			name = PhucTVTests;
 			packageProductDependencies = (
 			);
-			productName = PhucTvSwiftUITests;
-			productReference = 68A94BD02F8895C700C59159 /* PhucTvSwiftUITests.xctest */;
+			productName = PhucTVTests;
+			productReference = 68E634232F8CCB2D00865FCA /* PhucTVTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -182,7 +200,7 @@
 				LastUpgradeCheck = 2640;
 				ORGANIZATIONNAME = PhucTv;
 				TargetAttributes = {
-					68A94BCF2F8895C700C59159 = {
+					68E634222F8CCB2D00865FCA = {
 						CreatedOnToolsVersion = 26.3;
 						TestTargetID = 247E6CFFBAD8B13964BD807E;
 					};
@@ -210,7 +228,7 @@
 			projectRoot = "";
 			targets = (
 				247E6CFFBAD8B13964BD807E /* PhucTvSwiftUI */,
-				68A94BCF2F8895C700C59159 /* PhucTvSwiftUITests */,
+				68E634222F8CCB2D00865FCA /* PhucTVTests */,
 			);
 		};
 /* End PBXProject section */
@@ -225,7 +243,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		68A94BCE2F8895C700C59159 /* Resources */ = {
+		68E634212F8CCB2D00865FCA /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -235,7 +253,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		68A94BCC2F8895C700C59159 /* Sources */ = {
+		68E6341F2F8CCB2D00865FCA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -252,10 +270,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		68A94BD52F8895C700C59159 /* PBXTargetDependency */ = {
+		68E634282F8CCB2D00865FCA /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 247E6CFFBAD8B13964BD807E /* PhucTvSwiftUI */;
-			targetProxy = 68A94BD42F8895C700C59159 /* PBXContainerItemProxy */;
+			targetProxy = 68E634272F8CCB2D00865FCA /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -293,7 +311,7 @@
 			};
 			name = Debug;
 		};
-		68A94BD62F8895C700C59159 /* Debug */ = {
+		68E6342A2F8CCB2D00865FCA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -307,7 +325,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = pnd.neos.PhucTvSwiftUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = pnd.neos.PhucTVTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -317,11 +335,11 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PhucTvSwiftUI.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PhucTvSwiftUI";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PhucTV.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PhucTV";
 			};
 			name = Debug;
 		};
-		68A94BD72F8895C700C59159 /* Release */ = {
+		68E6342B2F8CCB2D00865FCA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -335,7 +353,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = pnd.neos.PhucTvSwiftUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = pnd.neos.PhucTVTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -344,7 +362,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PhucTvSwiftUI.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PhucTvSwiftUI";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PhucTV.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PhucTV";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -512,11 +530,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		68A94BD82F8895C700C59159 /* Build configuration list for PBXNativeTarget "PhucTvSwiftUITests" */ = {
+		68E634292F8CCB2D00865FCA /* Build configuration list for PBXNativeTarget "PhucTVTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				68A94BD62F8895C700C59159 /* Debug */,
-				68A94BD72F8895C700C59159 /* Release */,
+				68E6342A2F8CCB2D00865FCA /* Debug */,
+				68E6342B2F8CCB2D00865FCA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

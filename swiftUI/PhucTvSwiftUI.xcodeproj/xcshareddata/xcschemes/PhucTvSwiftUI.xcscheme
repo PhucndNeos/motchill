@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "247E6CFFBAD8B13964BD807E"
-               BuildableName = "PhucTvSwiftUI.app"
+               BuildableName = "PhucTV.app"
                BlueprintName = "PhucTvSwiftUI"
                ReferencedContainer = "container:PhucTvSwiftUI.xcodeproj">
             </BuildableReference>
@@ -31,7 +31,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "247E6CFFBAD8B13964BD807E"
-            BuildableName = "PhucTvSwiftUI.app"
+            BuildableName = "PhucTV.app"
             BlueprintName = "PhucTvSwiftUI"
             ReferencedContainer = "container:PhucTvSwiftUI.xcodeproj">
          </BuildableReference>
@@ -45,6 +45,17 @@
                BlueprintIdentifier = "68A94BCF2F8895C700C59159"
                BuildableName = "PhucTvSwiftUITests.xctest"
                BlueprintName = "PhucTvSwiftUITests"
+               ReferencedContainer = "container:PhucTvSwiftUI.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "68E634222F8CCB2D00865FCA"
+               BuildableName = "PhucTVTests.xctest"
+               BlueprintName = "PhucTVTests"
                ReferencedContainer = "container:PhucTvSwiftUI.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -65,7 +76,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "247E6CFFBAD8B13964BD807E"
-            BuildableName = "PhucTvSwiftUI.app"
+            BuildableName = "PhucTV.app"
             BlueprintName = "PhucTvSwiftUI"
             ReferencedContainer = "container:PhucTvSwiftUI.xcodeproj">
          </BuildableReference>
@@ -82,7 +93,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "247E6CFFBAD8B13964BD807E"
-            BuildableName = "PhucTvSwiftUI.app"
+            BuildableName = "PhucTV.app"
             BlueprintName = "PhucTvSwiftUI"
             ReferencedContainer = "container:PhucTvSwiftUI.xcodeproj">
          </BuildableReference>

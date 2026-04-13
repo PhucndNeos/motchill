@@ -21,8 +21,6 @@ struct PlayerSubtitleResolution: Equatable {
 }
 
 enum PlayerSubtitleResolver {
-    private static let hintWindow = 6
-
     static func resolve(
         positionMillis: Int64,
         cues: [PlayerSubtitleCue],
@@ -32,64 +30,48 @@ enum PlayerSubtitleResolver {
             return PlayerSubtitleResolution(cueIndex: nil, text: nil)
         }
 
-        if let hintIndex,
-           cues.indices.contains(hintIndex),
-           let resolvedIndex = resolveUsingHint(positionMillis: positionMillis, cues: cues, hintIndex: hintIndex) {
-            return PlayerSubtitleResolution(
-                cueIndex: resolvedIndex,
-                text: cues[resolvedIndex].text
-            )
-        }
-
-        guard let cueIndex = binarySearchContainingCue(positionMillis: positionMillis, cues: cues) else {
+        let activeCueIndices = activeCueIndices(
+            positionMillis: positionMillis,
+            cues: cues,
+            hintIndex: hintIndex
+        )
+        guard let cueIndex = activeCueIndices.last else {
             return PlayerSubtitleResolution(cueIndex: nil, text: nil)
         }
 
-        return PlayerSubtitleResolution(cueIndex: cueIndex, text: cues[cueIndex].text)
+        return PlayerSubtitleResolution(
+            cueIndex: cueIndex,
+            text: activeCueIndices
+                .map { cues[$0].text }
+                .joined(separator: "\n")
+        )
     }
 
-    private static func resolveUsingHint(
+    private static func activeCueIndices(
         positionMillis: Int64,
         cues: [PlayerSubtitleCue],
-        hintIndex: Int
-    ) -> Int? {
-        let hintCue = cues[hintIndex]
-        if hintCue.contains(positionMillis: positionMillis) {
-            return hintIndex
+        hintIndex: Int?
+    ) -> [Int] {
+        var resolvedIndices: [Int] = []
+        resolvedIndices.reserveCapacity(2)
+
+        if let hintIndex,
+           cues.indices.contains(hintIndex),
+           cues[hintIndex].contains(positionMillis: positionMillis) {
+            resolvedIndices.append(hintIndex)
         }
 
-        let lowerBound = max(0, hintIndex - hintWindow)
-        let upperBound = min(cues.count - 1, hintIndex + hintWindow)
-        guard lowerBound <= upperBound else { return nil }
-
-        for index in lowerBound ... upperBound where cues[index].contains(positionMillis: positionMillis) {
-            return index
-        }
-
-        return nil
-    }
-
-    private static func binarySearchContainingCue(
-        positionMillis: Int64,
-        cues: [PlayerSubtitleCue]
-    ) -> Int? {
-        var lowerBound = 0
-        var upperBound = cues.count - 1
-
-        while lowerBound <= upperBound {
-            let middleIndex = (lowerBound + upperBound) / 2
-            let cue = cues[middleIndex]
-
-            if positionMillis < cue.startMillis {
-                upperBound = middleIndex - 1
-            } else if positionMillis > cue.endMillis {
-                lowerBound = middleIndex + 1
-            } else {
-                return middleIndex
+        for (index, cue) in cues.enumerated() {
+            if cue.startMillis > positionMillis {
+                break
             }
+
+            guard cue.contains(positionMillis: positionMillis) else { continue }
+            guard !resolvedIndices.contains(index) else { continue }
+            resolvedIndices.append(index)
         }
 
-        return nil
+        return resolvedIndices.sorted()
     }
 }
 
@@ -131,7 +113,17 @@ struct PlayerSubtitleLoader: PlayerSubtitleLoading {
         }
 
         let subtitles = try Subtitles(fileURL: temporaryURL, encoding: .utf8)
-        return subtitles.cues.compactMap(Self.makeCue)
+        return subtitles.cues
+            .compactMap(Self.makeCue)
+            .sorted {
+                if $0.startMillis == $1.startMillis {
+                    if $0.endMillis == $1.endMillis {
+                        return $0.text < $1.text
+                    }
+                    return $0.endMillis < $1.endMillis
+                }
+                return $0.startMillis < $1.startMillis
+            }
     }
 
     static func supportedFileExtension(from url: URL) -> String? {
