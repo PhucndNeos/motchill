@@ -12,6 +12,7 @@
         <activity
             android:name=".app.MainActivity"
             android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|keyboard|keyboardHidden|uiMode|smallestScreenSize"
             android:theme="@style/Theme.PhucTV">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
