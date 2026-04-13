@@ -333,7 +333,6 @@ private fun PlayerContent(
     }
     val selectedSource = uiState.selectedSource ?: return
     val sourceCount = uiState.playableSources.size
-    val backgroundShape = RoundedCornerShape(28.dp)
     var playerSurfaceWidthPx by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(controlsVisible, controlFocusEpoch, sourceCount, uiState.selectedSourceIndex) {
@@ -345,12 +344,7 @@ private fun PlayerContent(
         hostFocusRequester.requestFocus()
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(12.dp)
-            .clip(backgroundShape),
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         PlayerSurface(
             modifier = Modifier.fillMaxSize(),
             engine = engine,
