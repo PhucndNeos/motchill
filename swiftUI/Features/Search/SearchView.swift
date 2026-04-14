@@ -359,7 +359,7 @@ private struct SearchResultsSection: View {
 
     private var columns: [GridItem] {
         [
-            GridItem(.adaptive(minimum: 136, maximum: 180), spacing: 16, alignment: .top)
+            GridItem(.adaptive(minimum: 150, maximum: 300), spacing: 16, alignment: .top)
         ]
     }
 
@@ -394,6 +394,7 @@ private struct SearchResultsSection: View {
                     MovieCardView(movie: movie) {
                         onOpenDetail(movie)
                     }
+                    .aspectRatio(0.68, contentMode: .fit)
                 }
             }
         }

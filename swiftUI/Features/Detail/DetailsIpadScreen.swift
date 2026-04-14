@@ -53,60 +53,53 @@ private struct IpadDetailSidebar: View {
     let onOpenEpisode: () -> Void
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-
-            VStack(alignment: .leading, spacing: 24) {
-                Spacer(minLength: 0)
-
-                VStack(alignment: .leading, spacing: 14) {
-                    Text(viewModel.title)
-                        .font(.system(size: 46, weight: .heavy, design: .rounded))
-                        .foregroundStyle(AppTheme.textPrimary)
-                        .lineLimit(4)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: 360, alignment: .leading)
-                        .minimumScaleFactor(0.55)
-                        .allowsTightening(true)
-
-                    if !viewModel.subtitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Text(viewModel.subtitle)
-                            .font(AppTheme.bodyFont)
-                            .foregroundStyle(AppTheme.textSecondary)
-                            .lineLimit(4)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: 360, alignment: .leading)
-                            .allowsTightening(true)
-                    }
-                    
-                    HStack(spacing: 14) {
-                        Button(action: onOpenEpisode) {
-                            FeaturePrimaryAction(text: "Watch Now", systemImage: "play.fill")
-                        }
-                        .buttonStyle(.plain)
-                        
-                        Button(action: onOpenTrailer) {
-                            FeatureSecondaryAction(text: "Trailer", systemImage: "film")
-                        }
-                        .buttonStyle(.plain)
-                    }
-
-                    IpadMetaRow(pills: viewModel.metadataPills)
-
-                    Text(viewModel.summary)
+        VStack(alignment: .leading, spacing: 24) {
+            Spacer(minLength: 0)
+            
+            VStack(alignment: .leading, spacing: 14) {
+                Text(viewModel.title)
+                    .font(.system(size: 46, weight: .heavy, design: .rounded))
+                    .foregroundStyle(AppTheme.textPrimary)
+                    .lineLimit(4)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
+                
+                if !viewModel.subtitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Text(viewModel.subtitle)
                         .font(AppTheme.bodyFont)
                         .foregroundStyle(AppTheme.textSecondary)
-                        .lineSpacing(4)
+                        .lineLimit(4)
                         .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: 360, alignment: .leading)
-                        .lineLimit(8)
+                        .allowsTightening(true)
                 }
-                .frame(maxWidth: 360, alignment: .leading)
+                
+                HStack(spacing: 14) {
+                    Button(action: onOpenEpisode) {
+                        FeaturePrimaryAction(text: "Watch Now", systemImage: "play.fill")
+                    }
+                    .buttonStyle(.plain)
+                    
+                    Button(action: onOpenTrailer) {
+                        FeatureSecondaryAction(text: "Trailer", systemImage: "film")
+                    }
+                    .buttonStyle(.plain)
+                }
+                
+                IpadMetaRow(pills: viewModel.metadataPills)
+                
+                Text(viewModel.summary)
+                    .font(AppTheme.bodyFont)
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(8)
             }
-            .padding(.horizontal, 32)
-            .padding(.bottom, 32)
-            .padding(.top, 120)
         }
-        .clipped()
+        .padding(.horizontal, 32)
+        .padding(.bottom, 32)
+        .padding(.top, 120)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -116,140 +109,150 @@ private struct IpadDetailContent: View {
     let onOpenEpisode: (PhucTvMovieEpisode) -> Void
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 44) {
-                if let detail = viewModel.detail {
-                    IpadSection(
-                        title: "Episodes",
-                        subtitle: detail.episodes.isEmpty ? nil : "Season 01 • \(detail.episodes.count) Episodes"
-                    ) {
-                        if detail.episodes.isEmpty {
-                            Text("No episodes available yet.")
-                                .font(AppTheme.bodyFont)
-                                .foregroundStyle(AppTheme.textSecondary)
-                        } else {
-                            VStack(spacing: 12) {
-                                ForEach(Array(detail.episodes.enumerated()), id: \.element.id) { index, episode in
-                                    Button(action: { onOpenEpisode(episode) }) {
-                                        DetailEpisodeRow(
-                                            movie: detail.movie,
-                                            episode: episode,
-                                            progress: viewModel.episodeProgressById[episode.id],
-                                            episodeIndex: index + 1,
-                                            totalEpisodes: detail.episodes.count
-                                        )
+        ScrollViewReader { proxy in
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 44) {
+                    if let detail = viewModel.detail {
+                        IpadSection(
+                            title: "Episodes",
+                            subtitle: detail.episodes.isEmpty ? nil : "Season 01 • \(detail.episodes.count) Episodes"
+                        ) {
+                            if detail.episodes.isEmpty {
+                                Text("No episodes available yet.")
+                                    .font(AppTheme.bodyFont)
+                                    .foregroundStyle(AppTheme.textSecondary)
+                            } else {
+                                VStack(spacing: 12) {
+                                    ForEach(Array(detail.episodes.enumerated()), id: \.element.id) { index, episode in
+                                        Button(action: { onOpenEpisode(episode) }) {
+                                            DetailEpisodeRow(
+                                                movie: detail.movie,
+                                                episode: episode,
+                                                progress: viewModel.episodeProgressById[episode.id],
+                                                episodeIndex: index + 1,
+                                                totalEpisodes: detail.episodes.count
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                        .id(episode.id)
+                                    }
+                                }
+                                .task(id: preferredEpisodeScrollTargetID(detail: detail, episodeProgressById: viewModel.episodeProgressById)) {
+                                    guard let targetID = preferredEpisodeScrollTargetID(detail: detail, episodeProgressById: viewModel.episodeProgressById) else { return }
+                                    await MainActor.run {
+                                        proxy.scrollTo(targetID, anchor: .center)
+                                    }
+                                }
+                            }
+                        }
+
+                        IpadSection(title: "Synopsis") {
+                            VStack(alignment: .leading, spacing: 14) {
+                                Text(viewModel.summary)
+                                    .font(AppTheme.bodyFont)
+                                    .foregroundStyle(AppTheme.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .lineSpacing(6)
+
+                                if let trailer = viewModel.trailerURL(), !trailer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                    Button(action: {
+                                        openExternalURL(trailer)
+                                    }) {
+                                        Text("Open Trailer")
+                                            .font(AppTheme.captionFont.weight(.semibold))
+                                            .foregroundStyle(AppTheme.textPrimary)
+                                            .padding(.horizontal, 14)
+                                            .padding(.vertical, 10)
+                                            .background(
+                                                Capsule(style: .continuous)
+                                                    .fill(Color.white.opacity(0.05))
+                                            )
+                                            .overlay(
+                                                Capsule(style: .continuous)
+                                                    .stroke(Color.white.opacity(0.10), lineWidth: 1)
+                                            )
                                     }
                                     .buttonStyle(.plain)
                                 }
                             }
                         }
-                    }
 
-                    IpadSection(title: "Synopsis") {
-                        VStack(alignment: .leading, spacing: 14) {
-                            Text(viewModel.summary)
-                                .font(AppTheme.bodyFont)
-                                .foregroundStyle(AppTheme.textSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .lineSpacing(6)
-
-                            if let trailer = viewModel.trailerURL(), !trailer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                Button(action: {
-                                    openExternalURL(trailer)
-                                }) {
-                                    Text("Open Trailer")
-                                        .font(AppTheme.captionFont.weight(.semibold))
-                                        .foregroundStyle(AppTheme.textPrimary)
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 10)
-                                        .background(
-                                            Capsule(style: .continuous)
-                                                .fill(Color.white.opacity(0.05))
-                                        )
-                                        .overlay(
-                                            Capsule(style: .continuous)
-                                                .stroke(Color.white.opacity(0.10), lineWidth: 1)
-                                        )
-                                }
-                                .buttonStyle(.plain)
+                        IpadSection(title: "Information") {
+                            VStack(alignment: .leading, spacing: 18) {
+                                IpadInfoCard(label: "Director", value: detail.director)
+                                IpadInfoCard(label: "Cast", value: detail.castString)
+                                IpadInfoCard(label: "Show times", value: detail.showTimes)
+                                IpadInfoCard(label: "More info", value: detail.moreInfo)
+                                IpadInfoCard(label: "Trailer", value: detail.trailer)
+                                IpadInfoCard(
+                                    label: "Status",
+                                    value: [detail.statusTitle, detail.statusText, detail.statusRaw].filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.joined(separator: " • ")
+                                )
                             }
                         }
-                    }
 
-                    IpadSection(title: "Information") {
-                        VStack(alignment: .leading, spacing: 18) {
-                            IpadInfoCard(label: "Director", value: detail.director)
-                            IpadInfoCard(label: "Cast", value: detail.castString)
-                            IpadInfoCard(label: "Show times", value: detail.showTimes)
-                            IpadInfoCard(label: "More info", value: detail.moreInfo)
-                            IpadInfoCard(label: "Trailer", value: detail.trailer)
-                            IpadInfoCard(
-                                label: "Status",
-                                value: [detail.statusTitle, detail.statusText, detail.statusRaw].filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.joined(separator: " • ")
-                            )
-                        }
-                    }
-
-                    IpadSection(title: "Classification") {
-                        VStack(alignment: .leading, spacing: 18) {
-                            if !detail.countries.isEmpty {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    IpadMiniLabel(text: "Countries")
-                                    FlowWrapLayout(items: detail.countries.map(\.name)) { IpadLabelChip(text: $0) }
-                                }
-                            }
-
-                            if !detail.categories.isEmpty {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    IpadMiniLabel(text: "Categories")
-                                    FlowWrapLayout(items: detail.categories.map(\.name)) { IpadLabelChip(text: $0) }
-                                }
-                            }
-                        }
-                    }
-
-                    IpadSection(title: "Gallery") {
-                        let images = Array(Set(detail.photoUrls + detail.previewPhotoUrls)).filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-
-                        if images.isEmpty {
-                            Text("No gallery images available.")
-                                .font(AppTheme.bodyFont)
-                                .foregroundStyle(AppTheme.textSecondary)
-                        } else {
-                            TabView {
-                                ForEach(images, id: \.self) { url in
-                                    IpadGalleryImage(url: url)
-                                }
-                            }
-                            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
-                            .frame(height: 250)
-                            .cornerRadius(20)
-                        }
-                    }
-
-                    IpadSection(title: "Related") {
-                        if detail.relatedMovies.isEmpty {
-                            Text("No related movies available.")
-                                .font(AppTheme.bodyFont)
-                                .foregroundStyle(AppTheme.textSecondary)
-                        } else {
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                LazyHStack(spacing: 14) {
-                                    ForEach(detail.relatedMovies, id: \.id) { movie in
-                                        MovieCardView(
-                                            movie: movie,
-                                            onTap: { router.push(.detail(movie)) }
-                                        )
+                        IpadSection(title: "Classification") {
+                            VStack(alignment: .leading, spacing: 18) {
+                                if !detail.countries.isEmpty {
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        IpadMiniLabel(text: "Countries")
+                                        FlowWrapLayout(items: detail.countries.map(\.name)) { IpadLabelChip(text: $0) }
                                     }
                                 }
-                                .padding(.vertical, 2)
+
+                                if !detail.categories.isEmpty {
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        IpadMiniLabel(text: "Categories")
+                                        FlowWrapLayout(items: detail.categories.map(\.name)) { IpadLabelChip(text: $0) }
+                                    }
+                                }
+                            }
+                        }
+
+                        IpadSection(title: "Gallery") {
+                            let images = Array(Set(detail.photoUrls + detail.previewPhotoUrls)).filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+                            if images.isEmpty {
+                                Text("No gallery images available.")
+                                    .font(AppTheme.bodyFont)
+                                    .foregroundStyle(AppTheme.textSecondary)
+                            } else {
+                                TabView {
+                                    ForEach(images, id: \.self) { url in
+                                        IpadGalleryImage(url: url)
+                                    }
+                                }
+                                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+                                .frame(height: 250)
+                                .cornerRadius(20)
+                            }
+                        }
+
+                        IpadSection(title: "Related") {
+                            if detail.relatedMovies.isEmpty {
+                                Text("No related movies available.")
+                                    .font(AppTheme.bodyFont)
+                                    .foregroundStyle(AppTheme.textSecondary)
+                            } else {
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    LazyHStack(spacing: 14) {
+                                        ForEach(detail.relatedMovies, id: \.id) { movie in
+                                            MovieCardView(
+                                                movie: movie,
+                                                onTap: { router.push(.detail(movie)) }
+                                            )
+                                            .frame(width: 140, height: 210)
+                                        }
+                                    }
+                                    .padding(.vertical, 2)
+                                }
                             }
                         }
                     }
                 }
+                .padding(.horizontal, 32)
+                .padding(.vertical, 32)
             }
-            .padding(.horizontal, 32)
-            .padding(.vertical, 32)
         }
     }
 }
@@ -443,4 +446,14 @@ private struct IpadGalleryImage: View {
 
 private func ipadDetailURL(_ value: String) -> URL? {
     URL(string: value)
+}
+
+#Preview("iPad Detail") {
+    DetailsIpadScreen(
+        viewModel: DetailViewModel.previewLoaded(),
+        router: AppRouter(),
+        onToggleLike: {},
+        onOpenTrailer: {},
+        onOpenEpisode: { _ in }
+    )
 }

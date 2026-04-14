@@ -145,47 +145,50 @@ private struct DetailLoadedContent: View {
     let onOpenEpisode: (PhucTvMovieEpisode) -> Void
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                DetailHeroSection(
-                    viewModel: viewModel,
-                    router: router,
-                    onToggleLike: onToggleLike,
-                    onOpenTrailer: onOpenTrailer,
-                    onOpenEpisode: {
-                        guard let episode = viewModel.detail?.episodes.first else { return }
-                        onOpenEpisode(episode)
-                    }
-                )
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    DetailHeroSection(
+                        viewModel: viewModel,
+                        router: router,
+                        onToggleLike: onToggleLike,
+                        onOpenTrailer: onOpenTrailer,
+                        onOpenEpisode: {
+                            guard let episode = viewModel.detail?.episodes.first else { return }
+                            onOpenEpisode(episode)
+                        }
+                    )
 
-                DetailOverviewCard(
-                    viewModel: viewModel,
-                    onOpenTrailer: onOpenTrailer
-                )
+                    DetailOverviewCard(
+                        viewModel: viewModel,
+                        onOpenTrailer: onOpenTrailer
+                    )
 
-                if !viewModel.availableTabs.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        DetailTabStrip(
-                            tabs: viewModel.availableTabs,
-                            selectedTab: viewModel.effectiveSelectedTab,
-                            onTabSelected: viewModel.selectTab
-                        )
-
-                        DetailSectionCard {
-                            DetailTabBody(
-                                detail: viewModel.detail,
+                    if !viewModel.availableTabs.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            DetailTabStrip(
+                                tabs: viewModel.availableTabs,
                                 selectedTab: viewModel.effectiveSelectedTab,
-                                episodeProgressById: viewModel.episodeProgressById,
-                                onOpenEpisode: onOpenEpisode,
-                                onOpenDetail: { router.push(.detail($0)) },
-                                onOpenSearch: { router.push(.search()) }
+                                onTabSelected: viewModel.selectTab
                             )
+
+                            DetailSectionCard {
+                                DetailTabBody(
+                                    detail: viewModel.detail,
+                                    selectedTab: viewModel.effectiveSelectedTab,
+                                    episodeProgressById: viewModel.episodeProgressById,
+                                    scrollProxy: proxy,
+                                    onOpenEpisode: onOpenEpisode,
+                                    onOpenDetail: { router.push(.detail($0)) },
+                                    onOpenSearch: { router.push(.search()) }
+                                )
+                            }
                         }
                     }
                 }
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.horizontal, 16)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
@@ -347,6 +350,7 @@ private func DetailTabBody(
     detail: PhucTvMovieDetail?,
     selectedTab: DetailSectionTab,
     episodeProgressById: [Int: PhucTvPlaybackProgressSnapshot],
+    scrollProxy: ScrollViewProxy,
     onOpenEpisode: @escaping (PhucTvMovieEpisode) -> Void,
     onOpenDetail: @escaping (PhucTvMovieCard) -> Void,
     onOpenSearch: @escaping () -> Void
@@ -354,7 +358,12 @@ private func DetailTabBody(
     if let detail {
         switch selectedTab {
         case .episodes:
-            DetailEpisodesTab(detail: detail, episodeProgressById: episodeProgressById, onOpenEpisode: onOpenEpisode)
+            DetailEpisodesTab(
+                detail: detail,
+                episodeProgressById: episodeProgressById,
+                scrollProxy: scrollProxy,
+                onOpenEpisode: onOpenEpisode
+            )
         case .synopsis:
             DetailSynopsisTab(detail: detail)
         case .information:
@@ -372,6 +381,7 @@ private func DetailTabBody(
 private struct DetailEpisodesTab: View {
     let detail: PhucTvMovieDetail
     let episodeProgressById: [Int: PhucTvPlaybackProgressSnapshot]
+    let scrollProxy: ScrollViewProxy
     let onOpenEpisode: (PhucTvMovieEpisode) -> Void
 
     var body: some View {
@@ -395,6 +405,13 @@ private struct DetailEpisodesTab: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .id(episode.id)
+                    }
+                }
+                .task(id: preferredEpisodeScrollTargetID(detail: detail, episodeProgressById: episodeProgressById)) {
+                    guard let targetID = preferredEpisodeScrollTargetID(detail: detail, episodeProgressById: episodeProgressById) else { return }
+                    await MainActor.run {
+                        scrollProxy.scrollTo(targetID, anchor: .center)
                     }
                 }
             }
@@ -544,7 +561,7 @@ struct DetailEpisodeRow: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(movie.displayTitle)
+                    Text(episode.name)
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
                         .lineLimit(2)

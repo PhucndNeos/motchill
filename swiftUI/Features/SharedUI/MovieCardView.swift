@@ -3,18 +3,18 @@ import SwiftUI
 struct MovieCardView: View {
     let movie: PhucTvMovieCard
     let onTap: () -> Void
-
-    private let cardSize = CGSize(width: 150, height: 300)
     
     var body: some View {
         Button(action: onTap) {
             ZStack {
-                RemoteImageView(
-                    url: movieCardRemoteURL(from: movie.displayPoster),
-                    cornerRadius: 26
-                )
-                .frame(width: cardSize.width, height: cardSize.height)
-
+                GeometryReader { proxy in
+                    RemoteImageView(
+                        url: movieCardRemoteURL(from: movie.displayPoster),
+                        cornerRadius: 26
+                    )
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                }
+                
                 LinearGradient(
                     colors: [
                         Color.black.opacity(0.02),
@@ -26,44 +26,44 @@ struct MovieCardView: View {
                     endPoint: .bottom
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-
+                
                 VStack(spacing: 0) {
                     HStack(alignment: .top) {
                         if let qualityText = badgeText(movie.quantity) {
                             FeatureMetaPill(text: qualityText)
                         }
-
+                        
                         Spacer(minLength: 12)
-
+                        
                         if let statusText = badgeText(movie.statusTitle) {
                             FeatureMetaPill(text: statusText)
                         }
                     }
                     .padding(.horizontal, 10)
                     .padding(.top, 10)
-
+                    
                     Spacer()
-
+                    
                     VStack(alignment: .leading, spacing: 7) {
                         Text(movie.displayTitle)
                             .font(.system(size: 24, weight: .heavy, design: .rounded))
                             .foregroundStyle(AppTheme.textPrimary)
                             .lineLimit(2)
                             .minimumScaleFactor(0.82)
-
+                        
                         if let releaseText = releaseText {
                             Text(releaseText)
                                 .font(.system(size: 12, weight: .medium, design: .rounded))
                                 .foregroundStyle(AppTheme.textMuted)
                                 .lineLimit(1)
                         }
-
+                        
                         if let statsText = statsText {
                             HStack(spacing: 6) {
                                 Image(systemName: "star.fill")
                                     .font(.system(size: 11, weight: .bold))
                                     .foregroundStyle(Color(red: 1.0, green: 0.78, blue: 0.36))
-
+                                
                                 Text(statsText)
                                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                                     .foregroundStyle(AppTheme.textPrimary.opacity(0.96))
@@ -76,7 +76,7 @@ struct MovieCardView: View {
                     .padding(.bottom, 16)
                 }
             }
-            .frame(width: cardSize.width, height: cardSize.height)
+            .frame(maxWidth: .infinity)
             .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
@@ -86,18 +86,18 @@ struct MovieCardView: View {
         }
         .buttonStyle(.plain)
     }
-
+    
     private var releaseText: String? {
         let parts = [
             movie.year > 0 ? String(movie.year) : nil,
             badgeText(movie.time)
         ]
-        .compactMap { $0 }
-
+            .compactMap { $0 }
+        
         guard !parts.isEmpty else { return nil }
         return parts.joined(separator: " • ")
     }
-
+    
     private var statsText: String? {
         let ratingValue: String? = {
             guard movie.ratePoint > 0 else {
@@ -105,12 +105,12 @@ struct MovieCardView: View {
             }
             return String(format: "%.1f", movie.ratePoint)
         }()
-
+        
         let episodeValue: String? = {
             guard movie.episodesTotal > 0 else { return nil }
             return "\(movie.episodesTotal) tập"
         }()
-
+        
         let parts = [ratingValue, episodeValue].compactMap { $0 }
         guard !parts.isEmpty else { return nil }
         return parts.joined(separator: " • ")
@@ -148,7 +148,7 @@ private func movieCardRemoteURL(from rawValue: String?) -> URL? {
     ZStack {
         AppTheme.background
             .ignoresSafeArea()
-
+        
         MovieCardView(movie: .previewMovieCard) { }
             .padding(24)
     }

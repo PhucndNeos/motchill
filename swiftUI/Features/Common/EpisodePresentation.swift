@@ -25,6 +25,17 @@ func shouldShowEpisodeProgressBar(_ progress: PhucTvPlaybackProgressSnapshot?) -
     return progress.durationMillis > 0 && progress.positionMillis > 0
 }
 
+func preferredEpisodeScrollTargetID(
+    detail: PhucTvMovieDetail?,
+    episodeProgressById: [Int: PhucTvPlaybackProgressSnapshot]
+) -> Int? {
+    guard let detail else { return nil }
+
+    return detail.episodes.last { episode in
+        shouldShowEpisodeProgressBar(episodeProgressById[episode.id])
+    }?.id
+}
+
 private func normalizedEpisodeTypeLabel(_ rawValue: String) -> String? {
     let normalized = rawValue
         .trimmingCharacters(in: .whitespacesAndNewlines)
