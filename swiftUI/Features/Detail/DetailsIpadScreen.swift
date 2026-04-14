@@ -131,10 +131,12 @@ private struct IpadDetailContent: View {
                             VStack(spacing: 12) {
                                 ForEach(Array(detail.episodes.enumerated()), id: \.element.id) { index, episode in
                                     Button(action: { onOpenEpisode(episode) }) {
-                                        IpadEpisodeRow(
+                                        DetailEpisodeRow(
+                                            movie: detail.movie,
                                             episode: episode,
                                             progress: viewModel.episodeProgressById[episode.id],
-                                            episodeIndex: index + 1
+                                            episodeIndex: index + 1,
+                                            totalEpisodes: detail.episodes.count
                                         )
                                     }
                                     .buttonStyle(.plain)
@@ -419,57 +421,6 @@ private struct IpadInfoCard: View {
                 .stroke(Color.white.opacity(0.10), lineWidth: 1)
         )
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-private struct IpadEpisodeRow: View {
-    let episode: PhucTvMovieEpisode
-    let progress: PhucTvPlaybackProgressSnapshot?
-    let episodeIndex: Int
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .center, spacing: 16) {
-                Text(String(format: "%02d", episodeIndex))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.white.opacity(0.26))
-                    .frame(width: 52, alignment: .leading)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(episode.label)
-                        .font(.system(size: 23, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.textPrimary)
-                        .lineLimit(2)
-
-                    Text(episodeSecondaryText(episode: episode, progress: progress))
-                        .font(AppTheme.bodyFont)
-                        .foregroundStyle(AppTheme.textSecondary)
-                        .lineLimit(1)
-                }
-
-                Spacer(minLength: 8)
-
-                Image(systemName: "play.circle.fill")
-                    .font(.system(size: 44, weight: .semibold))
-                    .foregroundStyle(.orange)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            if let progress, shouldShowEpisodeProgressBar(progress) {
-                ProgressView(value: progress.progressFraction)
-                    .tint(.orange)
-            }
-        }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.white.opacity(0.04))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.white.opacity(0.10), lineWidth: 1)
-        )
     }
 }
 
