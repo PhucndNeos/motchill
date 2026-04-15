@@ -111,15 +111,16 @@ actor SupabaseLikedMovieStore: PhucTvLikedMovieStoring {
     private func loadRowsIfAuthenticated() async throws -> [PhucTvLikedMovieRow]? {
         guard let client else { return nil }
         do {
-            _ = try await client.auth.session
+            let session = try await client.auth.session
+            return try await client
+                .from("liked_movies")
+                .select()
+                .eq("user_id", value: session.user.id)
+                .execute()
+                .value
         } catch {
             return nil
         }
-        return try await client
-            .from("liked_movies")
-            .select()
-            .execute()
-            .value
     }
 
     private func requireClient() throws -> SupabaseClient {
@@ -163,11 +164,12 @@ actor SupabasePlaybackPositionStore: PhucTvPlaybackPositionStoring {
 
     func load(movieID: Int, episodeID: Int) async throws -> PhucTvPlaybackProgressSnapshot? {
         guard let client = client else { return nil }
-        guard (try? await client.auth.session) != nil else { return nil }
+        guard let session = try? await client.auth.session else { return nil }
 
         let rows: [PhucTvPlaybackPositionRow] = try await client
             .from("playback_positions")
             .select()
+            .eq("user_id", value: session.user.id)
             .eq("movie_id", value: movieID)
             .eq("episode_id", value: episodeID)
             .execute()
