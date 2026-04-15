@@ -16,6 +16,13 @@ protocol PhucTvPlaybackPositionStoring: Sendable {
     ) async throws
 
     func load(movieID: Int, episodeID: Int) async throws -> PhucTvPlaybackProgressSnapshot?
+
+    func delete(movieID: Int, episodeID: Int) async throws
+}
+
+extension PhucTvPlaybackPositionStoring {
+    // Default no-op — remote stores do not need local deletion logic.
+    func delete(movieID: Int, episodeID: Int) async throws {}
 }
 
 struct PhucTvLegacyLocalDataPayload: Sendable {
@@ -211,6 +218,10 @@ actor UserDefaultsPhucTvPlaybackPositionStore: PhucTvPlaybackPositionStoring {
             return nil
         }
         return try JSONDecoder().decode(PhucTvPlaybackProgressSnapshot.self, from: data)
+    }
+
+    func delete(movieID: Int, episodeID: Int) async throws {
+        defaults.removeObject(forKey: Self.key(movieID: movieID, episodeID: episodeID))
     }
 
     static let keyPrefix = "playback_position:"

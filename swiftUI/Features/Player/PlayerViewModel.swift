@@ -16,7 +16,9 @@ final class PlayerViewModel {
     @ObservationIgnored
     private let repository: PhucTvRepository
     @ObservationIgnored
-    private let playbackPositionStore: PhucTvPlaybackPositionStoring
+    private let localStore: PhucTvPlaybackPositionStoring
+    @ObservationIgnored
+    private let remoteStore: PhucTvPlaybackPositionStoring?
     @ObservationIgnored
     private let subtitleLoader: PlayerSubtitleLoading
     @ObservationIgnored
@@ -59,7 +61,8 @@ final class PlayerViewModel {
         movieTitle: String,
         episodeLabel: String,
         repository: PhucTvRepository,
-        playbackPositionStore: PhucTvPlaybackPositionStoring,
+        localStore: PhucTvPlaybackPositionStoring,
+        remoteStore: PhucTvPlaybackPositionStoring? = nil,
         subtitleLoader: PlayerSubtitleLoading = PlayerSubtitleLoader()
     ) {
         self.movieID = movieID
@@ -67,7 +70,8 @@ final class PlayerViewModel {
         self.movieTitle = movieTitle
         self.episodeLabel = episodeLabel
         self.repository = repository
-        self.playbackPositionStore = playbackPositionStore
+        self.localStore = localStore
+        self.remoteStore = remoteStore
         self.subtitleLoader = subtitleLoader
         player.automaticallyWaitsToMinimizeStalling = true
     }
@@ -153,8 +157,11 @@ final class PlayerViewModel {
             selectedSourceIndex = 0
             applyTrackSelectionDefaultsForSelectedSource()
 
-            let resume = try? await playbackPositionStore.load(movieID: movieID, episodeID: episodeID)
-            await loadPlayerItem(startingAt: resume?.positionMillis ?? 0)
+            // Keep remote as the source of truth for resume. Local storage is only
+            // used as a write buffer until the next explicit sync point.
+            let remoteSnapshot = try? await remoteStore?.load(movieID: movieID, episodeID: episodeID)
+            let resumeMillis = remoteSnapshot?.positionMillis ?? 0
+            await loadPlayerItem(startingAt: resumeMillis)
             state = .loaded
         } catch {
             PhucTvLogger.shared.error(
@@ -181,6 +188,8 @@ final class PlayerViewModel {
         applyTrackSelectionDefaultsForSelectedSource()
 
         Task { [position = currentPositionMillis] in
+            await persistProgress()
+            await syncProgressToRemote()
             await loadPlayerItem(startingAt: position)
         }
     }
@@ -236,7 +245,10 @@ final class PlayerViewModel {
         if player.timeControlStatus == .playing {
             player.pause()
             isPlaying = false
-            Task { await persistProgress() }
+            Task {
+                await persistProgress()
+                await syncProgressToRemote()
+            }
         } else {
             player.play()
             isPlaying = true
@@ -248,6 +260,10 @@ final class PlayerViewModel {
     }
 
     func seek(to positionMillis: Int64, playAfterSeek: Bool = true) {
+        seek(to: positionMillis, playAfterSeek: playAfterSeek, syncProgress: true)
+    }
+
+    private func seek(to positionMillis: Int64, playAfterSeek: Bool, syncProgress: Bool) {
         let clamped = max(positionMillis, 0)
         let seconds = Double(clamped) / 1000.0
         let time = CMTime(seconds: seconds, preferredTimescale: 600)
@@ -260,6 +276,9 @@ final class PlayerViewModel {
                     self.isPlaying = true
                 }
                 self.syncSubtitleTextIfNeeded(at: clamped)
+                guard syncProgress else { return }
+                await self.persistProgress()
+                await self.syncProgressToRemote()
             }
         }
         currentPositionMillis = clamped
@@ -272,12 +291,15 @@ final class PlayerViewModel {
         detachTimeObserver()
         cancelOverlayAutoHide()
         clearSubtitleRuntime(clearSelection: true)
+        Task { await syncProgressToRemote() }
     }
 
+    /// Writes current progress to the local store only (fast, no network).
+    /// Called periodically by the time observer and before stop/sync.
     func persistProgress() async {
         guard durationMillis > 0 else { return }
         do {
-            try await playbackPositionStore.save(
+            try await localStore.save(
                 movieID: movieID,
                 episodeID: episodeID,
                 positionMillis: currentPositionMillis,
@@ -286,13 +308,50 @@ final class PlayerViewModel {
         } catch {
             PhucTvLogger.shared.error(
                 error,
-                message: "Player progress save failed",
+                message: "Player local progress save failed",
                 metadata: [
                     "movie_id": String(movieID),
                     "episode_id": String(episodeID),
                 ]
             )
         }
+    }
+
+    /// Syncs the current position to the remote store using max-wins logic,
+    /// then deletes the local row so it is not re-uploaded on next launch.
+    /// If the remote save fails, the local row is kept so the startup migrator
+    /// can retry. If the remote is already ahead, local is still deleted
+    /// (remote is the canonical source).
+    private func syncProgressToRemote() async {
+        guard durationMillis > 0, let remoteStore else { return }
+
+        let remoteSnapshot = try? await remoteStore.load(movieID: movieID, episodeID: episodeID)
+        let remotePosition = remoteSnapshot?.positionMillis ?? 0
+
+        if currentPositionMillis >= remotePosition {
+            // Local is ahead or equal — push to remote.
+            do {
+                try await remoteStore.save(
+                    movieID: movieID,
+                    episodeID: episodeID,
+                    positionMillis: currentPositionMillis,
+                    durationMillis: durationMillis
+                )
+            } catch {
+                PhucTvLogger.shared.error(
+                    error,
+                    message: "Player remote progress sync failed — local kept for retry",
+                    metadata: [
+                        "movie_id": String(movieID),
+                        "episode_id": String(episodeID),
+                    ]
+                )
+                return // Keep local so the startup migrator can retry.
+            }
+        }
+        // Remote is now up-to-date (either we just pushed, or it was already ahead).
+        // Delete the local row — it is no longer needed.
+        try? await localStore.delete(movieID: movieID, episodeID: episodeID)
     }
 
     func applyTrackSelectionDefaultsForSelectedSource() {
@@ -322,7 +381,7 @@ final class PlayerViewModel {
         attachTimeObserver()
 
         if positionMillis > 0 {
-            seek(to: positionMillis, playAfterSeek: false)
+            seek(to: positionMillis, playAfterSeek: false, syncProgress: false)
         }
 
         player.play()
@@ -469,7 +528,7 @@ final class PlayerViewModel {
             movieTitle: DetailMockData.detail.title,
             episodeLabel: DetailMockData.detail.episodes.first?.label ?? "Episode 1",
             repository: PreviewPlayerRepository(sources: PlayerMockData.sources),
-            playbackPositionStore: PreviewPlayerStore(progress: PhucTvPlaybackProgressSnapshot(positionMillis: 120_000, durationMillis: 600_000))
+            localStore: PreviewPlayerStore(progress: PhucTvPlaybackProgressSnapshot(positionMillis: 120_000, durationMillis: 600_000))
         )
         viewModel.sources = PlayerMockData.sources
         viewModel.selectedSourceIndex = 0
@@ -487,7 +546,7 @@ final class PlayerViewModel {
             movieTitle: DetailMockData.detail.title,
             episodeLabel: DetailMockData.detail.episodes.first?.label ?? "Episode 1",
             repository: PreviewPlayerRepository(error: NSError(domain: "PreviewPlayerRepository", code: 1)),
-            playbackPositionStore: PreviewPlayerStore(progress: nil)
+            localStore: PreviewPlayerStore(progress: nil)
         )
         viewModel.state = .error(message: "Không thể nạp nguồn phát trong preview.")
         viewModel.errorMessage = "Không thể nạp nguồn phát trong preview."
@@ -501,7 +560,7 @@ final class PlayerViewModel {
             movieTitle: DetailMockData.detail.title,
             episodeLabel: DetailMockData.detail.episodes.first?.label ?? "Episode 1",
             repository: PreviewPlayerRepository(sources: PlayerMockData.iframeSources),
-            playbackPositionStore: PreviewPlayerStore(progress: nil)
+            localStore: PreviewPlayerStore(progress: nil)
         )
         viewModel.sources = PlayerMockData.iframeSources
         viewModel.state = .error(message: "Không có nguồn phát trực tiếp. Chọn một iframe bên dưới để mở trong WebView.")

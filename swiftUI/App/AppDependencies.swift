@@ -10,7 +10,10 @@ struct AppDependencies: Sendable {
     let repository: PhucTvRepository
     let authManager: PhucTvSupabaseAuthManager
     let likedMovieStore: PhucTvLikedMovieStoring
+    /// Remote Supabase store — source of truth for cross-device sync.
     let playbackPositionStore: PhucTvPlaybackPositionStoring
+    /// Local UserDefaults store — used by the player for fast periodic writes.
+    let localPlaybackPositionStore: PhucTvPlaybackPositionStoring
     let configuration: AppConfiguration
     let screenIdleManager: ScreenIdleManaging
 
@@ -20,6 +23,7 @@ struct AppDependencies: Sendable {
         authManager = container.authManager
         likedMovieStore = container.likedMovieStore
         playbackPositionStore = container.playbackPositionStore
+        localPlaybackPositionStore = container.localPlaybackPositionStore
         configuration = container.configuration
         screenIdleManager = container.screenIdleManager
     }
@@ -29,6 +33,7 @@ struct AppDependencies: Sendable {
         authManager: PhucTvSupabaseAuthManager,
         likedMovieStore: PhucTvLikedMovieStoring,
         playbackPositionStore: PhucTvPlaybackPositionStoring,
+        localPlaybackPositionStore: PhucTvPlaybackPositionStoring,
         configuration: AppConfiguration,
         screenIdleManager: ScreenIdleManaging
     ) {
@@ -36,6 +41,7 @@ struct AppDependencies: Sendable {
         self.authManager = authManager
         self.likedMovieStore = likedMovieStore
         self.playbackPositionStore = playbackPositionStore
+        self.localPlaybackPositionStore = localPlaybackPositionStore
         self.configuration = configuration
         self.screenIdleManager = screenIdleManager
     }
@@ -45,6 +51,7 @@ struct AppDependencies: Sendable {
         authManager: PhucTvSupabaseAuthManager(client: nil),
         likedMovieStore: PreviewLikedMovieStore(),
         playbackPositionStore: PreviewPlaybackPositionStore(),
+        localPlaybackPositionStore: PreviewPlaybackPositionStore(),
         configuration: AppConfiguration(),
         screenIdleManager: PreviewScreenIdleManager()
     )

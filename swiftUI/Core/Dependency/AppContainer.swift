@@ -11,6 +11,7 @@ final class AppContainer {
     let authManager: PhucTvSupabaseAuthManager
     let likedMovieStore: SupabaseLikedMovieStore
     let playbackPositionStore: SupabasePlaybackPositionStore
+    let localPlaybackPositionStore: UserDefaultsPhucTvPlaybackPositionStore
     let legacyDataMigrator: PhucTvLegacyLocalDataMigrating
     let screenIdleManager: ScreenIdleManaging
     let supabaseClient: SupabaseClient?
@@ -36,6 +37,7 @@ final class AppContainer {
         supabaseClient = client
         likedMovieStore = SupabaseLikedMovieStore(client: client)
         playbackPositionStore = SupabasePlaybackPositionStore(client: client)
+        localPlaybackPositionStore = UserDefaultsPhucTvPlaybackPositionStore()
         legacyDataMigrator = PhucTvLegacyLocalDataMigrator(
             likedMovieStore: likedMovieStore,
             playbackPositionStore: playbackPositionStore

@@ -79,7 +79,10 @@ private struct DetailRootView: View {
     var body: some View {
         DetailScreen(viewModel: viewModel, router: router)
             .task {
-                guard shouldLoadOnAppear else { return }
+                guard shouldLoadOnAppear else {
+                    await viewModel.load(episodeProgressOnly: true)
+                    return
+                }
                 await viewModel.load()
                 shouldLoadOnAppear = false
             }

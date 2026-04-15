@@ -7,6 +7,7 @@ These docs describe the current native Android app in `android-compose` and the 
 - [Architecture](architecture.md)
 - [Modules and Screens](modules.md)
 - [API, Data, and Storage](api-data.md)
+- [Supabase Auth and Sync Flow](supabase-auth-sync.md)
 - [Payload Decryption and Key Recovery](security-decryption.md)
 - [Navigation Flow](navigation.md)
 

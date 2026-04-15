@@ -189,7 +189,8 @@ final class PlayerViewModelSubtitleTests: XCTestCase {
             movieTitle: "Movie",
             episodeLabel: "Episode 1",
             repository: StubPlayerRepository(sources: repositorySources),
-            playbackPositionStore: StubPlaybackStore(),
+            localStore: StubPlaybackStore(),
+            remoteStore: nil,
             subtitleLoader: loader
         )
     }

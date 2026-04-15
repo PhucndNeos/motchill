@@ -80,7 +80,7 @@ final class PhucTvSupabaseAuthManager: @unchecked Sendable {
     var signInHint: String? {
         switch state {
         case .signedOut:
-            return "Nhập email để nhận magic link và đồng bộ liked movies, playback position."
+            return "Đăng nhập để đồng bộ liked movies và playback position."
         case .unavailable(let message), .error(let message):
             return message
         default:
@@ -102,11 +102,21 @@ final class PhucTvSupabaseAuthManager: @unchecked Sendable {
         }
     }
 
-    func sendMagicLink(email: String) async throws {
+    /// Sends a 6-digit OTP to the given email address.
+    /// Requires "Email OTP" to be enabled in the Supabase dashboard.
+    func sendOTP(email: String) async throws {
         let client = try requireClient()
-        try await client.auth.signInWithOTP(
+        try await client.auth.signInWithOTP(email: email)
+    }
+
+    /// Verifies the 6-digit OTP entered by the user.
+    /// On success, `authStateChanges` fires and updates `state` to `.signedIn`.
+    func verifyOTP(email: String, token: String) async throws {
+        let client = try requireClient()
+        try await client.auth.verifyOTP(
             email: email,
-            redirectTo: redirectURL
+            token: token,
+            type: .email
         )
     }
 

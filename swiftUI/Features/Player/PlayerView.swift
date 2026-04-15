@@ -16,7 +16,8 @@ struct PlayerView: View {
         movieTitle: String,
         episodeLabel: String,
         repository: PhucTvRepository,
-        playbackPositionStore: PhucTvPlaybackPositionStoring,
+        localPlaybackPositionStore: PhucTvPlaybackPositionStoring,
+        remotePlaybackPositionStore: PhucTvPlaybackPositionStoring,
         router: AppRouter
     ) {
         self.router = router
@@ -32,7 +33,8 @@ struct PlayerView: View {
             movieTitle: movieTitle,
             episodeLabel: episodeLabel,
             repository: repository,
-            playbackPositionStore: playbackPositionStore
+            localStore: localPlaybackPositionStore,
+            remoteStore: remotePlaybackPositionStore
         )
         self.shouldLoadOnAppear = true
     }
@@ -67,7 +69,8 @@ struct PlayerView: View {
             movieTitle: playerInput.movieTitle,
             episodeLabel: playerInput.episodeLabel,
             repository: dependencies.repository,
-            playbackPositionStore: dependencies.playbackPositionStore
+            localStore: dependencies.localPlaybackPositionStore,
+            remoteStore: dependencies.playbackPositionStore
         )
     }
 }

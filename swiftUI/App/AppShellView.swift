@@ -68,7 +68,8 @@ struct AppShellView: View {
                 movieTitle: movieTitle,
                 episodeLabel: episodeLabel,
                 repository: dependencies.repository,
-                playbackPositionStore: dependencies.playbackPositionStore,
+                localPlaybackPositionStore: dependencies.localPlaybackPositionStore,
+                remotePlaybackPositionStore: dependencies.playbackPositionStore,
                 router: router
             )
         }
