@@ -268,7 +268,7 @@ class PlayerPlaybackEngine(
         val positionMs = player.currentPosition.coerceAtLeast(0L)
         val durationMs = player.duration.takeIf { duration -> duration > 0L } ?: 0L
         if (positionMs <= 0L && durationMs <= 0L) return
-        val positionChanged = abs(positionMs - lastPersistedPositionMs) >= 5000L
+        val positionChanged = abs(positionMs - lastPersistedPositionMs) >= 15_000L
         val durationChanged = durationMs != lastPersistedDurationMs
         if (!positionChanged && !durationChanged) return
         persistPosition(positionMs, durationMs)

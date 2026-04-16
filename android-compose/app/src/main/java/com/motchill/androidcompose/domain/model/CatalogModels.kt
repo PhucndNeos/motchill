@@ -1,5 +1,7 @@
 package com.motchill.androidcompose.domain.model
 
+import kotlinx.serialization.Serializable
+
 data class SimpleLabel(
     val id: Int,
     val name: String,
@@ -14,6 +16,7 @@ data class HomeSection(
     val isCarousel: Boolean,
 )
 
+@Serializable
 data class MovieCard(
     val id: Int,
     val name: String,

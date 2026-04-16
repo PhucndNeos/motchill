@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +53,7 @@ internal fun HomeScreenContent(
     onSelectHeroMovie: (Int) -> Unit,
     onTapFavorite: () -> Unit,
     onTapSearch: () -> Unit,
+    onTapAccount: () -> Unit,
     onOpenMovie: (String) -> Unit,
     onOpenSection: (String, String) -> Unit,
 ) {
@@ -83,6 +85,7 @@ internal fun HomeScreenContent(
                 onSelectHeroMovie = onSelectHeroMovie,
                 onTapFavorite = onTapFavorite,
                 onTapSearch = onTapSearch,
+                onTapAccount = onTapAccount,
                 onOpenMovie = onOpenMovie,
                 onOpenSection = onOpenSection,
             )
@@ -96,6 +99,7 @@ private fun HomeContent(
     onSelectHeroMovie: (Int) -> Unit,
     onTapFavorite: () -> Unit,
     onTapSearch: () -> Unit,
+    onTapAccount: () -> Unit,
     onOpenMovie: (String) -> Unit,
     onOpenSection: (String, String) -> Unit,
 ) {
@@ -106,6 +110,7 @@ private fun HomeContent(
             HomeStackContent(
                 uiState = uiState,
                 onTapSearch = onTapSearch,
+                onTapAccount = onTapAccount,
                 onOpenMovie = onOpenMovie,
                 onOpenSection = onOpenSection,
             )
@@ -115,6 +120,7 @@ private fun HomeContent(
                 selectedMovie = selectedMovie,
                 onSelectHeroMovie = onSelectHeroMovie,
                 onTapSearch = onTapSearch,
+                onTapAccount = onTapAccount,
                 onOpenMovie = onOpenMovie,
                 onOpenSection = onOpenSection,
             )
@@ -126,6 +132,7 @@ private fun HomeContent(
 private fun HomeStackContent(
     uiState: HomeUiState,
     onTapSearch: () -> Unit,
+    onTapAccount: () -> Unit,
     onOpenMovie: (String) -> Unit,
     onOpenSection: (String, String) -> Unit,
 ) {
@@ -143,8 +150,15 @@ private fun HomeStackContent(
                     text = "Tìm kiếm",
                     icon = Icons.Outlined.Search,
                     filled = false,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.weight(1f),
                     onClick = onTapSearch,
+                )
+                HomeActionButton(
+                    text = "Tài khoản",
+                    icon = Icons.Outlined.Person,
+                    filled = false,
+                    modifier = Modifier.weight(1f),
+                    onClick = onTapAccount,
                 )
             }
         }
@@ -167,6 +181,7 @@ private fun HomeSplitContent(
     selectedMovie: MovieCard,
     onSelectHeroMovie: (Int) -> Unit,
     onTapSearch: () -> Unit,
+    onTapAccount: () -> Unit,
     onOpenMovie: (String) -> Unit,
     onOpenSection: (String, String) -> Unit,
 ) {
@@ -190,8 +205,15 @@ private fun HomeSplitContent(
                         text = "Tìm kiếm",
                         icon = Icons.Outlined.Search,
                         filled = false,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.weight(1f),
                         onClick = onTapSearch,
+                    )
+                    HomeActionButton(
+                        text = "Tài khoản",
+                        icon = Icons.Outlined.Person,
+                        filled = false,
+                        modifier = Modifier.weight(1f),
+                        onClick = onTapAccount,
                     )
                 }
             }
@@ -612,6 +634,7 @@ private fun HomeScreenPreview() {
         onSelectHeroMovie = {},
         onTapFavorite = {},
         onTapSearch = {},
+        onTapAccount = {},
         onOpenMovie = {},
         onOpenSection = { _, _ -> },
     )

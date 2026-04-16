@@ -2,11 +2,15 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     namespace = "com.motchill.androidcompose"
     compileSdk = 36
+
+    val supabaseUrl = "https://frizgxdwkifvxvbvpcxj.supabase.co"
+    val supabaseAnonKey = "sb_publishable_t2AXYSGSGMgRkwNVuff32g_hK_iXfw0"
 
     defaultConfig {
         applicationId = "com.motchill.androidcompose"
@@ -20,6 +24,16 @@ android {
             "String",
             "MOTCHILL_PUBLIC_API_BASE_URL",
             "\"https://motchilltv.taxi\"",
+        )
+        buildConfigField(
+            "String",
+            "SUPABASE_URL",
+            "\"${supabaseUrl.replace("\"", "\\\"")}\"",
+        )
+        buildConfigField(
+            "String",
+            "SUPABASE_ANON_KEY",
+            "\"${supabaseAnonKey.replace("\"", "\\\"")}\"",
         )
     }
 
@@ -60,6 +74,7 @@ dependencies {
     implementation(libs.coroutines.android)
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
+    implementation(libs.serialization.json)
     implementation(libs.coil.compose)
     implementation(libs.androidx.media3.exoplayer.hls)
     implementation(libs.androidx.media3.datasource.okhttp)

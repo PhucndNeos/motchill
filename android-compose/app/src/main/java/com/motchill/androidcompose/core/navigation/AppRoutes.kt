@@ -4,6 +4,8 @@ import android.net.Uri
 
 object AppRoutes {
     fun detail(slug: String): String = "detail/${Uri.encode(slug)}"
+    fun auth(): String = "auth"
+    fun account(): String = "account"
 
     fun play(
         movieId: Int,

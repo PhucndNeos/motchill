@@ -122,14 +122,26 @@ fun PlayerScreen(
             positionStore = PhucTVAppContainer.playbackPositionStore,
         )
     }
+    val syncCoordinator = remember { PhucTVAppContainer.syncCoordinator }
     val runtimeState by engine.state.collectAsStateWithLifecycle()
+    val coroutineScope = rememberCoroutineScope()
+
+    fun syncPlaybackProgress() {
+        coroutineScope.launch {
+            syncCoordinator.syncPlaybackProgress(
+                movieId = movieId,
+                episodeId = episodeId,
+                posMs = runtimeState.positionMs,
+                durMs = runtimeState.durationMs,
+            )
+        }
+    }
 
     PlayerSystemUiEffect(
         activity = activity,
         view = view,
     )
 
-    val coroutineScope = rememberCoroutineScope()
     var controlsVisible by remember { mutableStateOf(true) }
     var interactionNonce by remember { mutableStateOf(0L) }
     var controlFocusEpoch by remember { mutableStateOf(0L) }
@@ -137,6 +149,7 @@ fun PlayerScreen(
     val exitPlayer: () -> Unit = {
         coroutineScope.launch {
             engine.flushPosition()
+            syncPlaybackProgress()
             onBack()
         }
     }
@@ -160,6 +173,7 @@ fun PlayerScreen(
             engine.stopForExit()
             coroutineScope.launch {
                 engine.release()
+                syncPlaybackProgress()
             }
         }
     }
@@ -238,7 +252,10 @@ fun PlayerScreen(
                     interactionNonce += 1
                 },
                 onBack = onBack,
-                onSelectSource = viewModel::selectSource,
+                onSelectSource = { index ->
+                    viewModel.selectSource(index)
+                    syncPlaybackProgress()
+                },
                 onSelectAudioTrack = { track ->
                     viewModel.selectAudioTrack(track)
                     coroutineScope.launch {
@@ -265,11 +282,15 @@ fun PlayerScreen(
                 onTogglePlayback = {
                     if (runtimeState.isPlaying) {
                         engine.pause()
+                        syncPlaybackProgress()
                     } else {
                         engine.play()
                     }
                 },
-                onSeekTo = { positionMs -> engine.seekTo(positionMs) },
+                onSeekTo = { positionMs ->
+                    engine.seekTo(positionMs)
+                    syncPlaybackProgress()
+                },
             )
         }
     }

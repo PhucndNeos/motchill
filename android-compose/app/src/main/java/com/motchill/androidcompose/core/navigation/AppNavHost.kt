@@ -16,6 +16,8 @@ import com.motchill.androidcompose.feature.detail.DetailScreen
 import com.motchill.androidcompose.feature.home.HomeRoute
 import com.motchill.androidcompose.feature.player.PlayerScreen
 import com.motchill.androidcompose.feature.search.SearchRoute
+import com.motchill.androidcompose.feature.account.AccountScreen
+import com.motchill.androidcompose.feature.auth.AuthScreen
 
 @Composable
 fun AppNavHost() {
@@ -31,6 +33,9 @@ fun AppNavHost() {
                     onOpenSearch = { navController.navigate(AppRoutes.search()) },
                     onOpenFavorite = {
                         navController.navigate(AppRoutes.search(likedOnly = true))
+                    },
+                    onOpenAccount = {
+                        navController.navigate(AppRoutes.account())
                     },
                     onOpenDetail = { slug ->
                         if (slug.isNotBlank()) {
@@ -88,6 +93,22 @@ fun AppNavHost() {
                     onOpenDetail = { slug ->
                         if (slug.isNotBlank()) navController.navigate(AppRoutes.detail(slug))
                     },
+                )
+            }
+        }
+        composable(AppDestination.Auth.route) {
+            AppSafeDrawingScreen {
+                AuthScreen(
+                    onDone = { navController.popBackStack() },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+        }
+        composable(AppDestination.Account.route) {
+            AppSafeDrawingScreen {
+                AccountScreen(
+                    onOpenAuth = { navController.navigate(AppRoutes.auth()) },
+                    onBack = { navController.popBackStack() },
                 )
             }
         }

@@ -202,7 +202,6 @@ private fun DetailHero(
             Row(horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier.fillMaxWidth()) {
                 DetailActionButton(text = "Xem ngay", icon = Icons.Outlined.PlayArrow, filled = true, onClick = { onPlay?.invoke() })
-                DetailActionButton(text = "Chi tiết", icon = Icons.Outlined.Info, filled = false, onClick = onOpenInformation)
                 DetailActionButton(text = "Trailer", icon = Icons.Outlined.PlayCircleOutline, filled = false, onClick = onOpenTrailer)
             }
         }

@@ -1,15 +1,35 @@
 package com.motchill.androidcompose.core.storage
 
 import android.content.Context
+import androidx.core.content.edit
+import com.motchill.androidcompose.core.supabase.AuthSessionProvider
+import com.motchill.androidcompose.core.supabase.LikedMovieLocalStore
+import com.motchill.androidcompose.core.supabase.LikedMovieRemoteStore
 import com.motchill.androidcompose.domain.model.MovieCard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import androidx.core.content.edit
 
-class LikedMovieStore(context: Context) {
+class LikedMovieStore(
+    context: Context,
+    private val authSessionProvider: AuthSessionProvider? = null,
+    private val remoteStore: LikedMovieRemoteStore? = null,
+) : LikedMovieLocalStore {
     private val prefs = context.getSharedPreferences(LIKED_MOVIE_PREFS, Context.MODE_PRIVATE)
 
-    suspend fun loadMovies(): List<MovieCard> = withContext(Dispatchers.IO) {
+    override suspend fun loadMovies(): List<MovieCard> = withContext(Dispatchers.IO) {
+        loadMoviesInternal()
+    }
+
+    private suspend fun loadMoviesInternal(): List<MovieCard> = withContext(Dispatchers.IO) {
+        if (authSessionProvider?.isAuthenticated == true) {
+            remoteStore?.let { runCatching { it.loadMovies() } }?.getOrNull()?.let { remoteMovies ->
+                if (remoteMovies.isNotEmpty()) {
+                    saveMovies(remoteMovies)
+                    return@withContext remoteMovies
+                }
+            }
+        }
+
         val encodedMovies = prefs.getStringSet(LIKED_MOVIE_CARDS_KEY, null)
             ?.toList()
             .orEmpty()
@@ -22,7 +42,7 @@ class LikedMovieStore(context: Context) {
     }
 
     suspend fun loadIds(): Set<Int> {
-        return loadMovies().map { it.id }.toSet()
+        return loadMoviesInternal().map { it.id }.toSet()
     }
 
     suspend fun isLiked(movieId: Int): Boolean {
@@ -30,19 +50,20 @@ class LikedMovieStore(context: Context) {
     }
 
     suspend fun toggleMovie(movie: MovieCard): List<MovieCard> = withContext(Dispatchers.IO) {
-        val current = loadMovies().toMutableList()
-        val index = current.indexOfFirst { it.id == movie.id }
-        if (index == -1) {
-            current.add(movie)
-        } else {
-            current.removeAt(index)
+        if (authSessionProvider?.isAuthenticated == true && remoteStore != null) {
+            return@withContext runCatching {
+                remoteStore.toggleMovie(movie)
+            }.getOrElse {
+                val fallback = toggleLocalMovie(movie)
+                fallback
+            }.also { saveMovies(it) }
         }
-        saveMovies(current)
-        current
+
+        toggleLocalMovie(movie).also { saveMovies(it) }
     }
 
     suspend fun toggle(movieId: Int): Set<Int> = withContext(Dispatchers.IO) {
-        val current = loadMovies().toMutableList()
+        val current = loadMoviesInternal().toMutableList()
         val index = current.indexOfFirst { it.id == movieId }
         if (index == -1) {
             current.add(movieFromId(movieId))
@@ -84,5 +105,22 @@ class LikedMovieStore(context: Context) {
             statusTitle = "",
         )
     }
-}
 
+    private suspend fun toggleLocalMovie(movie: MovieCard): List<MovieCard> {
+        val current = loadMoviesInternal().toMutableList()
+        val index = current.indexOfFirst { it.id == movie.id }
+        if (index == -1) {
+            current.add(movie)
+        } else {
+            current.removeAt(index)
+        }
+        return current
+    }
+
+    override suspend fun clearAll() = withContext(Dispatchers.IO) {
+        prefs.edit {
+            remove(LIKED_MOVIE_CARDS_KEY)
+            remove(LIKED_MOVIE_IDS_KEY)
+        }
+    }
+}

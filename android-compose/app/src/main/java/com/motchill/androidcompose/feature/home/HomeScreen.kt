@@ -13,6 +13,7 @@ import com.motchill.androidcompose.app.di.PhucTVAppContainer
 fun HomeRoute(
     onOpenSearch: () -> Unit,
     onOpenFavorite: () -> Unit,
+    onOpenAccount: () -> Unit,
     onOpenDetail: (String) -> Unit,
     onOpenSection: (String, String) -> Unit,
 ) {
@@ -29,6 +30,7 @@ fun HomeRoute(
         onSelectHeroMovie = homeViewModel::selectHeroMovie,
         onTapFavorite = onOpenFavorite,
         onTapSearch = onOpenSearch,
+        onTapAccount = onOpenAccount,
         onOpenMovie = onOpenDetail,
         onOpenSection = onOpenSection,
     )
@@ -41,6 +43,7 @@ fun HomeScreen(
     onSelectHeroMovie: (Int) -> Unit,
     onTapFavorite: () -> Unit,
     onTapSearch: () -> Unit,
+    onTapAccount: () -> Unit,
     onOpenMovie: (String) -> Unit,
     onOpenSection: (String, String) -> Unit,
 ) {
@@ -53,6 +56,7 @@ fun HomeScreen(
             onSelectHeroMovie = onSelectHeroMovie,
             onTapFavorite = onTapFavorite,
             onTapSearch = onTapSearch,
+            onTapAccount = onTapAccount,
             onOpenMovie = onOpenMovie,
             onOpenSection = onOpenSection,
         )
