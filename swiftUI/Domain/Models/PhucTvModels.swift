@@ -22,6 +22,8 @@ struct PhucTvHomeSection: Codable, Hashable, Sendable, Identifiable {
     let isCarousel: Bool
 }
 
+/// A movie card model that handles null/missing values by providing default values during decoding.
+/// - Remark: All properties are non-optional. Missing keys or null values from API are converted to defaults (empty string or zero).
 struct PhucTvMovieCard: Codable, Hashable, Identifiable, Sendable {
     let id: Int
     let name: String
@@ -51,6 +53,8 @@ struct PhucTvMovieCard: Codable, Hashable, Identifiable, Sendable {
     let photoUrls: [String]
     let previewPhotoUrls: [String]
 
+    // MARK: - Computed Properties
+
     var displayTitle: String {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? "Untitled" : trimmed
@@ -75,33 +79,11 @@ struct PhucTvMovieCard: Codable, Hashable, Identifiable, Sendable {
     }
 
     static let empty = PhucTvMovieCard(
-        id: 0,
-        name: "",
-        otherName: "",
-        avatar: "",
-        bannerThumb: "",
-        avatarThumb: "",
-        description: "",
-        banner: "",
-        imageIcon: "",
-        link: "",
-        quantity: "",
-        rating: "",
-        year: 0,
-        statusTitle: "",
-        statusRaw: "",
-        statusText: "",
-        director: "",
-        time: "",
-        trailer: "",
-        showTimes: "",
-        moreInfo: "",
-        castString: "",
-        episodesTotal: 0,
-        viewNumber: 0,
-        ratePoint: 0,
-        photoUrls: [],
-        previewPhotoUrls: []
+        id: 0, name: "", otherName: "", avatar: "", bannerThumb: "", avatarThumb: "",
+        description: "", banner: "", imageIcon: "", link: "", quantity: "", rating: "",
+        year: 0, statusTitle: "", statusRaw: "", statusText: "", director: "", time: "",
+        trailer: "", showTimes: "", moreInfo: "", castString: "", episodesTotal: 0,
+        viewNumber: 0, ratePoint: 0, photoUrls: [], previewPhotoUrls: []
     )
 }
 
@@ -376,4 +358,166 @@ private func looksLikeSubtitleFile(_ file: String) -> Bool {
         "ttml",
         "dfxp",
     ].contains(extensionValue)
+}
+
+// MARK: - Safe Decoding Extensions
+
+extension KeyedDecodingContainer {
+    func decode(_ type: String.Type, forKey key: Key, default defaultValue: String) -> String {
+        (try? decode(String.self, forKey: key)) ?? defaultValue
+    }
+
+    func decode(_ type: Int.Type, forKey key: Key, default defaultValue: Int) -> Int {
+        (try? decode(Int.self, forKey: key)) ?? defaultValue
+    }
+
+    func decode(_ type: Double.Type, forKey key: Key, default defaultValue: Double) -> Double {
+        (try? decode(Double.self, forKey: key)) ?? defaultValue
+    }
+
+    func decode(_ type: Bool.Type, forKey key: Key, default defaultValue: Bool) -> Bool {
+        (try? decode(Bool.self, forKey: key)) ?? defaultValue
+    }
+
+    func decode<T: Decodable>(_ type: [T].Type, forKey key: Key, default defaultValue: [T]) -> [T] {
+        (try? decode([T].self, forKey: key)) ?? defaultValue
+    }
+}
+
+extension PhucTvSearchChoice {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        value = container.decode(String.self, forKey: .value, default: "")
+        label = container.decode(String.self, forKey: .label, default: "")
+    }
+}
+
+extension PhucTvSimpleLabel {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = container.decode(Int.self, forKey: .id, default: 0)
+        name = container.decode(String.self, forKey: .name, default: "")
+        link = container.decode(String.self, forKey: .link, default: "")
+        displayColumn = container.decode(Int.self, forKey: .displayColumn, default: 0)
+    }
+}
+
+extension PhucTvHomeSection {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        title = container.decode(String.self, forKey: .title, default: "")
+        key = container.decode(String.self, forKey: .key, default: UUID().uuidString)
+        products = container.decode([PhucTvMovieCard].self, forKey: .products, default: [])
+        isCarousel = container.decode(Bool.self, forKey: .isCarousel, default: false)
+    }
+}
+
+extension PhucTvMovieCard {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = container.decode(Int.self, forKey: .id, default: 0)
+        name = container.decode(String.self, forKey: .name, default: "")
+        otherName = container.decode(String.self, forKey: .otherName, default: "")
+        avatar = container.decode(String.self, forKey: .avatar, default: "")
+        bannerThumb = container.decode(String.self, forKey: .bannerThumb, default: "")
+        avatarThumb = container.decode(String.self, forKey: .avatarThumb, default: "")
+        description = container.decode(String.self, forKey: .description, default: "")
+        banner = container.decode(String.self, forKey: .banner, default: "")
+        imageIcon = container.decode(String.self, forKey: .imageIcon, default: "")
+        link = container.decode(String.self, forKey: .link, default: "")
+        quantity = container.decode(String.self, forKey: .quantity, default: "")
+        rating = container.decode(String.self, forKey: .rating, default: "")
+        year = container.decode(Int.self, forKey: .year, default: 0)
+        statusTitle = container.decode(String.self, forKey: .statusTitle, default: "")
+        statusRaw = container.decode(String.self, forKey: .statusRaw, default: "")
+        statusText = container.decode(String.self, forKey: .statusText, default: "")
+        director = container.decode(String.self, forKey: .director, default: "")
+        time = container.decode(String.self, forKey: .time, default: "")
+        trailer = container.decode(String.self, forKey: .trailer, default: "")
+        showTimes = container.decode(String.self, forKey: .showTimes, default: "")
+        moreInfo = container.decode(String.self, forKey: .moreInfo, default: "")
+        castString = container.decode(String.self, forKey: .castString, default: "")
+        episodesTotal = container.decode(Int.self, forKey: .episodesTotal, default: 0)
+        viewNumber = container.decode(Int.self, forKey: .viewNumber, default: 0)
+        ratePoint = container.decode(Double.self, forKey: .ratePoint, default: 0.0)
+        photoUrls = container.decode([String].self, forKey: .photoUrls, default: [])
+        previewPhotoUrls = container.decode([String].self, forKey: .previewPhotoUrls, default: [])
+    }
+}
+
+extension PhucTvNavbarItem {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = container.decode(Int.self, forKey: .id, default: 0)
+        name = container.decode(String.self, forKey: .name, default: "")
+        slug = container.decode(String.self, forKey: .slug, default: "")
+        items = container.decode([PhucTvNavbarItem].self, forKey: .items, default: [])
+        isExistChild = container.decode(Bool.self, forKey: .isExistChild, default: false)
+    }
+}
+
+extension PhucTvPopupAdConfig {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = container.decode(Int.self, forKey: .id, default: 0)
+        name = container.decode(String.self, forKey: .name, default: "")
+        type = container.decode(String.self, forKey: .type, default: "")
+        desktopLink = container.decode(String.self, forKey: .desktopLink, default: "")
+        mobileLink = container.decode(String.self, forKey: .mobileLink, default: "")
+    }
+}
+
+extension PhucTvMovieEpisode {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = container.decode(Int.self, forKey: .id, default: 0)
+        episodeNumber = container.decode(String.self, forKey: .episodeNumber, default: "")
+        name = container.decode(String.self, forKey: .name, default: "")
+        fullLink = container.decode(String.self, forKey: .fullLink, default: "")
+        status = container.decode(String.self, forKey: .status, default: "")
+        type = container.decode(String.self, forKey: .type, default: "")
+    }
+}
+
+extension PhucTvSearchFacetOption {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = container.decode(Int.self, forKey: .id, default: 0)
+        name = container.decode(String.self, forKey: .name, default: "")
+        slug = container.decode(String.self, forKey: .slug, default: "")
+    }
+}
+
+extension PhucTvSearchPagination {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        pageIndex = container.decode(Int.self, forKey: .pageIndex, default: 1)
+        pageSize = container.decode(Int.self, forKey: .pageSize, default: 20)
+        pageCount = container.decode(Int.self, forKey: .pageCount, default: 1)
+        totalRecords = container.decode(Int.self, forKey: .totalRecords, default: 0)
+    }
+}
+
+extension PhucTvPlayTrack {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        kind = container.decode(String.self, forKey: .kind, default: "")
+        file = container.decode(String.self, forKey: .file, default: "")
+        label = container.decode(String.self, forKey: .label, default: "")
+        isDefault = container.decode(Bool.self, forKey: .isDefault, default: false)
+    }
+}
+
+extension PhucTvPlaySource {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sourceId = container.decode(Int.self, forKey: .sourceId, default: 0)
+        serverName = container.decode(String.self, forKey: .serverName, default: "")
+        link = container.decode(String.self, forKey: .link, default: "")
+        subtitle = container.decode(String.self, forKey: .subtitle, default: "")
+        type = container.decode(Int.self, forKey: .type, default: 0)
+        isFrame = container.decode(Bool.self, forKey: .isFrame, default: false)
+        quality = container.decode(String.self, forKey: .quality, default: "")
+        tracks = container.decode([PhucTvPlayTrack].self, forKey: .tracks, default: [])
+    }
 }
