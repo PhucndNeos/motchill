@@ -10,6 +10,14 @@ struct HomeView: View {
     private let shouldLoadOnAppear: Bool
 
     init(
+        router: AppRouter
+    ) {
+        self.router = router
+        self.initialViewModel = nil
+        self.shouldLoadOnAppear = true
+    }
+
+    init(
         repository: PhucTvRepository,
         router: AppRouter
     ) {

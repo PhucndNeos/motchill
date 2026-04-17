@@ -10,6 +10,16 @@ struct SearchView: View {
     private let shouldLoadOnAppear: Bool
 
     init(
+        router: AppRouter,
+        routeInput: SearchRouteInput = SearchRouteInput()
+    ) {
+        self.router = router
+        self.routeInput = routeInput
+        self.initialViewModel = nil
+        self.shouldLoadOnAppear = true
+    }
+
+    init(
         repository: PhucTvRepository,
         likedMovieStore: PhucTvLikedMovieStoring,
         router: AppRouter,

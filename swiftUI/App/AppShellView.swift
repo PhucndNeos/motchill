@@ -1,22 +1,17 @@
 import SwiftUI
 
 struct AppShellView: View {
-    private let dependencies: AppDependencies
     @State private var authManager: PhucTvSupabaseAuthManager
     @State private var router = AppRouter()
     @State private var showAuthSheet = false
 
     init(dependencies: AppDependencies) {
-        self.dependencies = dependencies
         _authManager = State(initialValue: dependencies.authManager)
     }
 
     var body: some View {
         NavigationStack(path: $router.path) {
-            HomeView(
-                repository: dependencies.repository,
-                router: router
-            )
+            HomeView(router: router)
             .navigationDestination(for: AppRoute.self, destination: destinationView)
             .overlay(alignment: .top) {
                 if let hint = authManager.signInHint {
@@ -42,34 +37,17 @@ struct AppShellView: View {
     private func destinationView(for route: AppRoute) -> some View {
         switch route {
         case .home:
-            HomeView(
-                repository: dependencies.repository,
-                router: router
-            )
+            HomeView(router: router)
         case .search(let routeInput):
-            SearchView(
-                repository: dependencies.repository,
-                likedMovieStore: dependencies.likedMovieStore,
-                router: router,
-                routeInput: routeInput
-            )
+            SearchView(router: router, routeInput: routeInput)
         case .detail(let movie):
-            DetailView(
-                movie: movie,
-                repository: dependencies.repository,
-                likedMovieStore: dependencies.likedMovieStore,
-                playbackPositionStore: dependencies.playbackPositionStore,
-                router: router
-            )
+            DetailView(movie: movie, router: router)
         case .player(let movieID, let episodeID, let movieTitle, let episodeLabel):
             PlayerView(
                 movieID: movieID,
                 episodeID: episodeID,
                 movieTitle: movieTitle,
                 episodeLabel: episodeLabel,
-                repository: dependencies.repository,
-                localPlaybackPositionStore: dependencies.localPlaybackPositionStore,
-                remotePlaybackPositionStore: dependencies.playbackPositionStore,
                 router: router
             )
         }

@@ -15,6 +15,24 @@ struct PlayerView: View {
         episodeID: Int,
         movieTitle: String,
         episodeLabel: String,
+        router: AppRouter
+    ) {
+        self.router = router
+        self.playerInput = PlayerInput(
+            movieID: movieID,
+            episodeID: episodeID,
+            movieTitle: movieTitle,
+            episodeLabel: episodeLabel
+        )
+        self.initialViewModel = nil
+        self.shouldLoadOnAppear = true
+    }
+
+    init(
+        movieID: Int,
+        episodeID: Int,
+        movieTitle: String,
+        episodeLabel: String,
         repository: PhucTvRepository,
         localPlaybackPositionStore: PhucTvPlaybackPositionStoring,
         remotePlaybackPositionStore: PhucTvPlaybackPositionStoring,

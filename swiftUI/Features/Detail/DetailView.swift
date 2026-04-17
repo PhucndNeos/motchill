@@ -11,6 +11,16 @@ struct DetailView: View {
 
     init(
         movie: PhucTvMovieCard,
+        router: AppRouter
+    ) {
+        self.router = router
+        self.movie = movie
+        self.initialViewModel = nil
+        self.shouldLoadOnAppear = true
+    }
+
+    init(
+        movie: PhucTvMovieCard,
         repository: PhucTvRepository,
         likedMovieStore: PhucTvLikedMovieStoring,
         playbackPositionStore: PhucTvPlaybackPositionStoring,
