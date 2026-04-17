@@ -80,6 +80,7 @@ private struct DetailRootView: View {
         DetailScreen(viewModel: viewModel, router: router)
             .task {
                 guard shouldLoadOnAppear else {
+                    await viewModel.loadEpisodeProgress()
                     return
                 }
                 await viewModel.load()

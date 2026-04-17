@@ -153,6 +153,11 @@ final class DetailViewModel {
         return result
     }
 
+    func loadEpisodeProgress() async {
+        guard let detail = detail else { return }
+        self.episodeProgressById = await loadEpisodeProgress(for: detail)
+    }
+
     static func previewLoaded() -> DetailViewModel {
         DetailViewModel(
             movie: DetailMockData.movie,
