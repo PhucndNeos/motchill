@@ -1,3 +1,5 @@
+import Foundation
+import Supabase
 import SwiftUI
 
 protocol ScreenIdleManaging: Sendable {
@@ -17,17 +19,6 @@ struct AppDependencies: Sendable {
     let configuration: AppConfiguration
     let screenIdleManager: ScreenIdleManaging
 
-    @MainActor
-    init(container: AppContainer) {
-        repository = container.repository
-        authManager = container.authManager
-        likedMovieStore = container.likedMovieStore
-        playbackPositionStore = container.playbackPositionStore
-        localPlaybackPositionStore = container.localPlaybackPositionStore
-        configuration = container.configuration
-        screenIdleManager = container.screenIdleManager
-    }
-
     init(
         repository: PhucTvRepository,
         authManager: PhucTvSupabaseAuthManager,
@@ -46,19 +37,88 @@ struct AppDependencies: Sendable {
         self.screenIdleManager = screenIdleManager
     }
 
-    static let preview = AppDependencies(
-        repository: PreviewRepository(),
-        authManager: PhucTvSupabaseAuthManager(client: nil),
-        likedMovieStore: PreviewLikedMovieStore(),
-        playbackPositionStore: PreviewPlaybackPositionStore(),
-        localPlaybackPositionStore: PreviewPlaybackPositionStore(),
-        configuration: AppConfiguration(),
-        screenIdleManager: PreviewScreenIdleManager()
-    )
+    static func live() -> AppDependencies {
+        let configuration = AppConfiguration()
+        let apiClient = PhucTvAPIClient(configuration: configuration)
+        let repository = DefaultPhucTvRepository(apiClient: apiClient)
+        let client = makeSupabaseClient(configuration: configuration)
+        let likedMovieStore = SupabaseLikedMovieStore(client: client)
+        let playbackPositionStore = SupabasePlaybackPositionStore(client: client)
+        let localPlaybackPositionStore = UserDefaultsPhucTvPlaybackPositionStore()
+        let legacyDataMigrator = PhucTvLegacyLocalDataMigrator(
+            likedMovieStore: likedMovieStore,
+            playbackPositionStore: playbackPositionStore
+        )
+
+        _ = PhucTvLogger.shared
+
+        return AppDependencies(
+            repository: repository,
+            authManager: PhucTvSupabaseAuthManager(
+                client: client,
+                redirectURL: configuration.supabaseAuthRedirectURL,
+                legacyDataMigrator: legacyDataMigrator
+            ),
+            likedMovieStore: likedMovieStore,
+            playbackPositionStore: playbackPositionStore,
+            localPlaybackPositionStore: localPlaybackPositionStore,
+            configuration: configuration,
+            screenIdleManager: LiveScreenIdleManager()
+        )
+    }
+
+    static func preview() -> AppDependencies {
+        AppDependencies(
+            repository: PreviewRepository(),
+            authManager: PhucTvSupabaseAuthManager(client: nil),
+            likedMovieStore: PreviewLikedMovieStore(),
+            playbackPositionStore: PreviewPlaybackPositionStore(),
+            localPlaybackPositionStore: PreviewPlaybackPositionStore(),
+            configuration: AppConfiguration(),
+            screenIdleManager: PreviewScreenIdleManager()
+        )
+    }
+
+    static func test(
+        repository: PhucTvRepository = PreviewRepository(),
+        authManager: PhucTvSupabaseAuthManager = PhucTvSupabaseAuthManager(client: nil),
+        likedMovieStore: PhucTvLikedMovieStoring = PreviewLikedMovieStore(),
+        playbackPositionStore: PhucTvPlaybackPositionStoring = PreviewPlaybackPositionStore(),
+        localPlaybackPositionStore: PhucTvPlaybackPositionStoring = PreviewPlaybackPositionStore(),
+        configuration: AppConfiguration = AppConfiguration(),
+        screenIdleManager: ScreenIdleManaging = PreviewScreenIdleManager()
+    ) -> AppDependencies {
+        AppDependencies(
+            repository: repository,
+            authManager: authManager,
+            likedMovieStore: likedMovieStore,
+            playbackPositionStore: playbackPositionStore,
+            localPlaybackPositionStore: localPlaybackPositionStore,
+            configuration: configuration,
+            screenIdleManager: screenIdleManager
+        )
+    }
+
+    private static func makeSupabaseClient(configuration: AppConfiguration) -> SupabaseClient? {
+        guard let supabaseConfiguration = PhucTvSupabaseConfiguration(configuration: configuration) else {
+            return nil
+        }
+
+        return SupabaseClient(
+            supabaseURL: supabaseConfiguration.url,
+            supabaseKey: supabaseConfiguration.publishableKey,
+            options: SupabaseClientOptions(
+                auth: .init(
+                    redirectToURL: configuration.supabaseAuthRedirectURL,
+                    emitLocalSessionAsInitialSession: true
+                )
+            )
+        )
+    }
 }
 
 private struct AppDependenciesKey: EnvironmentKey {
-    static let defaultValue = AppDependencies.preview
+    static let defaultValue = AppDependencies.preview()
 }
 
 extension EnvironmentValues {

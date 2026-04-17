@@ -2,7 +2,7 @@ import SwiftUI
 
 @main
 struct PhucTvSwiftUIApp: App {
-    private let dependencies = AppDependencies(container: .shared)
+    private let dependencies = AppDependencies.live()
 
     var body: some Scene {
         WindowGroup {

@@ -8,6 +8,7 @@ struct HomeView: View {
 
     private let initialViewModel: HomeViewModel?
     private let shouldLoadOnAppear: Bool
+    @State private var viewModel: HomeViewModel?
 
     init(
         router: AppRouter
@@ -36,67 +37,49 @@ struct HomeView: View {
     }
 
     var body: some View {
-        HomeRootView(
-            viewModel: initialViewModel ?? HomeViewModel(repository: dependencies.repository),
-            router: router,
-            shouldLoadOnAppear: shouldLoadOnAppear
-        )
-    }
-}
-
-private struct HomeRootView: View {
-    let router: AppRouter
-
-    @State private var viewModel: HomeViewModel
-    @State private var shouldLoadOnAppear: Bool
-
-    private var isPad: Bool {
-        UIDevice.current.userInterfaceIdiom == .pad
-    }
-
-    init(
-        viewModel: HomeViewModel,
-        router: AppRouter,
-        shouldLoadOnAppear: Bool
-    ) {
-        _viewModel = State(initialValue: viewModel)
-        self.router = router
-        _shouldLoadOnAppear = State(initialValue: shouldLoadOnAppear)
-    }
-
-    var body: some View {
-        content
-        .toolbar {
-            titleToolbar
-            searchToolbar
+        Group {
+            if let viewModel {
+                content(viewModel: viewModel)
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .task {
+                        await bootstrapIfNeeded()
+                    }
+            }
         }
         .task {
-            await loadIfNeeded()
+            await bootstrapIfNeeded()
         }
     }
 
     @ViewBuilder
-    private var content: some View {
-        ZStack {
-            if isPad {
-                HomeIpadScreen(
-                    viewModel: viewModel,
-                    router: router
-                )
-                .ignoresSafeArea()
-            } else {
-                HomeScreen(
-                    viewModel: viewModel,
-                    router: router
-                )
+    private func content(viewModel: HomeViewModel) -> some View {
+        HomeIpadScreen(
+            viewModel: viewModel,
+            router: router
+        )
+        .ignoresSafeArea()
+        .toolbar {
+            titleToolbar(viewModel: viewModel)
+            searchToolbar
+        }
+        .task {
+            guard shouldLoadOnAppear else {
+                return
             }
+
+            await viewModel.load()
         }
     }
 
-    private var titleToolbar: ToolbarItem<(), some View> {
+    private func titleToolbar(viewModel: HomeViewModel) -> ToolbarItem<(), some View> {
         ToolbarItem(placement: .title) {
             TabSegmentedView(
-                selectedItem: $viewModel.selectedSection,
+                selectedItem: Binding(
+                    get: { viewModel.selectedSection },
+                    set: { viewModel.selectedSection = $0 }
+                ),
                 items: viewModel.sections,
                 spacing: 4,
                 horizontalPadding: 8
@@ -135,12 +118,13 @@ private struct HomeRootView: View {
         router.push(.search())
     }
 
-    private func loadIfNeeded() async {
-        guard shouldLoadOnAppear else {
+    @MainActor
+    private func bootstrapIfNeeded() async {
+        guard viewModel == nil else {
             return
         }
 
-        await viewModel.load()
-        shouldLoadOnAppear = false
+        let resolvedViewModel = initialViewModel ?? HomeViewModel(repository: dependencies.repository)
+        viewModel = resolvedViewModel
     }
 }

@@ -448,6 +448,178 @@ private func ipadDetailURL(_ value: String) -> URL? {
     URL(string: value)
 }
 
+struct DetailEpisodeRow: View {
+    let movie: PhucTvMovieCard
+    let episode: PhucTvMovieEpisode
+    let progress: PhucTvPlaybackProgressSnapshot?
+    let episodeIndex: Int
+    let totalEpisodes: Int
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(episode.name)
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .lineLimit(2)
+                    
+                    FlowWrapLayout(items: rowPills) { text in
+                        FeatureMetaPill(text: text)
+                    }
+                    
+                    Text(continueWatchingText)
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .lineLimit(2)
+                    
+                    Text("Tap để xem ngay")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.textMuted)
+                        .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Spacer(minLength: 8)
+                
+                RemoteImageView(
+                    url: detailEpisodePosterURL(from: detailEpisodeArtwork(for: movie)),
+                    cornerRadius: 18,
+                    width: 100,
+                    height: 100
+                )
+                .overlay {
+                    Image("Pause")
+                        .resizable()
+                        .scaledToFit()
+                        .shadow(color: Color.black.opacity(0.36), radius: 8, x: 0, y: 4)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            VStack(spacing: 6) {
+                ProgressView(value: progressValue)
+                    .tint(.red)
+                
+                HStack {
+                    Text(progressLeadingText)
+                    Spacer()
+                    Text(progressTrailingText)
+                }
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.textMuted)
+            }
+        }
+        .padding(12)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.black.opacity(1),
+                    Color.black.opacity(0.258),
+                    Color.black.opacity(0.05)
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.white.opacity(0.10), lineWidth: 1)
+        )
+    }
+    
+    private var rowPills: [String] {
+        [
+            badgeText(movie.quantity),
+            "Ep \(displayEpisodeIndex) / \(max(totalEpisodes, 1))",
+        ]
+            .compactMap { $0 }
+    }
+    
+    private var displayEpisodeIndex: Int {
+        let rawEpisodeNumber = episode.episodeNumber.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let parsedValue = Int(rawEpisodeNumber), parsedValue > 0 {
+            return parsedValue
+        }
+        return episodeIndex
+    }
+    
+    private var progressValue: Double {
+        progress?.progressFraction ?? 0
+    }
+    
+    private var progressLeadingText: String {
+        "\(progressPercent)%"
+    }
+    
+    private var progressTrailingText: String {
+        "Ep \(displayEpisodeIndex) / \(max(totalEpisodes, 1))"
+    }
+    
+    private var progressPercent: Int {
+        Int((progressValue * 100).rounded())
+    }
+    
+    private var continueWatchingText: String {
+        "Tiếp tục: \(progressPercent)% - \(playbackProgressText)"
+    }
+    
+    private var playbackProgressText: String {
+        guard let progress, progress.durationMillis > 0 else {
+            let fallbackDuration = movie.time.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !fallbackDuration.isEmpty else { return "0/0 phút" }
+            return "0/\(fallbackDuration)"
+        }
+        
+        let duration = max(progress.durationMillis, 0)
+        let position = min(max(progress.positionMillis, 0), duration)
+        return "\(formatDetailEpisodeDuration(position))/\(formatDetailEpisodeDuration(duration))"
+    }
+}
+
+private func detailEpisodePosterURL(from rawValue: String?) -> URL? {
+    guard let rawValue else { return nil }
+    
+    let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty, let url = URL(string: trimmed) else { return nil }
+    
+    let scheme = url.scheme?.lowercased()
+    guard scheme == "http" || scheme == "https" else { return nil }
+    
+    return url
+}
+
+private func detailEpisodeArtwork(for movie: PhucTvMovieCard) -> String {
+    let banner = movie.displayBanner.trimmingCharacters(in: .whitespacesAndNewlines)
+    if !banner.isEmpty {
+        return banner
+    }
+    
+    return movie.displayPoster
+}
+
+private func formatDetailEpisodeDuration(_ positionMs: Int64) -> String {
+    let totalSeconds = max(positionMs, 0) / 1000
+    let hours = totalSeconds / 3600
+    let minutes = (totalSeconds % 3600) / 60
+    let seconds = totalSeconds % 60
+    
+    if hours > 0 {
+        return String(format: "%d:%02d:%02d", hours, minutes, seconds)
+    }
+    
+    return String(format: "%02d:%02d", minutes, seconds)
+}
+
+private func badgeText(_ rawValue: String?) -> String? {
+    guard let rawValue else { return nil }
+    let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+    return trimmed.isEmpty ? nil : trimmed
+}
+
 #Preview("iPad Detail") {
     DetailsIpadScreen(
         viewModel: DetailViewModel.previewLoaded(),
