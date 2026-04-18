@@ -44,8 +44,11 @@ struct AppFeature {
         Reduce { state, action in
             switch action {
             case .task:
-                state.authBanner = Self.makeAuthBanner(from: authManager)
-                return .none
+                state.authBanner = nil
+                return .run { send in
+                    await authManager.refreshSessionState()
+                    await send(.authSnapshotRefreshed)
+                }
 
             case .home(.searchTapped):
                 state.path.append(.search(SearchFeature.State()))
@@ -112,10 +115,10 @@ struct AppFeature {
                 }
 
             case .authSnapshotRefreshed:
+                state.authBanner = Self.makeAuthBanner(from: authManager)
                 if authManager.isAuthenticated() {
                     state.auth = nil
                 }
-                state.authBanner = Self.makeAuthBanner(from: authManager)
                 return .none
 
             case .popToRootTapped:

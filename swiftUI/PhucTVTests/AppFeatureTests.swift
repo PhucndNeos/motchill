@@ -11,22 +11,44 @@ struct AppFeatureTests {
     }
 
     @Test
-    func launchSeedsAuthBanner() async {
-        let authManager = PhucTvSupabaseAuthManager(client: nil)
+    func launchRefreshesAuthBanner() async {
+        let authState = AuthStateBox(
+            authenticated: false,
+            summary: PhucTvSupabaseUserSummary(
+                id: UUID(),
+                email: "user@example.com",
+                displayName: nil
+            )
+        )
         let store = TestStore(initialState: AppFeature.State()) {
             AppFeature()
         } withDependencies: {
-            $0.configurePhucTvDependencies(AppDependencies.test(authManager: authManager))
+            $0.phucTvAuthManager = PhucTvAuthManagerClient(
+                isAuthenticated: { authState.authenticated },
+                userSummary: { authState.authenticated ? authState.summary : nil },
+                signInHint: { authState.authenticated ? nil : "Đăng nhập để đồng bộ liked movies và playback position." },
+                sendOTP: { _ in },
+                verifyOTP: { _, _ in },
+                refreshSessionState: {
+                    authState.authenticated = true
+                },
+                signOut: {
+                    authState.authenticated = false
+                },
+                handle: { _ in }
+            )
         }
 
         #expect(store.state.home.status == .loading)
         #expect(store.state.path.isEmpty)
+        #expect(store.state.authBanner == nil)
 
-        await store.send(.task) {
+        await store.send(.task)
+        await store.receive(.authSnapshotRefreshed) {
             $0.authBanner = AppFeature.AuthBannerState(
-                message: "Đăng nhập để đồng bộ liked movies và playback position.",
-                buttonTitle: "Đăng nhập",
-                isSignedIn: false
+                message: "Đang đăng nhập với user@example.com.",
+                buttonTitle: "Đăng xuất",
+                isSignedIn: true
             )
         }
     }
@@ -141,14 +163,14 @@ struct AppFeatureTests {
 
     @Test
     func authBannerOpensAndDismissesSheet() async {
-        let authManager = PhucTvSupabaseAuthManager(client: nil)
         let store = TestStore(initialState: AppFeature.State()) {
             AppFeature()
         } withDependencies: {
-            $0.configurePhucTvDependencies(AppDependencies.test(authManager: authManager))
+            $0.configurePhucTvDependencies(AppDependencies.test(authManager: PhucTvSupabaseAuthManager(client: nil)))
         }
 
-        await store.send(.task) {
+        await store.send(.task)
+        await store.receive(.authSnapshotRefreshed) {
             $0.authBanner = AppFeature.AuthBannerState(
                 message: "Đăng nhập để đồng bộ liked movies và playback position.",
                 buttonTitle: "Đăng nhập",
@@ -167,14 +189,14 @@ struct AppFeatureTests {
 
     @Test
     func openURLRefreshesAuthState() async {
-        let authManager = PhucTvSupabaseAuthManager(client: nil)
         let store = TestStore(initialState: AppFeature.State()) {
             AppFeature()
         } withDependencies: {
-            $0.configurePhucTvDependencies(AppDependencies.test(authManager: authManager))
+            $0.configurePhucTvDependencies(AppDependencies.test(authManager: PhucTvSupabaseAuthManager(client: nil)))
         }
 
-        await store.send(.task) {
+        await store.send(.task)
+        await store.receive(.authSnapshotRefreshed) {
             $0.authBanner = AppFeature.AuthBannerState(
                 message: "Đăng nhập để đồng bộ liked movies và playback position.",
                 buttonTitle: "Đăng nhập",
@@ -228,5 +250,15 @@ struct AppFeatureTests {
             previewPhotoUrls: []
         )
     }
+}
 
+@MainActor
+private final class AuthStateBox: @unchecked Sendable {
+    var authenticated: Bool
+    let summary: PhucTvSupabaseUserSummary
+
+    init(authenticated: Bool, summary: PhucTvSupabaseUserSummary) {
+        self.authenticated = authenticated
+        self.summary = summary
+    }
 }
