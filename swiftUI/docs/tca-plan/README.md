@@ -15,11 +15,12 @@ This folder breaks the SwiftUI-to-TCA migration into small, ordered tasks so we 
 2. [01-setup-tca.md](./01-setup-tca.md)
 3. [01-setup-tca-result.md](./01-setup-tca-result.md)
 4. [02-app-shell-navigation.md](./02-app-shell-navigation.md)
-5. [03-home-feature.md](./03-home-feature.md)
-6. [04-search-feature.md](./04-search-feature.md)
-7. [05-detail-feature.md](./05-detail-feature.md)
-8. [06-player-feature.md](./06-player-feature.md)
-9. [07-cleanup-stabilization.md](./07-cleanup-stabilization.md)
+5. [02-app-shell-navigation-result.md](./02-app-shell-navigation-result.md)
+6. [03-home-feature.md](./03-home-feature.md)
+7. [04-search-feature.md](./04-search-feature.md)
+8. [05-detail-feature.md](./05-detail-feature.md)
+9. [06-player-feature.md](./06-player-feature.md)
+10. [07-cleanup-stabilization.md](./07-cleanup-stabilization.md)
 
 ## Migration Rules
 
