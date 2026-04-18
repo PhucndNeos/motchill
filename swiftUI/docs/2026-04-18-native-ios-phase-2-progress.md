@@ -32,6 +32,16 @@ The app shell now runs on TCA tree-based navigation with placeholder feature red
 - The legacy MVVM screens are still compiled and available, but they are not part of the new shell flow.
 - Router cleanup can happen later once all feature logic is migrated into TCA reducers.
 
+## Cleanup Targets
+
+These pieces are intentionally temporary and should be deleted once the later phases fully move the real feature logic into TCA:
+
+- the placeholder feature reducers and views for Home, Search, Detail, and Player
+- the legacy `AppRouter` shell path once no screen depends on it for navigation
+- the compatibility bridge code in `AppDependencies+TCA.swift` if a cleaner dependency layout replaces it later
+- any auth-shell glue that only exists to support the transition from boolean sheet state to TCA presentation state
+- any report or note that still describes the placeholder shell as the active implementation after migration finishes
+
 ## Verification
 
 - Reducer tests passed for shell routing, auth presentation, and auth callback handling.
