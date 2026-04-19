@@ -12,13 +12,11 @@ final class PlayerFeatureTests: XCTestCase {
             tracks: []
         )
         let repository = PlayerRepositorySpy(sources: [source])
-        let localStore = RecordingPlaybackStore(loadResult: nil)
         let remoteStore = RecordingPlaybackStore(
             loadResult: PhucTvPlaybackProgressSnapshot(positionMillis: 30_000, durationMillis: 120_000)
         )
         let store = makeStore(
             repository: repository,
-            localStore: localStore,
             remoteStore: remoteStore
         )
 
@@ -64,11 +62,11 @@ final class PlayerFeatureTests: XCTestCase {
 
         let repositoryLoadCount = await repository.loadCount()
         let remoteLoadCount = await remoteStore.loadCount()
-        let localLoadCount = await localStore.loadCount()
+        let remoteSaveCount = await remoteStore.saveCount()
 
         XCTAssertEqual(repositoryLoadCount, 1)
         XCTAssertEqual(remoteLoadCount, 1)
-        XCTAssertEqual(localLoadCount, 1)
+        XCTAssertEqual(remoteSaveCount, 0)
     }
 
     func testLoadFailureProducesErrorState() async {
@@ -146,11 +144,9 @@ final class PlayerFeatureTests: XCTestCase {
             link: "https://example.com/stream-2.m3u8",
             tracks: []
         )
-        let playbackStore = RecordingPlaybackStore()
         let remoteStore = RecordingPlaybackStore()
         let store = makeStore(
             repository: PlayerRepositorySpy(sources: [firstSource, secondSource]),
-            localStore: playbackStore,
             remoteStore: remoteStore,
             state: makeLoadedState(
                 sources: [firstSource, secondSource],
@@ -175,9 +171,11 @@ final class PlayerFeatureTests: XCTestCase {
 
         try? await Task.sleep(nanoseconds: 150_000_000)
 
-        let localSaveCount = await playbackStore.saveCount()
+        let remoteSaveCount = await remoteStore.saveCount()
+        let remoteLoadCount = await remoteStore.loadCount()
 
-        XCTAssertEqual(localSaveCount, 1)
+        XCTAssertEqual(remoteLoadCount, 1)
+        XCTAssertEqual(remoteSaveCount, 1)
 
         await store.send(.backButtonTapped) {
             $0.overlayVisible = false
@@ -266,40 +264,36 @@ final class PlayerFeatureTests: XCTestCase {
         await store.receive(.closeRequested)
     }
 
-    func testTimeUpdatePersistsProgress() async {
+    func testPlayPausePauseSyncsProgressToRemote() async {
         let source = makeSource(
             sourceId: 1,
             link: "https://example.com/stream.m3u8",
             tracks: []
         )
-        let localStore = RecordingPlaybackStore()
         let remoteStore = RecordingPlaybackStore()
         let store = makeStore(
             repository: PlayerRepositorySpy(sources: [source]),
-            localStore: localStore,
             remoteStore: remoteStore,
             state: makeLoadedState(
                 sources: [source],
                 selectedSourceIndex: 0,
-                currentPositionMillis: 0,
+                currentPositionMillis: 11_000,
                 durationMillis: 120_000,
                 isPlaying: true
             )
         )
 
-        await store.send(.timeUpdated(CMTime(seconds: 11, preferredTimescale: 1))) {
-            $0.currentPositionMillis = 11_000
+        await store.send(.playPauseTapped) {
+            $0.isPlaying = false
         }
-
-        await store.receive(.syncProgress)
 
         try? await Task.sleep(nanoseconds: 100_000_000)
 
-        let localSaveCount = await localStore.saveCount()
+        let remoteLoadCount = await remoteStore.loadCount()
         let remoteSaveCount = await remoteStore.saveCount()
 
-        XCTAssertEqual(localSaveCount, 1)
-        XCTAssertEqual(remoteSaveCount, 0)
+        XCTAssertEqual(remoteLoadCount, 1)
+        XCTAssertEqual(remoteSaveCount, 1)
     }
 
     func testBackButtonCleansTransientRuntime() async {
@@ -309,8 +303,10 @@ final class PlayerFeatureTests: XCTestCase {
             link: "https://example.com/stream.m3u8",
             tracks: [track]
         )
+        let remoteStore = RecordingPlaybackStore()
         let store = makeStore(
             repository: PlayerRepositorySpy(sources: [source]),
+            remoteStore: remoteStore,
             state: makeLoadedState(
                 sources: [source],
                 selectedSourceIndex: 0,
@@ -330,11 +326,16 @@ final class PlayerFeatureTests: XCTestCase {
         }
 
         await store.receive(.closeRequested)
+
+        let remoteLoadCount = await remoteStore.loadCount()
+        let remoteSaveCount = await remoteStore.saveCount()
+
+        XCTAssertEqual(remoteLoadCount, 1)
+        XCTAssertEqual(remoteSaveCount, 1)
     }
 
     private func makeStore(
         repository: PlayerRepositorySpy,
-        localStore: RecordingPlaybackStore = RecordingPlaybackStore(),
         remoteStore: RecordingPlaybackStore = RecordingPlaybackStore(),
         subtitleLoader: SubtitleLoaderSpy = SubtitleLoaderSpy(),
         state: PlayerFeature.State = PlayerFeature.State(
@@ -350,15 +351,6 @@ final class PlayerFeatureTests: XCTestCase {
         } withDependencies: {
             $0.phucTvRepository.loadEpisodeSources = { movieID, episodeID, server in
                 try await repository.loadEpisodeSources(movieID: movieID, episodeID: episodeID, server: server)
-            }
-            $0.phucTvLocalPlaybackPositionStore.save = { movieID, episodeID, positionMillis, durationMillis in
-                try await localStore.save(movieID: movieID, episodeID: episodeID, positionMillis: positionMillis, durationMillis: durationMillis)
-            }
-            $0.phucTvLocalPlaybackPositionStore.load = { movieID, episodeID in
-                try await localStore.load(movieID: movieID, episodeID: episodeID)
-            }
-            $0.phucTvLocalPlaybackPositionStore.delete = { movieID, episodeID in
-                try await localStore.delete(movieID: movieID, episodeID: episodeID)
             }
             $0.phucTvPlaybackPositionStore.save = { movieID, episodeID, positionMillis, durationMillis in
                 try await remoteStore.save(movieID: movieID, episodeID: episodeID, positionMillis: positionMillis, durationMillis: durationMillis)

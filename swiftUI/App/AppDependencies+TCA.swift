@@ -10,37 +10,9 @@ private enum PhucTvLiveDependencyFactory {
     static let repository: PhucTvRepository = DefaultPhucTvRepository(
         apiClient: PhucTvAPIClient(configuration: configuration)
     )
-    static let supabaseClient: SupabaseClient? = makeSupabaseClient()
-    static let likedMovieStore = SupabaseLikedMovieStore(client: supabaseClient)
-    static let playbackPositionStore = SupabasePlaybackPositionStore(client: supabaseClient)
-    static let localPlaybackPositionStore: PhucTvPlaybackPositionStoring = UserDefaultsPhucTvPlaybackPositionStore()
-    static let legacyDataMigrator: PhucTvLegacyLocalDataMigrating = PhucTvLegacyLocalDataMigrator(
-        likedMovieStore: likedMovieStore,
-        playbackPositionStore: playbackPositionStore
-    )
-    static let authManager: PhucTvSupabaseAuthManager = PhucTvSupabaseAuthManager(
-        client: supabaseClient,
-        redirectURL: configuration.supabaseAuthRedirectURL,
-        legacyDataMigrator: legacyDataMigrator
-    )
+    static let supabaseClient: SupabaseClient? = makeSupabaseClient(configuration: configuration)
+    static let authManager: PhucTvSupabaseAuthManager = PhucTvSupabaseAuthManager(client: supabaseClient)
     static let screenIdleManager: ScreenIdleManaging = LiveScreenIdleManager()
-
-    private static func makeSupabaseClient() -> SupabaseClient? {
-        guard let supabaseConfiguration = PhucTvSupabaseConfiguration(configuration: configuration) else {
-            return nil
-        }
-
-        return SupabaseClient(
-            supabaseURL: supabaseConfiguration.url,
-            supabaseKey: supabaseConfiguration.publishableKey,
-            options: SupabaseClientOptions(
-                auth: .init(
-                    redirectToURL: configuration.supabaseAuthRedirectURL,
-                    emitLocalSessionAsInitialSession: true
-                )
-            )
-        )
-    }
 }
 
 @DependencyClient
@@ -244,17 +216,17 @@ struct PhucTvLikedMovieStoreClient: Sendable {
 
 extension PhucTvLikedMovieStoreClient: DependencyKey {
     static let liveValue = Self(
-        loadMovies: { try await PhucTvLiveDependencyFactory.likedMovieStore.loadMovies() },
-        loadIDs: { try await PhucTvLiveDependencyFactory.likedMovieStore.loadIDs() },
-        isLiked: { try await PhucTvLiveDependencyFactory.likedMovieStore.isLiked(movieID: $0) },
-        toggle: { try await PhucTvLiveDependencyFactory.likedMovieStore.toggle(movie: $0) }
+        loadMovies: { try await SupabaseLikedMovieStore(client: PhucTvLiveDependencyFactory.supabaseClient).loadMovies() },
+        loadIDs: { try await SupabaseLikedMovieStore(client: PhucTvLiveDependencyFactory.supabaseClient).loadIDs() },
+        isLiked: { try await SupabaseLikedMovieStore(client: PhucTvLiveDependencyFactory.supabaseClient).isLiked(movieID: $0) },
+        toggle: { try await SupabaseLikedMovieStore(client: PhucTvLiveDependencyFactory.supabaseClient).toggle(movie: $0) }
     )
 
     static let previewValue = Self(
-        loadMovies: { try await AppDependencies.preview().likedMovieStore.loadMovies() },
-        loadIDs: { try await AppDependencies.preview().likedMovieStore.loadIDs() },
-        isLiked: { try await AppDependencies.preview().likedMovieStore.isLiked(movieID: $0) },
-        toggle: { try await AppDependencies.preview().likedMovieStore.toggle(movie: $0) }
+        loadMovies: { try await SupabaseLikedMovieStore(client: AppDependencies.preview().supabaseClient).loadMovies() },
+        loadIDs: { try await SupabaseLikedMovieStore(client: AppDependencies.preview().supabaseClient).loadIDs() },
+        isLiked: { try await SupabaseLikedMovieStore(client: AppDependencies.preview().supabaseClient).isLiked(movieID: $0) },
+        toggle: { try await SupabaseLikedMovieStore(client: AppDependencies.preview().supabaseClient).toggle(movie: $0) }
     )
 
     static let testValue = Self()
@@ -277,7 +249,7 @@ struct PhucTvPlaybackPositionStoreClient: Sendable {
 extension PhucTvPlaybackPositionStoreClient: DependencyKey {
     static let liveValue = Self(
         save: { movieID, episodeID, positionMillis, durationMillis in
-            try await PhucTvLiveDependencyFactory.playbackPositionStore.save(
+            try await SupabasePlaybackPositionStore(client: PhucTvLiveDependencyFactory.supabaseClient).save(
                 movieID: movieID,
                 episodeID: episodeID,
                 positionMillis: positionMillis,
@@ -285,10 +257,10 @@ extension PhucTvPlaybackPositionStoreClient: DependencyKey {
             )
         },
         load: { movieID, episodeID in
-            try await PhucTvLiveDependencyFactory.playbackPositionStore.load(movieID: movieID, episodeID: episodeID)
+            try await SupabasePlaybackPositionStore(client: PhucTvLiveDependencyFactory.supabaseClient).load(movieID: movieID, episodeID: episodeID)
         },
         delete: { movieID, episodeID in
-            try await PhucTvLiveDependencyFactory.playbackPositionStore.delete(movieID: movieID, episodeID: episodeID)
+            try await SupabasePlaybackPositionStore(client: PhucTvLiveDependencyFactory.supabaseClient).delete(movieID: movieID, episodeID: episodeID)
         }
     )
 
@@ -305,47 +277,6 @@ extension DependencyValues {
     var phucTvPlaybackPositionStore: PhucTvPlaybackPositionStoreClient {
         get { self[PhucTvPlaybackPositionStoreClient.self] }
         set { self[PhucTvPlaybackPositionStoreClient.self] = newValue }
-    }
-}
-
-@DependencyClient
-struct PhucTvLocalPlaybackPositionStoreClient: Sendable {
-    var save: @Sendable (_ movieID: Int, _ episodeID: Int, _ positionMillis: Int64, _ durationMillis: Int64) async throws -> Void = { _, _, _, _ in }
-    var load: @Sendable (_ movieID: Int, _ episodeID: Int) async throws -> PhucTvPlaybackProgressSnapshot? = { _, _ in nil }
-    var delete: @Sendable (_ movieID: Int, _ episodeID: Int) async throws -> Void = { _, _ in }
-}
-
-extension PhucTvLocalPlaybackPositionStoreClient: DependencyKey {
-    static let liveValue = Self(
-        save: { movieID, episodeID, positionMillis, durationMillis in
-            try await PhucTvLiveDependencyFactory.localPlaybackPositionStore.save(
-                movieID: movieID,
-                episodeID: episodeID,
-                positionMillis: positionMillis,
-                durationMillis: durationMillis
-            )
-        },
-        load: { movieID, episodeID in
-            try await PhucTvLiveDependencyFactory.localPlaybackPositionStore.load(movieID: movieID, episodeID: episodeID)
-        },
-        delete: { movieID, episodeID in
-            try await PhucTvLiveDependencyFactory.localPlaybackPositionStore.delete(movieID: movieID, episodeID: episodeID)
-        }
-    )
-
-    static let previewValue = Self(
-        save: { _, _, _, _ in },
-        load: { _, _ in nil },
-        delete: { _, _ in }
-    )
-
-    static let testValue = Self()
-}
-
-extension DependencyValues {
-    var phucTvLocalPlaybackPositionStore: PhucTvLocalPlaybackPositionStoreClient {
-        get { self[PhucTvLocalPlaybackPositionStoreClient.self] }
-        set { self[PhucTvLocalPlaybackPositionStoreClient.self] = newValue }
     }
 }
 
@@ -515,27 +446,6 @@ extension PhucTvPlaybackPositionStoreClient {
     }
 }
 
-extension PhucTvLocalPlaybackPositionStoreClient {
-    init(_ dependencies: AppDependencies) {
-        self.init(
-            save: { movieID, episodeID, positionMillis, durationMillis in
-                try await dependencies.localPlaybackPositionStore.save(
-                    movieID: movieID,
-                    episodeID: episodeID,
-                    positionMillis: positionMillis,
-                    durationMillis: durationMillis
-                )
-            },
-            load: { movieID, episodeID in
-                try await dependencies.localPlaybackPositionStore.load(movieID: movieID, episodeID: episodeID)
-            },
-            delete: { movieID, episodeID in
-                try await dependencies.localPlaybackPositionStore.delete(movieID: movieID, episodeID: episodeID)
-            }
-        )
-    }
-}
-
 extension PhucTvAuthManagerClient {
     init(_ dependencies: AppDependencies) {
         self.init(
@@ -566,7 +476,6 @@ extension DependencyValues {
         phucTvRepository = .init(dependencies)
         phucTvLikedMovieStore = .init(dependencies)
         phucTvPlaybackPositionStore = .init(dependencies)
-        phucTvLocalPlaybackPositionStore = .init(dependencies)
         phucTvAuthManager = .init(dependencies)
         phucTvRemoteConfigClient = .liveValue
         phucTvRemoteConfigStore = .liveValue

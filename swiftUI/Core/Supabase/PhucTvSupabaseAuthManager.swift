@@ -41,10 +41,6 @@ final class PhucTvSupabaseAuthManager: @unchecked Sendable {
     @ObservationIgnored
     private let client: SupabaseClient?
     @ObservationIgnored
-    private let redirectURL: URL?
-    @ObservationIgnored
-    private let legacyDataMigrator: PhucTvLegacyLocalDataMigrating?
-    @ObservationIgnored
     private var authObserverTask: Task<Void, Never>?
     @ObservationIgnored
     private let stateLock = NSLock()
@@ -52,13 +48,9 @@ final class PhucTvSupabaseAuthManager: @unchecked Sendable {
     var state: State = .loading
 
     init(
-        client: SupabaseClient?,
-        redirectURL: URL? = nil,
-        legacyDataMigrator: PhucTvLegacyLocalDataMigrating? = nil
+        client: SupabaseClient?
     ) {
         self.client = client
-        self.redirectURL = redirectURL
-        self.legacyDataMigrator = legacyDataMigrator
         if client == nil {
             stateLock.withLock {
                 state = .signedOut
@@ -196,7 +188,6 @@ final class PhucTvSupabaseAuthManager: @unchecked Sendable {
         stateLock.withLock {
             state = .signedIn(makeSummary(from: session.user))
         }
-        Task { await legacyDataMigrator?.migrateIfNeeded() }
     }
 
     private func makeSummary(from user: User) -> PhucTvSupabaseUserSummary {

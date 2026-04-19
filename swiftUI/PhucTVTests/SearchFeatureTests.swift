@@ -113,24 +113,31 @@ struct SearchFeatureTests {
                 : sampleResults(pageNumber: 1)
         }
 
-        await store.send(.submitSearch(" hero "))
-
-        #expect(repository.requests.first?.search == "hero")
-        #expect(repository.requests.first?.pageNumber == 1)
+        await store.send(.submitSearch(" hero ")) {
+            $0.uiState = $0.uiState
+                .withSearchInput("hero")
+                .commitSearch()
+                .withLoading(isSearching: true)
+        }
 
         await store.receive(.loadPageResponse(.success(.init(results: sampleResults(pageNumber: 1), pageNumber: 1)))) {
             $0.uiState = $0.uiState.withSearchResults(sampleResults(pageNumber: 1), pageNumber: 1)
         }
 
-        await store.send(.goToPage(2))
+        #expect(repository.requests.first?.search == "hero")
+        #expect(repository.requests.first?.pageNumber == 1)
 
-        #expect(repository.requests.count == 2)
-        #expect(repository.requests.last?.pageNumber == 2)
-        #expect(repository.requests.last?.search == "hero")
+        await store.send(.goToPage(2)) {
+            $0.uiState = $0.uiState.withLoading(isSearching: true)
+        }
 
         await store.receive(.loadPageResponse(.success(.init(results: sampleResults(pageNumber: 2), pageNumber: 2)))) {
             $0.uiState = $0.uiState.withSearchResults(sampleResults(pageNumber: 2), pageNumber: 2)
         }
+
+        #expect(repository.requests.count == 2)
+        #expect(repository.requests.last?.pageNumber == 2)
+        #expect(repository.requests.last?.search == "hero")
 
         #expect(store.state.uiState.currentPage == 2)
         #expect(store.state.uiState.searchText == "hero")

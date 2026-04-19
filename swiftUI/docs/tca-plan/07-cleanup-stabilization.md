@@ -1,5 +1,7 @@
 # Task 7: Cleanup and Stabilization
 
+This phase is complete. See [07-cleanup-stabilization-result.md](./07-cleanup-stabilization-result.md) for the finished state.
+
 ## Goal
 
 After the core screens have moved to TCA, remove the remaining MVVM and router leftovers, then standardize the codebase so the TCA path is the only active architecture for migrated screens.
@@ -19,6 +21,8 @@ At this point:
 ## Files to Touch
 
 - `swiftUI/App/AppRouter.swift`
+- `swiftUI/App/AppRoute.swift`
+- `swiftUI/App/AppRootViewModel.swift`
 - any remaining `*ViewModel.swift` files
 - any now-unused presentation helpers
 - previews that still instantiate legacy view models

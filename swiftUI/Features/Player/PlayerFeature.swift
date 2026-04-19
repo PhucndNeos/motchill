@@ -61,9 +61,6 @@ struct PlayerFeature {
         var player = AVPlayer()
 
         @ObservationStateIgnored
-        var lastPersistedProgressBucket: Int64 = 0
-
-        @ObservationStateIgnored
         var subtitleCues: [PlayerSubtitleCue] = []
 
         @ObservationStateIgnored
@@ -172,13 +169,10 @@ struct PlayerFeature {
         case sourceSelected(PhucTvPlaySource)
         case subtitleSelected(PhucTvPlayTrack?)
         case subtitleLoaded(Result<SubtitleLoadResponse, LoadError>)
-        case syncProgress
-        case syncProgressToRemote
         case closeRequested
     }
 
     @Dependency(\.phucTvRepository) var repository
-    @Dependency(\.phucTvLocalPlaybackPositionStore) var localPlaybackPositionStore
     @Dependency(\.phucTvPlaybackPositionStore) var playbackPositionStore
     @Dependency(\.phucTvPlayerSubtitleLoader) var subtitleLoader
     @Dependency(\.phucTvScreenIdleManager) var screenIdleManager
@@ -212,7 +206,6 @@ struct PlayerFeature {
                 state.currentSubtitleText = nil
                 state.subtitleCues = []
                 state.currentSubtitleCueIndex = nil
-                state.lastPersistedProgressBucket = 0
 
                 return loadEpisodeSources(movieID: state.movieID, episodeID: state.episodeID)
 
@@ -229,7 +222,6 @@ struct PlayerFeature {
                 state.currentSubtitleText = nil
                 state.subtitleCues = []
                 state.currentSubtitleCueIndex = nil
-                state.lastPersistedProgressBucket = 0
 
                 return loadEpisodeSources(movieID: state.movieID, episodeID: state.episodeID)
 
@@ -242,7 +234,6 @@ struct PlayerFeature {
                 state.currentSubtitleText = nil
                 state.subtitleCues = []
                 state.currentSubtitleCueIndex = nil
-                state.lastPersistedProgressBucket = response.resumePositionMillis / 10_000
 
                 guard let selectedSource = state.selectedSource else {
                     let message: String
@@ -288,59 +279,19 @@ struct PlayerFeature {
                     .cancel(id: CancelID.overlayAutoHide),
                     .cancel(id: CancelID.subtitleLoad),
                     .cancel(id: CancelID.timeObserver),
-                    .run { [player = state.player, movieID = state.movieID, episodeID = state.episodeID, positionMillis = state.currentPositionMillis, durationMillis = state.durationMillis, localPlaybackPositionStore = localPlaybackPositionStore, playbackPositionStore = playbackPositionStore, screenIdleManager = screenIdleManager] send in
+                    .run { [player = state.player, movieID = state.movieID, episodeID = state.episodeID, positionMillis = state.currentPositionMillis, durationMillis = state.durationMillis, screenIdleManager = screenIdleManager] send in
                         await MainActor.run {
                             player.pause()
                             screenIdleManager.enableAutoLock()
                         }
 
-                        guard durationMillis > 0 else {
-                            await send(.closeRequested)
-                            return
-                        }
+                        await syncProgressToRemote(
+                            movieID: movieID,
+                            episodeID: episodeID,
+                            positionMillis: positionMillis,
+                            durationMillis: durationMillis
+                        )
 
-                        do {
-                            try await localPlaybackPositionStore.save(
-                                movieID,
-                                episodeID,
-                                positionMillis,
-                                durationMillis
-                            )
-                        } catch {
-                            PhucTvLogger.shared.error(
-                                error,
-                                message: "Player close local progress save failed",
-                                metadata: [
-                                    "movie_id": String(movieID),
-                                    "episode_id": String(episodeID)
-                                ]
-                            )
-                        }
-
-                        let remoteSnapshot = try? await playbackPositionStore.load(movieID: movieID, episodeID: episodeID)
-                        let remotePosition = remoteSnapshot?.positionMillis ?? 0
-
-                        if positionMillis >= remotePosition {
-                            do {
-                                try await playbackPositionStore.save(
-                                    movieID,
-                                    episodeID,
-                                    positionMillis,
-                                    durationMillis
-                                )
-                            } catch {
-                                PhucTvLogger.shared.error(
-                                    error,
-                                    message: "Player close remote progress sync failed",
-                                    metadata: [
-                                        "movie_id": String(movieID),
-                                        "episode_id": String(episodeID)
-                                    ]
-                                )
-                            }
-                        }
-
-                        try? await localPlaybackPositionStore.delete(movieID, episodeID)
                         await send(.closeRequested)
                     }
                 )
@@ -375,13 +326,7 @@ struct PlayerFeature {
                     state.isPlaying = false
                     return .merge(
                         pausePlayer(player: state.player),
-                        persistProgress(
-                            movieID: state.movieID,
-                            episodeID: state.episodeID,
-                            positionMillis: state.currentPositionMillis,
-                            durationMillis: state.durationMillis
-                        ),
-                        syncProgressToRemote(
+                        syncProgressToRemoteEffect(
                             movieID: state.movieID,
                             episodeID: state.episodeID,
                             positionMillis: state.currentPositionMillis,
@@ -413,13 +358,7 @@ struct PlayerFeature {
                         positionMillis: clamped,
                         playAfterSeek: playAfterSeek
                     ),
-                    persistProgress(
-                        movieID: state.movieID,
-                        episodeID: state.episodeID,
-                        positionMillis: clamped,
-                        durationMillis: state.durationMillis
-                    ),
-                    syncProgressToRemote(
+                    syncProgressToRemoteEffect(
                         movieID: state.movieID,
                         episodeID: state.episodeID,
                         positionMillis: clamped,
@@ -439,14 +378,7 @@ struct PlayerFeature {
                 }
 
                 updateSubtitleText(for: state.currentPositionMillis, state: &state)
-
-                let bucket = state.currentPositionMillis / 10_000
-                guard bucket != state.lastPersistedProgressBucket else {
-                    return .none
-                }
-
-                state.lastPersistedProgressBucket = bucket
-                return .send(.syncProgress)
+                return .none
 
             case let .sourceSelected(source):
                 guard let nextIndex = state.playableSources.firstIndex(where: { $0.id == source.id }) else {
@@ -505,22 +437,6 @@ struct PlayerFeature {
                 state.currentSubtitleText = nil
                 return .cancel(id: CancelID.subtitleLoad)
 
-            case .syncProgress:
-                return persistProgress(
-                    movieID: state.movieID,
-                    episodeID: state.episodeID,
-                    positionMillis: state.currentPositionMillis,
-                    durationMillis: state.durationMillis
-                )
-
-            case .syncProgressToRemote:
-                return syncProgressToRemote(
-                    movieID: state.movieID,
-                    episodeID: state.episodeID,
-                    positionMillis: state.currentPositionMillis,
-                    durationMillis: state.durationMillis
-                )
-
             case .closeRequested:
                 return .none
             }
@@ -529,8 +445,7 @@ struct PlayerFeature {
 
     private func loadEpisodeSources(movieID: Int, episodeID: Int) -> Effect<Action> {
         let repository = repository
-        let localPlaybackPositionStore = localPlaybackPositionStore
-        let playbackPositionStore = playbackPositionStore
+        let playbackStore = playbackPositionStore
 
         return .run { send in
             do {
@@ -539,12 +454,8 @@ struct PlayerFeature {
                     episodeID: episodeID,
                     server: 0
                 )
-                let remoteSnapshot = try? await playbackPositionStore.load(movieID: movieID, episodeID: episodeID)
-                let localSnapshot = try? await localPlaybackPositionStore.load(movieID: movieID, episodeID: episodeID)
-
-                let resumePositionMillis = remoteSnapshot?.positionMillis
-                    ?? localSnapshot?.positionMillis
-                    ?? 0
+                let remoteSnapshot = try? await playbackStore.load(movieID: movieID, episodeID: episodeID)
+                let resumePositionMillis = remoteSnapshot?.positionMillis ?? 0
 
                 await send(.loadResponse(.success(.init(
                     sources: fetchedSources,
@@ -678,36 +589,19 @@ struct PlayerFeature {
         }
     }
 
-    private func persistProgress(
+    private func syncProgressToRemoteEffect(
         movieID: Int,
         episodeID: Int,
         positionMillis: Int64,
         durationMillis: Int64
     ) -> Effect<Action> {
-        guard durationMillis > 0 else {
-            return .none
-        }
-
-        let localPlaybackPositionStore = localPlaybackPositionStore
-
-        return .run { _ in
-            do {
-                try await localPlaybackPositionStore.save(
-                    movieID,
-                    episodeID,
-                    positionMillis,
-                    durationMillis
-                )
-            } catch {
-                PhucTvLogger.shared.error(
-                    error,
-                    message: "Player local progress save failed",
-                    metadata: [
-                        "movie_id": String(movieID),
-                        "episode_id": String(episodeID)
-                    ]
-                )
-            }
+        .run { _ in
+            await syncProgressToRemote(
+                movieID: movieID,
+                episodeID: episodeID,
+                positionMillis: positionMillis,
+                durationMillis: durationMillis
+            )
         }
     }
 
@@ -716,40 +610,36 @@ struct PlayerFeature {
         episodeID: Int,
         positionMillis: Int64,
         durationMillis: Int64
-    ) -> Effect<Action> {
+    ) async {
         guard durationMillis > 0 else {
-            return .none
+            return
         }
 
-        let localPlaybackPositionStore = localPlaybackPositionStore
-        let playbackPositionStore = playbackPositionStore
+        let playbackStore = playbackPositionStore
 
-        return .run { _ in
-            let remoteSnapshot = try? await playbackPositionStore.load(movieID: movieID, episodeID: episodeID)
-            let remotePosition = remoteSnapshot?.positionMillis ?? 0
+        let remoteSnapshot = try? await playbackStore.load(movieID: movieID, episodeID: episodeID)
+        let remotePosition = remoteSnapshot?.positionMillis ?? 0
 
-            if positionMillis >= remotePosition {
-                do {
-                    try await playbackPositionStore.save(
-                        movieID,
-                        episodeID,
-                        positionMillis,
-                        durationMillis
-                    )
-                } catch {
-                    PhucTvLogger.shared.error(
-                        error,
-                        message: "Player remote progress sync failed — local kept for retry",
-                        metadata: [
-                            "movie_id": String(movieID),
-                            "episode_id": String(episodeID)
-                        ]
-                    )
-                    return
-                }
-            }
+        guard positionMillis >= remotePosition else {
+            return
+        }
 
-            try? await localPlaybackPositionStore.delete(movieID, episodeID)
+        do {
+            try await playbackStore.save(
+                movieID,
+                episodeID,
+                positionMillis,
+                durationMillis
+            )
+        } catch {
+            PhucTvLogger.shared.error(
+                error,
+                message: "Player remote progress sync failed",
+                metadata: [
+                    "movie_id": String(movieID),
+                    "episode_id": String(episodeID)
+                ]
+            )
         }
     }
 
@@ -798,13 +688,7 @@ struct PlayerFeature {
 
         return .merge(
             .cancel(id: CancelID.subtitleLoad),
-            persistProgress(
-                movieID: state.movieID,
-                episodeID: state.episodeID,
-                positionMillis: resumePositionMillis,
-                durationMillis: state.durationMillis
-            ),
-            syncProgressToRemote(
+            syncProgressToRemoteEffect(
                 movieID: state.movieID,
                 episodeID: state.episodeID,
                 positionMillis: resumePositionMillis,

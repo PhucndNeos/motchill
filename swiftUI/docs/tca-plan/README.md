@@ -11,7 +11,8 @@ This folder breaks the SwiftUI-to-TCA migration into small, ordered tasks so we 
 - Phase 5, `05-detail-feature.md`, is done.
 - Phase 6, `06-player-feature.md`, is done.
 - The app now has a TCA foundation layer, a root `AppFeature`, a TCA shell navigation stack, and reducer-backed Home, Search, Detail, and Player features.
-- The next phase is cleanup and stabilization to remove any remaining legacy MVVM/router leftovers.
+- Phase 7, `07-cleanup-stabilization.md`, is done.
+- The app now uses TCA for shell flow and Supabase-only sync for liked movies and playback history.
 
 ## Reading Order
 
@@ -29,6 +30,7 @@ This folder breaks the SwiftUI-to-TCA migration into small, ordered tasks so we 
 12. [06-player-feature.md](./06-player-feature.md)
 13. [06-player-feature-result.md](./06-player-feature-result.md)
 14. [07-cleanup-stabilization.md](./07-cleanup-stabilization.md)
+15. [07-cleanup-stabilization-result.md](./07-cleanup-stabilization-result.md)
 
 ## Migration Rules
 
