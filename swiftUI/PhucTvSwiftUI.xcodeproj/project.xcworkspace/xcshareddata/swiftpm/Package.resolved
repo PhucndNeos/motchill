@@ -1,5 +1,5 @@
 {
-  "originHash" : "988091d6b8f3ccdcd6af087d1908ec6d7e052423063edb45e0cd1dac7b9c5176",
+  "originHash" : "5b3a1dd305e40f51c1072125cfa24adfe50f57944280f5dcae37c6f49f3883f3",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -20,21 +20,21 @@
       }
     },
     {
-      "identity" : "dotlottie-ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/LottieFiles/dotlottie-ios",
-      "state" : {
-        "branch" : "main",
-        "revision" : "0ac253fb9d2d4981c780848b6ce1f824bc8946a1"
-      }
-    },
-    {
       "identity" : "combine-schedulers",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/combine-schedulers",
       "state" : {
         "revision" : "dcccb979a2183b8df3334237e3dc1ae2b4116a86",
         "version" : "1.2.0"
+      }
+    },
+    {
+      "identity" : "dotlottie-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/LottieFiles/dotlottie-ios",
+      "state" : {
+        "branch" : "main",
+        "revision" : "0ac253fb9d2d4981c780848b6ce1f824bc8946a1"
       }
     },
     {
