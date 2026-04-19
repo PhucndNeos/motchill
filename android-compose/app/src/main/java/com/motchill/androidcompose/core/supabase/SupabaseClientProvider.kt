@@ -7,6 +7,9 @@ import io.github.jan.supabase.postgrest.Postgrest
 
 fun createSupabaseClient(config: SupabaseConfig): SupabaseClient =
     createSupabaseClient(config.url, config.publishableKey) {
-        install(Auth)
+        install(Auth) {
+            alwaysAutoRefresh = true
+            autoLoadFromStorage = false // Chúng ta tự quản lý qua SupabaseAuthManager
+        }
         install(Postgrest)
     }

@@ -37,12 +37,18 @@ class SupabaseAuthManager(
                     val userSession = UserSession(
                         accessToken = savedSession.accessToken,
                         refreshToken = savedSession.refreshToken,
-                        expiresIn = 3600.seconds.inWholeSeconds,
+                        expiresIn = (savedSession.expiresAtEpochSeconds - System.currentTimeMillis() / 1000L).coerceAtLeast(0L),
                         tokenType = savedSession.tokenType,
                         user = null, 
                         expiresAt = Instant.fromEpochSeconds(savedSession.expiresAtEpochSeconds),
                     )
                     client.auth.importSession(userSession)
+                    
+                    // Chủ động refresh nếu session sắp hết hạn hoặc để đảm bảo tính ổn định
+                    if (savedSession.isExpired || (savedSession.expiresAtEpochSeconds - System.currentTimeMillis() / 1000L) < 300) {
+                        client.auth.refreshCurrentSession()
+                    }
+
                     _state.value = AuthState.SignedIn(savedSession.user)
                 } catch (e: Exception) {
                     _state.value = AuthState.SignedOut
