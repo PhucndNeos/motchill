@@ -1,122 +1,46 @@
+import ComposableArchitecture
 import SwiftUI
 
 struct DetailView: View {
-    let router: AppRouter
-
-    @Environment(\.appDependencies) private var dependencies
-
-    private let movie: PhucTvMovieCard?
-    private let initialViewModel: DetailViewModel?
-    private let shouldLoadOnAppear: Bool
-    @State private var viewModel: DetailViewModel?
-
-    init(
-        movie: PhucTvMovieCard,
-        router: AppRouter
-    ) {
-        self.router = router
-        self.movie = movie
-        self.initialViewModel = nil
-        self.shouldLoadOnAppear = true
-    }
-
-    init(
-        movie: PhucTvMovieCard,
-        repository: PhucTvRepository,
-        likedMovieStore: PhucTvLikedMovieStoring,
-        playbackPositionStore: PhucTvPlaybackPositionStoring,
-        router: AppRouter
-    ) {
-        self.router = router
-        self.movie = movie
-        self.initialViewModel = DetailViewModel(
-            movie: movie,
-            repository: repository,
-            likedMovieStore: likedMovieStore,
-            playbackPositionStore: playbackPositionStore
-        )
-        self.shouldLoadOnAppear = true
-    }
-
-    init(viewModel: DetailViewModel, router: AppRouter) {
-        self.router = router
-        self.movie = nil
-        self.initialViewModel = viewModel
-        self.shouldLoadOnAppear = false
-    }
+    @Bindable var store: StoreOf<DetailFeature>
 
     var body: some View {
-        Group {
-            if let viewModel {
-                detailContent(viewModel: viewModel)
-            } else {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        }
-        .task {
-            await bootstrapIfNeeded()
-        }
-    }
-
-    @ViewBuilder
-    private func detailContent(viewModel: DetailViewModel) -> some View {
         ZStack {
-            if viewModel.state != .loaded || !viewModel.hasRenderableContent {
-                DetailBackground()
-                    .ignoresSafeArea()
+            if store.screenState == .loaded, store.hasRenderableContent {
+                DetailsIpadScreen(store: store)
+            } else {
+                EmptyView()
             }
 
-            loadedContent(viewModel: viewModel)
-            stateOverlay(viewModel: viewModel)
+            stateOverlay
         }
+        .background(
+            DetailBackground(urlString: store.backDropURL)
+                .ignoresSafeArea()
+        )
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: toggleLike) {
-                    Image(systemName: viewModel.isLiked ? "heart.fill" : "heart")
+                Button(action: { store.send(.likeToggled) }) {
+                    Image(systemName: store.isLiked ? "heart.fill" : "heart")
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(viewModel.isLiked ? Color.red.opacity(0.95) : AppTheme.textPrimary)
+                        .foregroundStyle(store.isLiked ? Color.red.opacity(0.95) : AppTheme.textPrimary)
                         .frame(width: 42, height: 42)
                         .background(
-                            (viewModel.isLiked ? Color.red.opacity(0.18) : Color.white.opacity(0.06)),
+                            (store.isLiked ? Color.red.opacity(0.18) : Color.white.opacity(0.06)),
                             in: Circle()
                         )
                 }
                 .buttonStyle(.plain)
             }
         }
-        .task(id: viewModel.movie.id) {
-            guard viewModel.state == .idle else {
-                if !shouldLoadOnAppear {
-                    await viewModel.loadEpisodeProgress()
-                }
-                return
-            }
-
-            if shouldLoadOnAppear {
-                await viewModel.load()
-            } else {
-                await viewModel.loadEpisodeProgress()
-            }
+        .task {
+            await store.send(.onAppear).finish()
         }
     }
 
     @ViewBuilder
-    private func loadedContent(viewModel: DetailViewModel) -> some View {
-        if viewModel.state == .loaded, viewModel.hasRenderableContent {
-            DetailsIpadScreen(
-                viewModel: viewModel,
-                router: router,
-                onToggleLike: toggleLike,
-                onOpenTrailer: openTrailer,
-                onOpenEpisode: openEpisode
-            )
-        }
-    }
-
-    @ViewBuilder
-    private func stateOverlay(viewModel: DetailViewModel) -> some View {
-        switch viewModel.state {
+    private var stateOverlay: some View {
+        switch store.screenState {
         case .idle, .loading:
             FeatureStateOverlay(
                 descriptor: .loading(
@@ -124,8 +48,9 @@ struct DetailView: View {
                     message: "Chờ một lát để nạp thông tin chi tiết của phim.",
                     errorCode: "DETAIL_LOADING"
                 ),
-                onRetry: retry
+                onRetry: { store.send(.retryTapped) }
             )
+
         case .error(let message):
             FeatureStateOverlay(
                 descriptor: .failure(
@@ -135,11 +60,12 @@ struct DetailView: View {
                     icon: .server,
                     secondaryTitle: "Quay lại"
                 ),
-                onRetry: retry,
-                onSecondary: closeDetail
+                onRetry: { store.send(.retryTapped) },
+                onSecondary: { store.send(.backButtonTapped) }
             )
+
         case .loaded:
-            if !viewModel.hasRenderableContent {
+            if !store.hasRenderableContent {
                 FeatureStateOverlay(
                     descriptor: .empty(
                         title: "Chưa có nội dung",
@@ -147,77 +73,32 @@ struct DetailView: View {
                         errorCode: "DETAIL_EMPTY",
                         secondaryTitle: "Tìm kiếm"
                     ),
-                    onRetry: retry,
-                    onSecondary: openSearch
+                    onRetry: { store.send(.retryTapped) },
+                    onSecondary: { store.send(.searchTapped) }
                 )
             }
         }
     }
-
-    @MainActor
-    private func bootstrapIfNeeded() async {
-        guard viewModel == nil else {
-            return
-        }
-
-        let resolvedViewModel: DetailViewModel
-        if let initialViewModel {
-            resolvedViewModel = initialViewModel
-        } else {
-            guard let movie else {
-                preconditionFailure("DetailView requires either a movie or an injected view model.")
-            }
-
-            resolvedViewModel = DetailViewModel(
-                movie: movie,
-                repository: dependencies.repository,
-                likedMovieStore: dependencies.likedMovieStore,
-                playbackPositionStore: dependencies.playbackPositionStore
-            )
-        }
-
-        viewModel = resolvedViewModel
-    }
-    
-    private func retry() {
-        guard let viewModel else { return }
-        makeAsyncAction { await viewModel.retry() }()
-    }
-
-    private func toggleLike() {
-        guard let viewModel else { return }
-        Task { await viewModel.toggleLike() }
-    }
-
-    private func closeDetail() {
-        router.pop()
-    }
-
-    private func openSearch() {
-        router.push(.search())
-    }
-
-    private func openTrailer() {
-        openExternalURL(viewModel?.trailerURL())
-    }
-
-    private func openEpisode(_ episode: PhucTvMovieEpisode) {
-        guard let viewModel else { return }
-        router.push(
-            .player(
-                movieID: viewModel.detail?.id ?? viewModel.movie.id,
-                episodeID: episode.id,
-                movieTitle: viewModel.title,
-                episodeLabel: episode.label
-            )
-        )
-    }
 }
 
 private struct DetailBackground: View {
+    let urlString: String
+
     var body: some View {
         ZStack {
-            AppTheme.background
+            RemoteImageView(url: backdropURL(urlString), cornerRadius: 0)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .overlay(
+                    LinearGradient(
+                        colors: [
+                            Color.black.opacity(0.18),
+                            Color.black.opacity(0.60),
+                            Color.black.opacity(0.90)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
 
             LinearGradient(
                 colors: [
@@ -239,4 +120,17 @@ private struct DetailBackground: View {
             )
         }
     }
+}
+
+private func backdropURL(_ value: String) -> URL? {
+    let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty, let url = URL(string: trimmed) else {
+        return nil
+    }
+
+    guard let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https" else {
+        return nil
+    }
+
+    return url
 }

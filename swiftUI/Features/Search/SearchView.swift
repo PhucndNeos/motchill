@@ -1,76 +1,8 @@
+import ComposableArchitecture
 import SwiftUI
 
 struct SearchView: View {
-    let router: AppRouter
-
-    @Environment(\.appDependencies) private var dependencies
-
-    private let routeInput: SearchRouteInput
-    private let initialViewModel: SearchViewModel?
-    private let shouldLoadOnAppear: Bool
-
-    init(
-        router: AppRouter,
-        routeInput: SearchRouteInput = SearchRouteInput()
-    ) {
-        self.router = router
-        self.routeInput = routeInput
-        self.initialViewModel = nil
-        self.shouldLoadOnAppear = true
-    }
-
-    init(
-        repository: PhucTvRepository,
-        likedMovieStore: PhucTvLikedMovieStoring,
-        router: AppRouter,
-        routeInput: SearchRouteInput = SearchRouteInput()
-    ) {
-        self.router = router
-        self.routeInput = routeInput
-        self.initialViewModel = SearchViewModel(
-            repository: repository,
-            likedMovieStore: likedMovieStore,
-            routeInput: routeInput
-        )
-        self.shouldLoadOnAppear = true
-    }
-
-    init(viewModel: SearchViewModel, router: AppRouter) {
-        self.router = router
-        self.routeInput = SearchRouteInput()
-        self.initialViewModel = viewModel
-        self.shouldLoadOnAppear = false
-    }
-
-    var body: some View {
-        SearchRootView(
-            viewModel: initialViewModel ?? SearchViewModel(
-                repository: dependencies.repository,
-                likedMovieStore: dependencies.likedMovieStore,
-                routeInput: routeInput
-            ),
-            router: router,
-            shouldLoadOnAppear: shouldLoadOnAppear
-        )
-    }
-}
-
-private struct SearchRootView: View {
-    let router: AppRouter
-
-    @State private var viewModel: SearchViewModel
-    @State private var activePicker: SearchPickerKind?
-    @State private var shouldLoadOnAppear: Bool
-
-    init(
-        viewModel: SearchViewModel,
-        router: AppRouter,
-        shouldLoadOnAppear: Bool
-    ) {
-        _viewModel = State(initialValue: viewModel)
-        self.router = router
-        _shouldLoadOnAppear = State(initialValue: shouldLoadOnAppear)
-    }
+    @Bindable var store: StoreOf<SearchFeature>
 
     var body: some View {
         ZStack {
@@ -82,9 +14,9 @@ private struct SearchRootView: View {
             titleToolbar
             likedOnlyToolbar
         }
-        .sheet(item: $activePicker, content: pickerSheet)
+        .sheet(item: $store.activePicker, content: pickerSheet)
         .task {
-            await loadIfNeeded()
+            await store.send(.onTask).finish()
         }
     }
 
@@ -105,21 +37,21 @@ private struct SearchRootView: View {
         ScrollView(.vertical, showsIndicators: true) {
             VStack(alignment: .leading, spacing: 24) {
                 SearchFieldSection(
-                    text: searchTextBinding,
-                    onSubmit: submitSearch,
-                    onClear: clearSearch
+                    text: $store.uiState.searchInputValue,
+                    onSubmit: { store.send(.submitSearch(store.uiState.searchInputValue)) },
+                    onClear: { store.send(.clearSearch) }
                 )
 
                 SearchFilterStrip(
-                    uiState: viewModel.uiState,
-                    onOpenPicker: openPicker
+                    uiState: store.uiState,
+                    onOpenPicker: { store.activePicker = $0 }
                 )
 
                 SearchResultsSection(
-                    uiState: viewModel.uiState,
-                    onOpenDetail: openDetail,
-                    onPrevious: goToPreviousPage,
-                    onNext: goToNextPage
+                    uiState: store.uiState,
+                    onOpenDetail: { store.send(.detailTapped(movie: $0)) },
+                    onPrevious: { store.send(.goToPage(store.uiState.currentPage - 1)) },
+                    onNext: { store.send(.goToPage(store.uiState.currentPage + 1)) }
                 )
             }
             .padding(.horizontal, 20)
@@ -129,27 +61,20 @@ private struct SearchRootView: View {
         .overlay { overlayView }
     }
 
-    private var searchTextBinding: Binding<String> {
-        Binding(
-            get: { viewModel.uiState.searchInputValue },
-            set: { viewModel.onSearchTextChanged($0) }
-        )
-    }
-
     @ViewBuilder
     private var overlayView: some View {
-        if let descriptor = viewModel.uiState.overlayDescriptor {
+        if let descriptor = store.uiState.overlayDescriptor {
             if descriptor.isLoading {
                 SearchOverlay(
                     descriptor: descriptor,
-                    onRetry: refresh,
+                    onRetry: { store.send(.retryTapped) },
                     onSecondary: nil
                 )
             } else {
                 SearchOverlay(
                     descriptor: descriptor,
-                    onRetry: refresh,
-                    onSecondary: closeSearch
+                    onRetry: { store.send(.retryTapped) },
+                    onSecondary: { store.send(.backButtonTapped) }
                 )
             }
         }
@@ -157,20 +82,20 @@ private struct SearchRootView: View {
 
     private var titleToolbar: ToolbarItem<(), some View> {
         ToolbarItem(placement: .title) {
-            Text(viewModel.uiState.screenTitle)
+            Text(store.uiState.screenTitle)
                 .font(.largeTitle)
         }
     }
 
     private var likedOnlyToolbar: ToolbarItem<(), some View> {
         ToolbarItem(placement: .topBarTrailing) {
-            Button(action: viewModel.toggleLikedOnly) {
-                Image(systemName: viewModel.uiState.showLikedOnly ? "heart.fill" : "heart")
+            Button(action: { store.send(.toggleLikedOnly) }) {
+                Image(systemName: store.uiState.showLikedOnly ? "heart.fill" : "heart")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(viewModel.uiState.showLikedOnly ? Color.red.opacity(0.95) : AppTheme.textPrimary)
+                    .foregroundStyle(store.uiState.showLikedOnly ? Color.red.opacity(0.95) : AppTheme.textPrimary)
                     .frame(width: 42, height: 42)
                     .background(
-                        (viewModel.uiState.showLikedOnly ? Color.red.opacity(0.18) : Color.white.opacity(0.06)),
+                        (store.uiState.showLikedOnly ? Color.red.opacity(0.18) : Color.white.opacity(0.06)),
                         in: Circle()
                     )
             }
@@ -181,77 +106,81 @@ private struct SearchRootView: View {
     private func pickerSheet(for picker: SearchPickerKind) -> some View {
         SearchPickerSheet(
             title: picker.title,
-            options: viewModel.pickerOptions(for: picker),
+            options: pickerOptions(for: picker),
             onSelect: { optionID in
-                Task {
-                    await handleSelection(optionID: optionID, for: picker)
-                    activePicker = nil
-                }
+                store.send(selectionAction(optionID: optionID, picker: picker))
+                store.activePicker = nil
             }
         )
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
     }
 
-    private func openPicker(_ picker: SearchPickerKind) {
-        activePicker = picker
-    }
-
-    private func openDetail(_ movie: PhucTvMovieCard) {
-        router.push(.detail(movie))
-    }
-
-    private func closeSearch() {
-        router.pop()
-    }
-
-    private func submitSearch() {
-        Task { await viewModel.submitSearch() }
-    }
-
-    private func clearSearch() {
-        Task { await viewModel.clearSearch() }
-    }
-
-    private func refresh() {
-        Task { await viewModel.refresh() }
-    }
-
-    private func goToPreviousPage() {
-        Task { await viewModel.goToPage(viewModel.uiState.currentPage - 1) }
-    }
-
-    private func goToNextPage() {
-        Task { await viewModel.goToPage(viewModel.uiState.currentPage + 1) }
-    }
-
-    private func loadIfNeeded() async {
-        guard shouldLoadOnAppear else { return }
-        await viewModel.load()
-        shouldLoadOnAppear = false
-    }
-
-    private func handleSelection(optionID: String, for picker: SearchPickerKind) async {
+    private func pickerOptions(for picker: SearchPickerKind) -> [SearchUIPickerOption] {
         switch picker {
         case .category:
-            let option = viewModel.uiState.filters.categoryOptionsWithAll()
-                .first(where: { "category-\($0.id)-\($0.slug)" == optionID })
-            await viewModel.selectCategory(option?.hasID == true ? option : nil)
-        case .country:
-            let option = viewModel.uiState.filters.countryOptionsWithAll()
-                .first(where: { "country-\($0.id)-\($0.slug)" == optionID })
-            await viewModel.selectCountry(option?.hasID == true ? option : nil)
-        case .type:
-            let option = searchTypeOptions.first(where: { "type-\($0.value)" == optionID })
-            await viewModel.selectTypeRaw(option?.value.isEmpty == false ? option : nil)
-        case .year:
-            let option = searchYearOptions.first(where: { "year-\($0.value)" == optionID })
-            await viewModel.selectYear(option?.value.isEmpty == false ? option : nil)
-        case .order:
-            let option = searchOrderOptions.first(where: { "order-\($0.value)" == optionID })
-            if let option {
-                await viewModel.selectOrderBy(option.value)
+            return store.uiState.filters.categoryOptionsWithAll().map {
+                SearchUIPickerOption(
+                    id: "category-\($0.id)-\($0.slug)",
+                    title: $0.name,
+                    subtitle: $0.slug,
+                    isSelected: store.uiState.selectedCategoryID == $0.id || (!$0.hasID && store.uiState.selectedCategoryID == nil)
+                )
             }
+        case .country:
+            return store.uiState.filters.countryOptionsWithAll().map {
+                SearchUIPickerOption(
+                    id: "country-\($0.id)-\($0.slug)",
+                    title: $0.name,
+                    subtitle: $0.slug,
+                    isSelected: store.uiState.selectedCountryID == $0.id || (!$0.hasID && store.uiState.selectedCountryID == nil)
+                )
+            }
+        case .type:
+            return searchTypeOptions.map {
+                SearchUIPickerOption(
+                    id: "type-\($0.value)",
+                    title: $0.label,
+                    subtitle: $0.value,
+                    isSelected: store.uiState.selectedTypeRaw == $0.value
+                )
+            }
+        case .year:
+            return searchYearOptions.map {
+                SearchUIPickerOption(
+                    id: "year-\($0.value)",
+                    title: $0.label,
+                    subtitle: $0.value,
+                    isSelected: store.uiState.selectedYear == $0.value
+                )
+            }
+        case .order:
+            return searchOrderOptions.map {
+                SearchUIPickerOption(
+                    id: "order-\($0.value)",
+                    title: $0.label,
+                    subtitle: $0.value,
+                    isSelected: store.uiState.selectedOrderBy == $0.value
+                )
+            }
+        }
+    }
+
+    private func selectionAction(optionID: String, picker: SearchPickerKind) -> SearchFeature.Action {
+        switch picker {
+        case .category:
+            return .selectCategory(optionID)
+        case .country:
+            return .selectCountry(optionID)
+        case .type:
+            return .selectTypeRaw(optionID)
+        case .year:
+            return .selectYear(optionID)
+        case .order:
+            if let value = searchOrderOptions.first(where: { "order-\($0.value)" == optionID })?.value {
+                return .selectOrderBy(value)
+            }
+            return .selectOrderBy(optionID)
         }
     }
 }
@@ -268,23 +197,6 @@ private struct SearchOverlay: View {
             onSecondary: onSecondary
         )
         .background(Color.black.opacity(0.28).ignoresSafeArea())
-    }
-}
-
-private struct SearchHeaderSection: View {
-    let uiState: SearchUIState
-    let onBack: () -> Void
-    let onToggleLikedOnly: () -> Void
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            Spacer()
-            Text(uiState.screenTitle)
-                .font(AppTheme.titleFont)
-                .foregroundStyle(AppTheme.textPrimary)
-            
-            Spacer(minLength: 12)
-        }
     }
 }
 
@@ -481,65 +393,8 @@ private struct SearchPickerSheet: View {
 
 #Preview("Search Loaded") {
     NavigationStack {
-        SearchView(
-            viewModel: SearchViewModel(
-                repository: PreviewSearchRepository(),
-                likedMovieStore: PreviewLikedMovieStore(),
-                uiState: SearchUIState()
-                    .withLoadedFilters(
-                        PhucTvSearchFilterData(
-                            categories: [
-                                PhucTvSearchFacetOption(id: 1, name: "Action", slug: "action"),
-                                PhucTvSearchFacetOption(id: 2, name: "Thriller", slug: "thriller"),
-                            ],
-                            countries: [
-                                PhucTvSearchFacetOption(id: 10, name: "All Regions", slug: "all-regions"),
-                                PhucTvSearchFacetOption(id: 11, name: "Korea", slug: "korea"),
-                            ]
-                        )
-                    )
-                    .withLikedMovies(Array(SearchPreviewData.movies.prefix(3)))
-                    .withSearchResults(
-                        PhucTvSearchResults(
-                            records: SearchPreviewData.movies,
-                            pagination: PhucTvSearchPagination(pageIndex: 1, pageSize: 12, pageCount: 2, totalRecords: 18)
-                        ),
-                        pageNumber: 1
-                    )
-            ),
-            router: AppRouter()
-        )
+        SearchView(store: makeSearchPreviewStore())
     }
-}
-
-private struct PreviewSearchRepository: PhucTvRepository {
-    func loadHome() async throws -> [PhucTvHomeSection] { [] }
-    func loadNavbar() async throws -> [PhucTvNavbarItem] { [] }
-    func loadDetail(slug: String) async throws -> PhucTvMovieDetail { throw NSError(domain: "preview", code: 1) }
-    func loadPreview(slug: String) async throws -> PhucTvMovieDetail { throw NSError(domain: "preview", code: 1) }
-    func loadSearchFilters() async throws -> PhucTvSearchFilterData { .init(categories: [], countries: []) }
-    func loadSearchResults(
-        categoryId: Int?,
-        countryId: Int?,
-        typeRaw: String,
-        year: String,
-        orderBy: String,
-        isChieuRap: Bool,
-        is4k: Bool,
-        search: String,
-        pageNumber: Int
-    ) async throws -> PhucTvSearchResults {
-        .init(records: SearchPreviewData.movies, pagination: .init(pageIndex: 1, pageSize: 12, pageCount: 1, totalRecords: SearchPreviewData.movies.count))
-    }
-    func loadEpisodeSources(movieID: Int, episodeID: Int, server: Int) async throws -> [PhucTvPlaySource] { [] }
-    func loadPopupAd() async throws -> PhucTvPopupAdConfig? { nil }
-}
-
-private actor PreviewLikedMovieStore: PhucTvLikedMovieStoring {
-    func loadMovies() async throws -> [PhucTvMovieCard] { Array(SearchPreviewData.movies.prefix(2)) }
-    func loadIDs() async throws -> Set<Int> { Set(SearchPreviewData.movies.prefix(2).map(\.id)) }
-    func isLiked(movieID: Int) async throws -> Bool { movieID == SearchPreviewData.movies.first?.id }
-    func toggle(movie: PhucTvMovieCard) async throws -> [PhucTvMovieCard] { [movie] }
 }
 
 private enum SearchPreviewData {
@@ -582,5 +437,36 @@ private enum SearchPreviewData {
             photoUrls: [],
             previewPhotoUrls: []
         )
+    }
+}
+
+@MainActor private func makeSearchPreviewStore() -> StoreOf<SearchFeature> {
+    var state = SearchFeature.State(
+        routeInput: SearchRouteInput(initialQuery: "hero"),
+        uiState: SearchUIState()
+            .withLoadedFilters(
+                PhucTvSearchFilterData(
+                    categories: [
+                        PhucTvSearchFacetOption(id: 1, name: "Action", slug: "action"),
+                        PhucTvSearchFacetOption(id: 2, name: "Thriller", slug: "thriller"),
+                    ],
+                    countries: [
+                        PhucTvSearchFacetOption(id: 10, name: "All Regions", slug: "all-regions"),
+                        PhucTvSearchFacetOption(id: 11, name: "Korea", slug: "korea"),
+                    ]
+                )
+            )
+            .withLikedMovies(Array(SearchPreviewData.movies.prefix(3)))
+            .withSearchResults(
+                PhucTvSearchResults(
+                    records: SearchPreviewData.movies,
+                    pagination: PhucTvSearchPagination(pageIndex: 1, pageSize: 12, pageCount: 2, totalRecords: 18)
+                ),
+                pageNumber: 1
+            )
+    )
+    state.didBootstrap = true
+    return Store(initialState: state) {
+        SearchFeature()
     }
 }

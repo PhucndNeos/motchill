@@ -1,156 +1,44 @@
 import AVKit
+import ComposableArchitecture
 import SwiftUI
 
 struct PlayerView: View {
-    let router: AppRouter
-
-    @Environment(\.appDependencies) private var dependencies
-
-    private let playerInput: PlayerInput?
-    private let initialViewModel: PlayerViewModel?
-    private let shouldLoadOnAppear: Bool
-
-    init(
-        movieID: Int,
-        episodeID: Int,
-        movieTitle: String,
-        episodeLabel: String,
-        router: AppRouter
-    ) {
-        self.router = router
-        self.playerInput = PlayerInput(
-            movieID: movieID,
-            episodeID: episodeID,
-            movieTitle: movieTitle,
-            episodeLabel: episodeLabel
-        )
-        self.initialViewModel = nil
-        self.shouldLoadOnAppear = true
-    }
-
-    init(
-        movieID: Int,
-        episodeID: Int,
-        movieTitle: String,
-        episodeLabel: String,
-        repository: PhucTvRepository,
-        localPlaybackPositionStore: PhucTvPlaybackPositionStoring,
-        remotePlaybackPositionStore: PhucTvPlaybackPositionStoring,
-        router: AppRouter
-    ) {
-        self.router = router
-        self.playerInput = PlayerInput(
-            movieID: movieID,
-            episodeID: episodeID,
-            movieTitle: movieTitle,
-            episodeLabel: episodeLabel
-        )
-        self.initialViewModel = PlayerViewModel(
-            movieID: movieID,
-            episodeID: episodeID,
-            movieTitle: movieTitle,
-            episodeLabel: episodeLabel,
-            repository: repository,
-            localStore: localPlaybackPositionStore,
-            remoteStore: remotePlaybackPositionStore
-        )
-        self.shouldLoadOnAppear = true
-    }
-
-    init(viewModel: PlayerViewModel, router: AppRouter) {
-        self.router = router
-        self.playerInput = nil
-        self.initialViewModel = viewModel
-        self.shouldLoadOnAppear = false
-    }
-
-    var body: some View {
-        PlayerRootView(
-            viewModel: resolvedViewModel,
-            router: router,
-            shouldLoadOnAppear: shouldLoadOnAppear
-        )
-    }
-
-    private var resolvedViewModel: PlayerViewModel {
-        if let initialViewModel {
-            return initialViewModel
-        }
-
-        guard let playerInput else {
-            preconditionFailure("PlayerView requires either playback input or an injected view model.")
-        }
-
-        return PlayerViewModel(
-            movieID: playerInput.movieID,
-            episodeID: playerInput.episodeID,
-            movieTitle: playerInput.movieTitle,
-            episodeLabel: playerInput.episodeLabel,
-            repository: dependencies.repository,
-            localStore: dependencies.localPlaybackPositionStore,
-            remoteStore: dependencies.playbackPositionStore
-        )
-    }
-}
-
-private struct PlayerInput {
-    let movieID: Int
-    let episodeID: Int
-    let movieTitle: String
-    let episodeLabel: String
-}
-
-private struct PlayerRootView: View {
-    let router: AppRouter
-
-    @Environment(\.appDependencies) private var dependencies
-
-    @State private var viewModel: PlayerViewModel
-    @State private var shouldLoadOnAppear: Bool
-
-    init(
-        viewModel: PlayerViewModel,
-        router: AppRouter,
-        shouldLoadOnAppear: Bool
-    ) {
-        _viewModel = State(initialValue: viewModel)
-        self.router = router
-        _shouldLoadOnAppear = State(initialValue: shouldLoadOnAppear)
-    }
-
-    var body: some View {
-        PlayerScreen(viewModel: viewModel, router: router)
-            .task {
-                await loadIfNeeded()
-            }
-            .onAppear(perform: handleAppear)
-            .onDisappear(perform: handleDisappear)
-    }
-
-    private func loadIfNeeded() async {
-        guard shouldLoadOnAppear else { return }
-        await viewModel.load()
-        shouldLoadOnAppear = false
-    }
-
-    private func handleAppear() {
-        dependencies.screenIdleManager.disableAutoLock()
-    }
-
-    private func handleDisappear() {
-        dependencies.screenIdleManager.enableAutoLock()
-        Task {
-            await viewModel.persistProgress()
-            viewModel.stop()
-        }
-    }
-}
-
-private struct PlayerScreen: View {
-    let viewModel: PlayerViewModel
-    let router: AppRouter
+    @Bindable var store: StoreOf<PlayerFeature>
 
     @State private var webDestination: PlayerWebDestination?
+
+    var body: some View {
+        PlayerPlaybackSurface(
+            store: store,
+            webDestination: $webDestination,
+            onBack: { store.send(.backButtonTapped) }
+        )
+        .toolbar(.hidden, for: .navigationBar)
+        .fullScreenCover(item: $webDestination) { destination in
+            NavigationStack {
+                PlayerWebViewScreen(destination: destination)
+            }
+        }
+        .task {
+            await store.send(.onAppear).finish()
+        }
+    }
+}
+
+private struct PlayerPlaybackSurface: View {
+    @Bindable var store: StoreOf<PlayerFeature>
+    let onBack: () -> Void
+    @Binding var webDestination: PlayerWebDestination?
+
+    init(
+        store: StoreOf<PlayerFeature>,
+        webDestination: Binding<PlayerWebDestination?>,
+        onBack: @escaping () -> Void
+    ) {
+        self._store = Bindable(store)
+        self._webDestination = webDestination
+        self.onBack = onBack
+    }
 
     var body: some View {
         GeometryReader { proxy in
@@ -169,37 +57,33 @@ private struct PlayerScreen: View {
                     }
             )
             .onTapGesture {
-                viewModel.handleOverlayTap()
-            }
-        }
-        .toolbar(.hidden, for: .navigationBar)
-        .fullScreenCover(item: $webDestination) { destination in
-            NavigationStack {
-                PlayerWebViewScreen(destination: destination)
+                store.send(.overlayTapped)
             }
         }
     }
 
     @ViewBuilder
     private var playerContent: some View {
-        if viewModel.state == .loaded, viewModel.selectedSource != nil {
+        if store.screenState == .loaded, store.selectedSource != nil {
             ZStack(alignment: .bottom) {
-                VideoPlayer(player: viewModel.player)
+                VideoPlayer(player: store.player)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
-                PlayerSubtitleOverlay(text: viewModel.currentSubtitleText)
+
+                PlayerSubtitleOverlay(text: store.currentSubtitleText)
+
                 PlayerOverlay(
-                    viewModel: viewModel,
-                    onBack: { router.pop() }
+                    store: store,
+                    onBack: onBack
                 )
-                .opacity(viewModel.overlayVisible ? 1 : 0)
+                .opacity(store.overlayVisible ? 1 : 0)
             }
         }
     }
 
     @ViewBuilder
     private var playerStateOverlay: some View {
-        switch viewModel.state {
+        switch store.screenState {
         case .idle, .loading:
             FeatureStateOverlay(
                 descriptor: .loading(
@@ -209,6 +93,7 @@ private struct PlayerScreen: View {
                 ),
                 onRetry: retry
             )
+
         case .error(let message):
             FeatureStateOverlay(
                 descriptor: .failure(
@@ -222,9 +107,10 @@ private struct PlayerScreen: View {
                 onRetry: retry,
                 onSecondary: closePlayer
             )
+
         case .loaded:
-            if viewModel.selectedSource == nil {
-                if viewModel.hasIframeOnlySources {
+            if store.selectedSource == nil {
+                if store.hasIframeOnlySources {
                     FeatureStateOverlay(
                         descriptor: .failure(
                             title: "Không có nguồn phát trực tiếp",
@@ -255,7 +141,7 @@ private struct PlayerScreen: View {
     }
 
     private var iframeActionButtons: [ErrorOverlay.ActionButton] {
-        viewModel.iframeSources.compactMap { source in
+        store.iframeSources.compactMap { source in
             guard let url = normalizedPlayerURL(from: source.link) else { return nil }
 
             return ErrorOverlay.ActionButton(title: source.actionButtonTitle) {
@@ -268,22 +154,20 @@ private struct PlayerScreen: View {
     }
 
     private func retry() {
-        makeAsyncAction {
-            await viewModel.retry()
-        }()
+        store.send(.retryTapped)
     }
 
     private func closePlayer() {
-        router.pop()
+        store.send(.backButtonTapped)
     }
 
     private func handleSeekGesture(at positionX: CGFloat, width: CGFloat) {
         guard width > 0 else { return }
 
         if positionX < width / 3 {
-            viewModel.seek(by: -viewModel.seekStepMillis)
+            store.send(.seek(deltaMillis: -store.seekStepMillis))
         } else if positionX > width * 0.75 {
-            viewModel.seek(by: viewModel.seekStepMillis)
+            store.send(.seek(deltaMillis: store.seekStepMillis))
         }
     }
 }
@@ -336,17 +220,10 @@ private struct PlayerWebViewScreen: View {
 #Preview("Player") {
     NavigationStack {
         PlayerView(
-            viewModel: PlayerViewModel.previewLoaded(),
-            router: AppRouter()
+            store: Store(initialState: PlayerFeature.State.previewLoaded()) {
+                PlayerFeature()
+            }
         )
     }
-}
-
-#Preview("Player iframe only") {
-    NavigationStack {
-        PlayerView(
-            viewModel: PlayerViewModel.previewIframeOnlyError(),
-            router: AppRouter()
-        )
-    }
+    .preferredColorScheme(.dark)
 }

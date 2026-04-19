@@ -5,13 +5,15 @@
 //  Created by Phucnd on 11/4/26.
 //  Copyright © 2026 PhucTv. All rights reserved.
 //
+import ComposableArchitecture
 import Kingfisher
 import SwiftUI
 import UIKit
 
+/// The primary layout container for the iPad Home screen.
+/// It observes the `HomeFeature` state to switch between loading, empty, error, and loaded UI views.
 struct HomeIpadScreen: View {
-    let viewModel: HomeViewModel
-    let router: AppRouter
+    @Bindable var store: StoreOf<HomeFeature>
 
     var body: some View {
         GeometryReader { proxy in
@@ -19,7 +21,7 @@ struct HomeIpadScreen: View {
                 HomeIpadBackground()
                     .ignoresSafeArea()
 
-                switch viewModel.state {
+                switch store.status {
                 case .loading:
                     FeatureStateOverlay(
                         descriptor: .loading(
@@ -27,9 +29,7 @@ struct HomeIpadScreen: View {
                             message: "Chờ một lát để nạp hero feature cho iPad.",
                             errorCode: "HOME_LOADING"
                         ),
-                        onRetry: makeAsyncAction {
-                            await viewModel.retry()
-                        }
+                        onRetry: { store.send(.retryTapped) }
                     )
                 case .empty:
                     FeatureStateOverlay(
@@ -39,12 +39,8 @@ struct HomeIpadScreen: View {
                             errorCode: "HOME_EMPTY",
                             secondaryTitle: "Tìm kiếm"
                         ),
-                        onRetry: makeAsyncAction {
-                            await viewModel.retry()
-                        },
-                        onSecondary: {
-                            router.push(.search())
-                        }
+                        onRetry: { store.send(.retryTapped) },
+                        onSecondary: { store.send(.searchTapped) }
                     )
                 case .error(let message):
                     FeatureStateOverlay(
@@ -54,18 +50,15 @@ struct HomeIpadScreen: View {
                             errorCode: "HOME_LOAD_FAIL",
                             icon: .server
                         ),
-                        onRetry: makeAsyncAction {
-                            await viewModel.retry()
-                        }
+                        onRetry: { store.send(.retryTapped) }
                     )
-                    case .loaded(_):
-                        if viewModel.hasRenderableContent,
-                           let section = viewModel.selectedSection,
+                case .loaded(_):
+                    if store.hasRenderableContent,
+                       let section = store.selectedSection,
                            !section.products.isEmpty {
                         HomeIpadLoadedContent(
-                            viewModel: viewModel,
-                            heroMovies: section.products,
-                            router: router
+                            store: store,
+                            heroMovies: section.products
                         )
                     } else {
                         FeatureStateOverlay(
@@ -75,12 +68,8 @@ struct HomeIpadScreen: View {
                                 errorCode: "HOME_EMPTY",
                                 secondaryTitle: "Tìm kiếm"
                             ),
-                            onRetry: makeAsyncAction {
-                                await viewModel.retry()
-                            },
-                            onSecondary: {
-                                router.push(.search())
-                            }
+                            onRetry: { store.send(.retryTapped) },
+                            onSecondary: { store.send(.searchTapped) }
                         )
                     }
                 }
@@ -98,42 +87,22 @@ private func openTrailer(_ trailer: String) {
 }
 
 private struct HomeIpadLoadedContent: View {
-    @Bindable var viewModel: HomeViewModel
+    @Bindable var store: StoreOf<HomeFeature>
     let heroMovies: [PhucTvMovieCard]
-    let router: AppRouter
-
-    private var selectedHeroID: Binding<Int?> {
-        Binding<Int?>(
-            get: { viewModel.selectedMovie?.id },
-            set: { newID in
-                guard let newID else {
-                    viewModel.selectedMovie = nil
-                    return
-                }
-                viewModel.selectedMovie = heroMovies.first(where: { $0.id == newID })
-            }
-        )
-    }
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             FeaturePagingView(
-                selectedID: selectedHeroID,
+                selectedItem: $store.selectedMovie,
                 items: heroMovies,
                 spacing: 0,
                 horizontalPadding: 0,
-                onSelectionChanged: { newID in
-                    guard let newID else {
-                        viewModel.selectedMovie = nil
-                        return
-                    }
-                    viewModel.selectedMovie = heroMovies.first(where: { $0.id == newID })
-                }
+                onSelectionChanged: nil
             ) { currentMovie in
                 HomeIpadHeroCardView(
                     movie: currentMovie,
                     onWatchNow: {
-                        router.push(.detail(currentMovie))
+                        store.send(.detailTapped(movie: currentMovie))
                     },
                     onTrailer: {
                         openTrailer(currentMovie.trailer)
@@ -141,7 +110,7 @@ private struct HomeIpadLoadedContent: View {
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .id(viewModel.selectedSection?.id ?? "home-ipad-hero")
+            .id(store.selectedSection?.id ?? "home-ipad-hero")
             .onAppear {
                 syncSelectionIfNeeded()
             }
@@ -149,24 +118,27 @@ private struct HomeIpadLoadedContent: View {
                 syncSelectionIfNeeded()
             }
             
-            HomeIpadIndicator(selectedMovie: $viewModel.selectedMovie, items: heroMovies)
+            HomeIpadIndicator(
+                selectedMovie: $store.selectedMovie,
+                items: heroMovies
+            )
                 .padding()
         }
     }
 
     private func syncSelectionIfNeeded() {
         guard !heroMovies.isEmpty else {
-            viewModel.selectedMovie = nil
+            store.selectedMovie = nil
             return
         }
 
-        if let selectedID = viewModel.selectedMovie?.id,
+        if let selectedID = store.selectedMovie?.id,
            let matched = heroMovies.first(where: { $0.id == selectedID }) {
-            viewModel.selectedMovie = matched
+            store.selectedMovie = matched
             return
         }
 
-        viewModel.selectedMovie = heroMovies.first
+        store.selectedMovie = heroMovies.first
     }
 }
 
@@ -621,8 +593,9 @@ private func homeRemoteURL(from rawValue: String?) -> URL? {
 
 #Preview("Home iPad Hero") {
     HomeIpadScreen(
-        viewModel: HomeViewModel.previewLoaded(),
-        router: AppRouter()
+        store: Store(initialState: HomeFeature.State.previewLoaded()) {
+            HomeFeature()
+        }
     )
     .preferredColorScheme(.dark)
 }

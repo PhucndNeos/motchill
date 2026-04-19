@@ -1,16 +1,8 @@
-import Observation
+import ComposableArchitecture
 import SwiftUI
 
 struct AuthView: View {
-    @Bindable var authManager: PhucTvSupabaseAuthManager
-    @Environment(\.dismiss) private var dismiss
-
-    @State private var email = ""
-    @State private var otpCode = ""
-    @State private var step: AuthStep = .emailEntry
-    @State private var isBusy = false
-    @State private var feedbackMessage: FeedbackMessage?
-    @State private var resendCooldown = 0
+    @Bindable var store: StoreOf<AuthFeature>
 
     var body: some View {
         NavigationStack {
@@ -28,34 +20,20 @@ struct AuthView: View {
                     .padding(.vertical, 28)
                 }
             }
-            .loadingIndicator(isBusy)
+            .loadingIndicator(store.isBusy)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Đóng") { dismiss() }
-                        .foregroundStyle(.white)
+                    Button("Đóng") {
+                        store.send(.closeButtonTapped)
+                    }
+                    .foregroundStyle(.white)
                 }
             }
         }
         .presentationDetents([.large])
         .presentationCornerRadius(28)
-        .onChange(of: authManager.isAuthenticated) { _, isAuth in
-            if isAuth { dismiss() }
-        }
-        .task(id: resendCooldown) {
-            // Restartable countdown; capture initial value to avoid immediate cancel on state changes
-            let start = resendCooldown
-            guard start > 0 else { return }
-            var remaining = start
-            while remaining > 0 && !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
-                remaining -= 1
-                resendCooldown = remaining
-            }
-        }
     }
-
-    // MARK: - Header
 
     private var brandHeader: some View {
         VStack(spacing: 10) {
@@ -74,14 +52,14 @@ struct AuthView: View {
                 .foregroundStyle(.white.opacity(0.72))
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 360)
-                .animation(.easeInOut(duration: 0.2), value: step)
+                .animation(.easeInOut(duration: 0.2), value: store.step)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 6)
     }
 
     private var headerSubtitle: String {
-        switch step {
+        switch store.step {
         case .emailEntry:
             return "Nhập email để nhận mã OTP. Không cần mật khẩu."
         case .otpEntry:
@@ -89,17 +67,16 @@ struct AuthView: View {
         }
     }
 
-    // MARK: - Card
-
     private var authCard: some View {
         VStack(alignment: .leading, spacing: 18) {
-            switch step {
+            switch store.step {
             case .emailEntry:
                 emailField
                 sendOTPButton
                 footerNote
-            case .otpEntry(let sentEmail):
-                otpSentBanner(email: sentEmail)
+
+            case .otpEntry(let email):
+                otpSentBanner(email: email)
                 otpField
                 verifyButton
                 changeEmailButton
@@ -110,10 +87,8 @@ struct AuthView: View {
         .overlay(cardBorder)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .shadow(color: .black.opacity(0.34), radius: 34, x: 0, y: 24)
-        .animation(.easeInOut(duration: 0.25), value: step)
+        .animation(.easeInOut(duration: 0.25), value: store.step)
     }
-
-    // MARK: - Email step
 
     private var emailField: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -128,13 +103,13 @@ struct AuthView: View {
                     .foregroundStyle(.white.opacity(0.48))
                     .frame(width: 18)
 
-                TextField("name@example.com", text: $email)
+                TextField("name@example.com", text: $store.email)
                     .textInputAutocapitalization(.never)
                     .keyboardType(.emailAddress)
                     .autocorrectionDisabled()
                     .foregroundStyle(.white)
                     .submitLabel(.done)
-                    .onSubmit { Task { await sendOTP() } }
+                    .onSubmit { store.send(.sendOTPButtonTapped) }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 15)
@@ -152,10 +127,10 @@ struct AuthView: View {
     private var sendOTPButton: some View {
         VStack(alignment: .leading, spacing: 12) {
             Button {
-                Task { await sendOTP() }
+                store.send(.sendOTPButtonTapped)
             } label: {
                 HStack(spacing: 10) {
-                    if isBusy {
+                    if store.isBusy {
                         ProgressView().tint(.black)
                     }
                     Text("Nhận mã OTP")
@@ -175,7 +150,7 @@ struct AuthView: View {
             .buttonStyle(.plain)
             .foregroundStyle(.black)
             .shadow(color: Color.red.opacity(0.25), radius: 18, x: 0, y: 10)
-            .disabled(isBusy || !canSubmitEmail)
+            .disabled(store.isBusy || !store.canSubmitEmail)
 
             feedbackRow
         }
@@ -197,8 +172,6 @@ struct AuthView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 2)
     }
-
-    // MARK: - OTP step
 
     private func otpSentBanner(email: String) -> some View {
         HStack(spacing: 10) {
@@ -236,18 +209,13 @@ struct AuthView: View {
                     .foregroundStyle(.white.opacity(0.48))
                     .frame(width: 18)
 
-                TextField("000000", text: $otpCode)
+                TextField("000000", text: $store.otpCode)
                     .keyboardType(.numberPad)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
                     .foregroundStyle(.white)
                     .font(.system(.title3, design: .monospaced).weight(.semibold))
                     .tracking(8)
-                    .onChange(of: otpCode) { _, newValue in
-                        // Allow digits only, no hard limit
-                        let filtered = newValue.filter(\.isNumber)
-                        if filtered != newValue { otpCode = filtered }
-                    }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 15)
@@ -258,10 +226,10 @@ struct AuthView: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(
-                        otpCode.count > 6
+                        store.otpCode.count == 6
                         ? Color(red: 0.3, green: 0.9, blue: 0.55).opacity(0.7)
                         : Color.white.opacity(0.12),
-                        lineWidth: otpCode.count > 6 ? 1.5 : 1
+                        lineWidth: store.otpCode.count == 6 ? 1.5 : 1
                     )
             )
         }
@@ -270,10 +238,10 @@ struct AuthView: View {
     private var verifyButton: some View {
         VStack(alignment: .leading, spacing: 12) {
             Button {
-                Task { await verifyOTP() }
+                store.send(.verifyOTPButtonTapped)
             } label: {
                 HStack(spacing: 10) {
-                    if isBusy {
+                    if store.isBusy {
                         ProgressView().tint(.black)
                     }
                     Text("Xác nhận & Đăng nhập")
@@ -293,7 +261,7 @@ struct AuthView: View {
             .buttonStyle(.plain)
             .foregroundStyle(.black)
             .shadow(color: Color.red.opacity(0.25), radius: 18, x: 0, y: 10)
-            .disabled(isBusy || !canSubmitOTP)
+            .disabled(store.isBusy || !store.canSubmitOTP)
 
             feedbackRow
         }
@@ -303,11 +271,7 @@ struct AuthView: View {
     private var changeEmailButton: some View {
         HStack(spacing: 0) {
             Button {
-                withAnimation {
-                    step = .emailEntry
-                    otpCode = ""
-                    feedbackMessage = nil
-                }
+                store.send(.changeEmailButtonTapped)
             } label: {
                 Text("Đổi email")
                     .font(.footnote.weight(.medium))
@@ -321,113 +285,35 @@ struct AuthView: View {
                 .foregroundStyle(.white.opacity(0.3))
 
             Button {
-                Task { await resendOTP() }
+                store.send(.resendOTPButtonTapped)
             } label: {
-                Group {
-                    if resendCooldown > 0 {
-                        Text("Gửi lại (\(resendCooldown)s)")
-                    } else {
-                        Text("Gửi lại mã")
-                    }
-                }
-                .font(.footnote.weight(.medium))
-                .foregroundStyle(resendCooldown > 0 ? .white.opacity(0.28) : .white.opacity(0.55))
-                .underline(resendCooldown == 0)
+                Text(store.resendButtonTitle)
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(store.resendCooldown > 0 ? .white.opacity(0.28) : .white.opacity(0.55))
+                    .underline(store.resendCooldown == 0)
             }
             .buttonStyle(.plain)
-            .disabled(isBusy || resendCooldown > 0)
+            .disabled(store.isBusy || store.resendCooldown > 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: - Shared
-
     @ViewBuilder
     private var feedbackRow: some View {
-        if let msg = feedbackMessage {
+        if let message = store.feedbackMessage {
             HStack(spacing: 8) {
-                Image(systemName: msg.isError ? "exclamationmark.circle" : "info.circle")
+                Image(systemName: message.isError ? "exclamationmark.circle" : "info.circle")
                     .font(.footnote)
-                    .foregroundStyle(msg.isError ? Color.red.opacity(0.85) : Color.white.opacity(0.65))
-                Text(msg.text)
+                    .foregroundStyle(message.isError ? Color.red.opacity(0.85) : Color.white.opacity(0.65))
+                Text(message.text)
                     .font(.footnote)
-                    .foregroundStyle(msg.isError ? Color.red.opacity(0.85) : Color.white.opacity(0.8))
+                    .foregroundStyle(message.isError ? Color.red.opacity(0.85) : Color.white.opacity(0.8))
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
 
-    // MARK: - Validation
-
-    private var canSubmitEmail: Bool {
-        !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    private var canSubmitOTP: Bool {
-        otpCode.count > 6
-    }
-
-    // MARK: - Actions
-
-    private func sendOTP() async {
-        guard canSubmitEmail else { return }
-        isBusy = true
-        feedbackMessage = nil
-        defer { isBusy = false }
-
-        do {
-            let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
-            try await authManager.sendOTP(email: trimmed)
-            resendCooldown = 60
-            withAnimation { step = .otpEntry(email: trimmed) }
-        } catch {
-            feedbackMessage = FeedbackMessage(text: error.localizedDescription, isError: true)
-        }
-    }
-
-    private func resendOTP() async {
-        guard case .otpEntry(let sentEmail) = step else { return }
-        isBusy = true
-        feedbackMessage = nil
-        defer { isBusy = false }
-
-        do {
-            try await authManager.sendOTP(email: sentEmail)
-            feedbackMessage = FeedbackMessage(text: "Đã gửi lại mã OTP.", isError: false)
-            resendCooldown = 60
-        } catch {
-            feedbackMessage = FeedbackMessage(text: error.localizedDescription, isError: true)
-        }
-    }
-
-    private func verifyOTP() async {
-        guard case .otpEntry(let sentEmail) = step, canSubmitOTP else { return }
-        isBusy = true
-        feedbackMessage = nil
-        defer { isBusy = false }
-
-        do {
-            try await authManager.verifyOTP(email: sentEmail, token: otpCode)
-            // dismiss() is triggered by .onChange(of: authManager.isAuthenticated)
-        } catch {
-            feedbackMessage = FeedbackMessage(text: error.localizedDescription, isError: true)
-        }
-    }
 }
-
-// MARK: - Supporting types
-
-private enum AuthStep: Equatable {
-    case emailEntry
-    case otpEntry(email: String)
-}
-
-private struct FeedbackMessage: Equatable {
-    let text: String
-    let isError: Bool
-}
-
-// MARK: - Background & styling
 
 private struct AuthBackground: View {
     var body: some View {

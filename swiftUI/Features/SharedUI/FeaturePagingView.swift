@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FeaturePagingView<Item, Content>: View where Item: Identifiable, Item.ID: Hashable, Content: View {
-    @Binding var selectedID: Item.ID?
+    @Binding var selectedItem: Item?
     let items: [Item]
     let spacing: CGFloat
     let horizontalPadding: CGFloat
@@ -9,14 +9,14 @@ struct FeaturePagingView<Item, Content>: View where Item: Identifiable, Item.ID:
     let content: (Item) -> Content
 
     init(
-        selectedID: Binding<Item.ID?>,
+        selectedItem: Binding<Item?>,
         items: [Item],
         spacing: CGFloat = 0,
         horizontalPadding: CGFloat = 0,
         onSelectionChanged: ((Item.ID?) -> Void)? = nil,
         @ViewBuilder content: @escaping (Item) -> Content
     ) {
-        self._selectedID = selectedID
+        self._selectedItem = selectedItem
         self.items = items
         self.spacing = spacing
         self.horizontalPadding = horizontalPadding
@@ -27,6 +27,12 @@ struct FeaturePagingView<Item, Content>: View where Item: Identifiable, Item.ID:
     var body: some View {
         GeometryReader { proxy in
             let pageWidth = max(proxy.size.width - (horizontalPadding * 2), 1)
+            let selectedID = Binding<Item.ID?>(
+                get: { selectedItem?.id },
+                set: { newValue in
+                    selectedItem = items.first(where: { $0.id == newValue })
+                }
+            )
 
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: spacing) {
@@ -41,12 +47,12 @@ struct FeaturePagingView<Item, Content>: View where Item: Identifiable, Item.ID:
             }
             .scrollIndicators(.hidden)
             .scrollTargetBehavior(.paging)
-            .scrollPosition(id: $selectedID)
+            .scrollPosition(id: selectedID)
             .onAppear {
-                guard selectedID == nil else { return }
-                selectedID = items.first?.id
+                guard selectedItem == nil else { return }
+                selectedItem = items.first
             }
-            .onChange(of: selectedID) { _, newValue in
+            .onChange(of: selectedItem?.id) { _, newValue in
                 onSelectionChanged?(newValue)
             }
         }

@@ -88,26 +88,6 @@ actor SupabaseLikedMovieStore: PhucTvLikedMovieStoring {
         return try await loadMovies()
     }
 
-    func importLegacyMovies(_ movies: [PhucTvMovieCard]) async throws {
-        guard let client = client else { return }
-        guard let session = try? await client.auth.session else { return }
-        guard !movies.isEmpty else { return }
-
-        let rows = movies.map { movie in
-            PhucTvLikedMovieRow(
-                userID: session.user.id,
-                movieID: movie.id,
-                movieSnapshot: movie,
-                createdAt: nil
-            )
-        }
-
-        try await client
-            .from("liked_movies")
-            .upsert(rows, onConflict: "user_id,movie_id")
-            .execute()
-    }
-
     private func loadRowsIfAuthenticated() async throws -> [PhucTvLikedMovieRow]? {
         guard let client else { return nil }
         do {
@@ -182,25 +162,16 @@ actor SupabasePlaybackPositionStore: PhucTvPlaybackPositionStoring {
         )
     }
 
-    func importLegacyPositions(_ positions: [PhucTvLegacyPlaybackPosition]) async throws {
+    func delete(movieID: Int, episodeID: Int) async throws {
         guard let client = client else { return }
         guard let session = try? await client.auth.session else { return }
-        guard !positions.isEmpty else { return }
-
-        let rows = positions.map { position in
-            PhucTvPlaybackPositionRow(
-                userID: session.user.id,
-                movieID: position.movieID,
-                episodeID: position.episodeID,
-                positionMillis: max(position.snapshot.positionMillis, 0),
-                durationMillis: max(position.snapshot.durationMillis, 0),
-                updatedAt: nil
-            )
-        }
 
         try await client
             .from("playback_positions")
-            .upsert(rows, onConflict: "user_id,movie_id,episode_id")
+            .delete()
+            .eq("user_id", value: session.user.id)
+            .eq("movie_id", value: movieID)
+            .eq("episode_id", value: episodeID)
             .execute()
     }
 }

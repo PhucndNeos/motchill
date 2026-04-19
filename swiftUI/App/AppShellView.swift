@@ -1,92 +1,40 @@
+import ComposableArchitecture
 import SwiftUI
 
 struct AppShellView: View {
-    @State private var authManager: PhucTvSupabaseAuthManager
-    @State private var router = AppRouter()
-    @State private var showAuthSheet = false
-
-    init(dependencies: AppDependencies) {
-        _authManager = State(initialValue: dependencies.authManager)
-    }
-
+    @Bindable var store: StoreOf<AppFeature>
+    
     var body: some View {
-        NavigationStack(path: $router.path) {
-            HomeView(router: router)
-            .navigationDestination(for: AppRoute.self, destination: destinationView)
-            .overlay(alignment: .top) {
-                if let banner = authBanner {
-                    AuthBanner(
-                        message: banner.message,
-                        buttonTitle: banner.buttonTitle,
-                        onButtonTap: banner.action
-                    )
-                    .padding(.top, 12)
-                    .padding(.horizontal, 16)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+            HomeView(store: store.scope(state: \.home, action: \.home))
+                .overlay(alignment: .topTrailing) {
+                    if let banner = store.authBanner {
+                        AuthBanner(
+                            message: banner.message,
+                            buttonTitle: banner.buttonTitle,
+                            onButtonTap: { store.send(.authBannerButtonTapped) }
+                        )
+                        .padding(.horizontal, 16)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                    }
                 }
+        } destination: { store in
+            switch store.case {
+            case .search(let store):
+                SearchView(store: store)
+            case .detail(let store):
+                DetailView(store: store)
+            case .player(let store):
+                PlayerFeatureView(store: store)
             }
-            .sheet(isPresented: $showAuthSheet) {
-                AuthView(authManager: authManager)
-            }
+        }
+        .sheet(item: $store.scope(state: \.$auth, action: \.auth)) { store in
+            AuthView(store: store)
+        }
+        .task {
+            await store.send(.task).finish()
         }
     }
-
-    private var authBanner: AuthBannerContent? {
-        if authManager.isAuthenticated {
-            let email = authManager.userSummary?.email?.trimmingCharacters(in: .whitespacesAndNewlines)
-            let message = if let email, !email.isEmpty {
-                "Đang đăng nhập với \(email)."
-            } else {
-                "Đang đăng nhập."
-            }
-
-            return AuthBannerContent(
-                message: message,
-                buttonTitle: "Đăng xuất",
-                action: {
-                    Task { await authManager.signOut() }
-                }
-            )
-        }
-
-        guard let hint = authManager.signInHint else {
-            return nil
-        }
-
-        return AuthBannerContent(
-            message: hint,
-            buttonTitle: "Đăng nhập",
-            action: {
-                showAuthSheet = true
-            }
-        )
-    }
-
-    @ViewBuilder
-    private func destinationView(for route: AppRoute) -> some View {
-        switch route {
-        case .home:
-            HomeView(router: router)
-        case .search(let routeInput):
-            SearchView(router: router, routeInput: routeInput)
-        case .detail(let movie):
-            DetailView(movie: movie, router: router)
-        case .player(let movieID, let episodeID, let movieTitle, let episodeLabel):
-            PlayerView(
-                movieID: movieID,
-                episodeID: episodeID,
-                movieTitle: movieTitle,
-                episodeLabel: episodeLabel,
-                router: router
-            )
-        }
-    }
-}
-
-private struct AuthBannerContent {
-    let message: String
-    let buttonTitle: String
-    let action: () -> Void
 }
 
 private struct AuthBanner: View {
@@ -99,7 +47,6 @@ private struct AuthBanner: View {
             Text(message)
                 .font(.footnote.weight(.medium))
                 .foregroundStyle(.white)
-                .frame(maxWidth: .infinity, alignment: .leading)
 
             Button(buttonTitle, action: onButtonTap)
                 .font(.footnote.weight(.semibold))

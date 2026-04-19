@@ -1,6 +1,6 @@
 import Foundation
 
-enum DetailSectionTab: Hashable {
+enum DetailSectionTab: Hashable, Sendable {
     case episodes
     case synopsis
     case information
@@ -20,7 +20,7 @@ enum DetailSectionTab: Hashable {
     }
 }
 
-enum DetailScreenState: Equatable {
+enum DetailScreenState: Equatable, Sendable {
     case idle
     case loading
     case loaded

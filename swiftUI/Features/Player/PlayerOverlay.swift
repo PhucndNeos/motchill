@@ -6,13 +6,14 @@
 //  Copyright © 2026 PhucTv. All rights reserved.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
 struct PlayerSubtitleOverlay: View {
     let text: String?
-    
+
     var body: some View {
-        if let text {            
+        if let text {
             Text(text)
                 .font(.system(size: 30, weight: .semibold, design: .rounded))
                 .foregroundStyle(Color.yellow.opacity(0.95))
@@ -29,51 +30,31 @@ struct PlayerSubtitleOverlay: View {
     }
 }
 
-
 struct PlayerOverlay: View {
-    @Bindable var viewModel: PlayerViewModel
+    @Bindable var store: StoreOf<PlayerFeature>
     let onBack: () -> Void
+
     @State private var scrubbingFraction: Double?
 
-    init(
-        viewModel: PlayerViewModel,
-        onBack: @escaping () -> Void
-    ) {
-        self._viewModel = Bindable(viewModel)
-        self.onBack = onBack
-    }
-
-    private var selectedSourceBinding: Binding<PhucTvPlaySource?> {
-        Binding(
-            get: { viewModel.selectedSource },
-            set: { newValue in
-                guard let newValue else { return }
-                if let index = viewModel.playableSources.firstIndex(where: { $0.id == newValue.id }) {
-                    viewModel.selectSource(index)
-                }
-            }
-        )
-    }
-
     private var displayedProgressFraction: Double {
-        scrubbingFraction ?? viewModel.progressFraction
+        scrubbingFraction ?? store.progressFraction
     }
 
     private var displayedCurrentPositionMillis: Int64 {
-        guard viewModel.durationMillis > 0 else { return viewModel.currentPositionMillis }
-        return Int64((Double(viewModel.durationMillis) * displayedProgressFraction).rounded())
+        guard store.durationMillis > 0 else { return store.currentPositionMillis }
+        return Int64((Double(store.durationMillis) * displayedProgressFraction).rounded())
     }
 
     private var playIcon: String {
-        viewModel.isPlaying ? "pause.fill" : "play.fill"
+        store.isPlaying ? "pause.fill" : "play.fill"
     }
 
     private var audioLabel: String {
-        viewModel.selectedAudioTrack?.displayLabel ?? "AUDIO"
+        store.selectedAudioTrack?.displayLabel ?? "AUDIO"
     }
 
     private var subtitleLabel: String {
-        viewModel.isSubtitleEnabled ? (viewModel.selectedSubtitleTrack?.displayLabel ?? "SUBS") : "SUBS"
+        store.isSubtitleEnabled ? (store.selectedSubtitleTrack?.displayLabel ?? "SUBS") : "SUBS"
     }
 
     var body: some View {
@@ -144,13 +125,13 @@ struct PlayerOverlay: View {
             Spacer(minLength: 16)
 
             VStack(spacing: 4) {
-                Text(viewModel.movieTitle)
+                Text(store.movieTitle)
                     .font(.system(size: 30, weight: .heavy, design: .rounded))
                     .foregroundStyle(Color(red: 1.0, green: 0.76, blue: 0.73))
                     .tracking(-0.6)
                     .lineLimit(1)
 
-                Text("\(viewModel.episodeLabel) • \(viewModel.sourceTitle)")
+                Text("\(store.episodeLabel) • \(store.sourceTitle)")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.textSecondary.opacity(0.72))
                     .tracking(2.4)
@@ -165,14 +146,14 @@ struct PlayerOverlay: View {
                     icon: "airplayaudio",
                     size: 18,
                     backgroundOpacity: 0.12,
-                    onTap: {}
+                    onTap: { store.send(.showOverlayTemporarily) }
                 )
 
                 PlayerOverlayIconButton(
                     icon: "gearshape.fill",
                     size: 18,
                     backgroundOpacity: 0.12,
-                    onTap: {}
+                    onTap: { store.send(.showOverlayTemporarily) }
                 )
             }
         }
@@ -184,13 +165,13 @@ struct PlayerOverlay: View {
                 icon: "goforward.10",
                 size: 30,
                 onTap: {
-                    viewModel.seek(by: -viewModel.seekStepMillis)
+                    store.send(.seek(deltaMillis: -store.seekStepMillis))
                 }
             )
 
-            Button(action: {
-                viewModel.togglePlayback()
-            }) {
+            Button {
+                store.send(.playPauseTapped)
+            } label: {
                 ZStack {
                     LinearGradient(
                         colors: [
@@ -216,7 +197,7 @@ struct PlayerOverlay: View {
                 size: 30,
                 flipped: true,
                 onTap: {
-                    viewModel.seek(by: viewModel.seekStepMillis)
+                    store.send(.seek(deltaMillis: store.seekStepMillis))
                 }
             )
         }
@@ -230,7 +211,7 @@ struct PlayerOverlay: View {
                 HStack {
                     Text(formatMillis(displayedCurrentPositionMillis))
                     Spacer()
-                    Text(formatMillis(viewModel.durationMillis))
+                    Text(formatMillis(store.durationMillis))
                 }
                 .font(.system(size: 15, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.textSecondary.opacity(0.72))
@@ -248,10 +229,10 @@ struct PlayerOverlay: View {
                         .frame(height: 1)
                 }
 
-                if !viewModel.playableSources.isEmpty {
-                    TabSegmentedView(
-                        selectedItem: selectedSourceBinding,
-                        items: viewModel.playableSources,
+                if !store.playableSources.isEmpty {
+                    IndexedTabSegmentedView(
+                        selectedIndex: $store.selectedSourceIndex,
+                        items: store.playableSources,
                         spacing: 12,
                         horizontalPadding: 0
                     ) { source, isSelected in
@@ -282,20 +263,20 @@ struct PlayerOverlay: View {
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
-                        guard viewModel.durationMillis > 0 else { return }
+                        guard store.durationMillis > 0 else { return }
                         scrubbingFraction = clampFraction(value.location.x / width)
-                        viewModel.showOverlayTemporarily()
+                        store.send(.showOverlayTemporarily)
                     }
                     .onEnded { value in
-                        guard viewModel.durationMillis > 0 else {
+                        guard store.durationMillis > 0 else {
                             scrubbingFraction = nil
                             return
                         }
 
                         let fraction = clampFraction(value.location.x / width)
-                        let targetMillis = Int64((Double(viewModel.durationMillis) * fraction).rounded())
+                        let targetMillis = Int64((Double(store.durationMillis) * fraction).rounded())
                         scrubbingFraction = nil
-                        viewModel.seek(to: targetMillis, playAfterSeek: true)
+                        store.send(.seekTo(positionMillis: targetMillis, playAfterSeek: true))
                     }
             )
         }
@@ -311,18 +292,22 @@ struct PlayerOverlay: View {
                     icon: "speaker.wave.2.fill",
                     label: audioLabel,
                     onTap: {
-                        viewModel.showOverlayTemporarily()
+                        store.send(.showOverlayTemporarily)
                     }
                 )
 
-                if viewModel.hasSubtitleTracks {
+                if store.hasSubtitleTracks {
                     PlayerOverlaySideButton(
                         icon: "captions.bubble.fill",
                         label: subtitleLabel,
-                        isActive: viewModel.isSubtitleEnabled,
+                        isActive: store.isSubtitleEnabled,
                         onTap: {
-                            viewModel.toggleSubtitle()
-                            viewModel.showOverlayTemporarily()
+                            if store.isSubtitleEnabled {
+                                store.send(.subtitleSelected(nil))
+                            } else if let track = store.defaultSubtitleTrackForSelectedSource {
+                                store.send(.subtitleSelected(track))
+                            }
+                            store.send(.showOverlayTemporarily)
                         }
                     )
                 }
@@ -331,7 +316,7 @@ struct PlayerOverlay: View {
                     icon: "speedometer",
                     label: "1.0X",
                     onTap: {
-                        viewModel.showOverlayTemporarily()
+                        store.send(.showOverlayTemporarily)
                     }
                 )
             }
@@ -428,7 +413,6 @@ private struct PlayerOverlaySideButton: View {
                     .lineLimit(1)
             }
         }
-        .cornerRadius(14)
         .buttonStyle(.plain)
     }
 }
@@ -475,7 +459,9 @@ private func clampFraction(_ value: Double) -> Double {
 
 #Preview("Player Overlay") {
     PlayerOverlay(
-        viewModel: PlayerViewModel.previewLoaded(),
+        store: Store(initialState: PlayerFeature.State.previewLoaded()) {
+            PlayerFeature()
+        },
         onBack: {}
     )
     .preferredColorScheme(.dark)
@@ -485,4 +471,3 @@ private func clampFraction(_ value: Double) -> Double {
     PlayerSubtitleOverlay(text: "This is a subtitle example")
         .preferredColorScheme(.dark)
 }
-    

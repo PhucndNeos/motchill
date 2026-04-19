@@ -28,6 +28,8 @@ struct PhucTvSupabaseUserSummary: Equatable, Sendable {
 
 @Observable
 final class PhucTvSupabaseAuthManager: @unchecked Sendable {
+    private static let signedOutHint = "Đăng nhập để đồng bộ liked movies và playback position."
+
     enum State: Equatable, Sendable {
         case loading
         case signedOut
@@ -39,24 +41,20 @@ final class PhucTvSupabaseAuthManager: @unchecked Sendable {
     @ObservationIgnored
     private let client: SupabaseClient?
     @ObservationIgnored
-    private let redirectURL: URL?
-    @ObservationIgnored
-    private let legacyDataMigrator: PhucTvLegacyLocalDataMigrating?
-    @ObservationIgnored
     private var authObserverTask: Task<Void, Never>?
+    @ObservationIgnored
+    private let stateLock = NSLock()
 
     var state: State = .loading
 
     init(
-        client: SupabaseClient?,
-        redirectURL: URL? = nil,
-        legacyDataMigrator: PhucTvLegacyLocalDataMigrating? = nil
+        client: SupabaseClient?
     ) {
         self.client = client
-        self.redirectURL = redirectURL
-        self.legacyDataMigrator = legacyDataMigrator
         if client == nil {
-            state = .signedOut
+            stateLock.withLock {
+                state = .signedOut
+            }
             return
         }
         observeAuthState()
@@ -68,23 +66,29 @@ final class PhucTvSupabaseAuthManager: @unchecked Sendable {
     }
 
     var isAuthenticated: Bool {
-        if case .signedIn = state { return true }
-        return false
+        stateLock.withLock {
+            if case .signedIn = state { return true }
+            return false
+        }
     }
 
     var userSummary: PhucTvSupabaseUserSummary? {
-        if case .signedIn(let user) = state { return user }
-        return nil
+        stateLock.withLock {
+            if case .signedIn(let user) = state { return user }
+            return nil
+        }
     }
 
     var signInHint: String? {
-        switch state {
-        case .signedOut:
-            return "Đăng nhập để đồng bộ liked movies và playback position."
-        case .unavailable(let message), .error(let message):
-            return message
-        default:
-            return nil
+        stateLock.withLock {
+            switch state {
+            case .loading, .signedOut:
+                return Self.signedOutHint
+            case .unavailable(let message), .error(let message):
+                return message
+            case .signedIn:
+                return nil
+            }
         }
     }
 
@@ -97,7 +101,9 @@ final class PhucTvSupabaseAuthManager: @unchecked Sendable {
             }
         } catch {
             await MainActor.run {
-                self.state = .signedOut
+                self.stateLock.withLock {
+                    self.state = .signedOut
+                }
             }
         }
     }
@@ -130,11 +136,15 @@ final class PhucTvSupabaseAuthManager: @unchecked Sendable {
         do {
             try await client.auth.signOut()
             await MainActor.run {
-                self.state = .signedOut
+                self.stateLock.withLock {
+                    self.state = .signedOut
+                }
             }
         } catch {
             await MainActor.run {
-                self.state = .error(error.localizedDescription)
+                self.stateLock.withLock {
+                    self.state = .error(error.localizedDescription)
+                }
             }
         }
     }
@@ -146,7 +156,9 @@ final class PhucTvSupabaseAuthManager: @unchecked Sendable {
                 _ = try await client.auth.session(from: url)
             } catch {
                 await MainActor.run {
-                    self.state = .error(error.localizedDescription)
+                    self.stateLock.withLock {
+                        self.state = .error(error.localizedDescription)
+                    }
                     PhucTvLogger.shared.error(error, message: "Failed to handle auth URL: \(url)")
                 }
             }
@@ -167,12 +179,15 @@ final class PhucTvSupabaseAuthManager: @unchecked Sendable {
 
     private func apply(session: Session?) {
         guard let session, !session.isExpired else {
-            state = .signedOut
+            stateLock.withLock {
+                state = .signedOut
+            }
             return
         }
 
-        state = .signedIn(makeSummary(from: session.user))
-        Task { await legacyDataMigrator?.migrateIfNeeded() }
+        stateLock.withLock {
+            state = .signedIn(makeSummary(from: session.user))
+        }
     }
 
     private func makeSummary(from user: User) -> PhucTvSupabaseUserSummary {
@@ -188,6 +203,15 @@ final class PhucTvSupabaseAuthManager: @unchecked Sendable {
             throw PhucTvSupabaseAuthError.missingConfiguration
         }
         return client
+    }
+}
+
+private extension NSLock {
+    @discardableResult
+    func withLock<T>(_ body: () throws -> T) rethrows -> T {
+        lock()
+        defer { unlock() }
+        return try body()
     }
 }
 

@@ -17,6 +17,7 @@
 		6AC200000000000000000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6AC200000000000000000021 /* Assets.xcassets */; };
 		A0A0A0A0A0A0A0A0A0A0A0A0 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = C0C0C0C0C0C0C0C0C0C0C0C0 /* Alamofire */; };
 		BD7123923FB4CC70C416690A /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 33C6D38FEB06E2F321451C7A /* Kingfisher */; };
+		CACA0F0C0F0C0F0C0F0C0F0D /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CACA0F0D0F0D0F0D0F0D0F0D /* ComposableArchitecture */; };
 		E1E1E1E1E1E1E1E1E1E1E1E1 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = F1F1F1F1F1F1F1F1F1F1F1F1 /* Supabase */; };
 /* End PBXBuildFile section */
 
@@ -65,6 +66,7 @@
 				44275316F121033B65345D97 /* Foundation.framework in Frameworks */,
 				5E88CAAF2F925F95008A35E2 /* DotLottie in Frameworks */,
 				A0A0A0A0A0A0A0A0A0A0A0A0 /* Alamofire in Frameworks */,
+				CACA0F0C0F0C0F0C0F0C0F0D /* ComposableArchitecture in Frameworks */,
 				5EB4882F2F8A8A88007251E8 /* Flow in Frameworks */,
 				BD7123923FB4CC70C416690A /* Kingfisher in Frameworks */,
 				68A94BEF2F889C5600C59159 /* SwiftyBeaver in Frameworks */,
@@ -145,6 +147,7 @@
 			name = PhucTvSwiftUI;
 			packageProductDependencies = (
 				C0C0C0C0C0C0C0C0C0C0C0C0 /* Alamofire */,
+				CACA0F0D0F0D0F0D0F0D0F0D /* ComposableArchitecture */,
 				33C6D38FEB06E2F321451C7A /* Kingfisher */,
 				68A94BEE2F889C5600C59159 /* SwiftyBeaver */,
 				5EB4882E2F8A8A88007251E8 /* Flow */,
@@ -209,6 +212,7 @@
 			packageReferences = (
 				B0B0B0B0B0B0B0B0B0B0B0B0 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				398B5E19506E6BD979D22D5C /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				CACA0F0C0F0C0F0C0F0C0F0C /* XCRemoteSwiftPackageReference "swift-composable-architecture" */,
 				68A94BED2F889C5600C59159 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
 				5EB4882D2F8A8A88007251E8 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
 				5E312E542F8BDC5D00C90FED /* XCRemoteSwiftPackageReference "SwiftSubtitles" */,
@@ -597,6 +601,14 @@
 				minimumVersion = 5.10.0;
 			};
 		};
+		CACA0F0C0F0C0F0C0F0C0F0C /* XCRemoteSwiftPackageReference "swift-composable-architecture" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-composable-architecture";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		D1D1D1D1D1D1D1D1D1D1D1D1 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase/supabase-swift";
@@ -642,6 +654,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B0B0B0B0B0B0B0B0B0B0B0B0 /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
+		};
+		CACA0F0D0F0D0F0D0F0D0F0D /* ComposableArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CACA0F0C0F0C0F0C0F0C0F0C /* XCRemoteSwiftPackageReference "swift-composable-architecture" */;
+			productName = ComposableArchitecture;
 		};
 		F1F1F1F1F1F1F1F1F1F1F1F1 /* Supabase */ = {
 			isa = XCSwiftPackageProductDependency;

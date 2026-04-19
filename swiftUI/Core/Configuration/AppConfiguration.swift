@@ -36,6 +36,10 @@ struct AppConfiguration {
     var screenSize: CGSize {
         UIScreen.main.bounds.size
     }
+    @MainActor
+    var safeArea: UIEdgeInsets? {
+        UIApplication.shared.delegate?.window??.safeAreaInsets
+    }
     var requestHeaders: [String: String] {
         [
             "User-Agent": "Mozilla/5.0 (PhucTvSwiftUI)",

@@ -56,6 +56,55 @@ struct TabSegmentedView<Item, Content>: View where Item: Identifiable, Item.ID: 
     }
 }
 
+struct IndexedTabSegmentedView<Item, Content>: View where Item: Identifiable, Item.ID: Hashable, Content: View {
+    @Binding var selectedIndex: Int
+    let items: [Item]
+    let spacing: CGFloat
+    let horizontalPadding: CGFloat
+    let itemContent: (Item, Bool) -> Content
+
+    init(
+        selectedIndex: Binding<Int>,
+        items: [Item],
+        spacing: CGFloat = 10,
+        horizontalPadding: CGFloat = 16,
+        @ViewBuilder itemContent: @escaping (Item, Bool) -> Content
+    ) {
+        self._selectedIndex = selectedIndex
+        self.items = items
+        self.spacing = spacing
+        self.horizontalPadding = horizontalPadding
+        self.itemContent = itemContent
+    }
+
+    var body: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: spacing) {
+                    ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                        let isSelected = selectedIndex == index
+
+                        Button {
+                            selectedIndex = index
+                        } label: {
+                            itemContent(item, isSelected)
+                        }
+                        .id(item.id)
+                    }
+                }
+                .padding(.horizontal, horizontalPadding)
+                .scrollTargetLayout()
+            }
+            .onChange(of: selectedIndex) {
+                guard items.indices.contains(selectedIndex) else { return }
+                withAnimation(.easeInOut) {
+                    proxy.scrollTo(items[selectedIndex].id, anchor: .center)
+                }
+            }
+        }
+    }
+}
+
 
 extension Color {
     
