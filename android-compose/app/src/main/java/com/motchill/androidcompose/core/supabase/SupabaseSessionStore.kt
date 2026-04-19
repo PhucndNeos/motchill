@@ -19,13 +19,25 @@ class SupabaseSessionStore(context: Context) : SupabaseSessionRepository {
         }
     }
 
+    override fun saveEmail(email: String) {
+        prefs.edit { putString(KEY_EMAIL, email) }
+    }
+
+    override fun loadEmail(): String? {
+        return prefs.getString(KEY_EMAIL, null)
+    }
+
     override fun clear() {
-        prefs.edit { remove(KEY_SESSION) }
+        prefs.edit { 
+            remove(KEY_SESSION) 
+            // Don't remove email
+        }
     }
 
     private companion object {
         const val PREFS_NAME = "motchill_supabase_session"
         const val KEY_SESSION = "session"
+        const val KEY_EMAIL = "last_email"
     }
 }
 

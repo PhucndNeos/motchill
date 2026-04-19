@@ -52,4 +52,6 @@ interface SupabaseSessionRepository {
     fun load(): SupabaseSession?
     fun save(session: SupabaseSession)
     fun clear()
+    fun saveEmail(email: String)
+    fun loadEmail(): String?
 }

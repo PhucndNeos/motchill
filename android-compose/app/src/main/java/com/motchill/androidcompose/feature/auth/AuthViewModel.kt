@@ -26,7 +26,7 @@ data class AuthUiState(
 class AuthViewModel(
     private val authManager: SupabaseAuthManager = PhucTVAppContainer.authManager,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(AuthUiState())
+    private val _uiState = MutableStateFlow(AuthUiState(email = authManager.getLastEmail() ?: ""))
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     init {
@@ -66,6 +66,10 @@ class AuthViewModel(
             _uiState.value = _uiState.value.copy(errorMessage = "Enter your email address")
             return
         }
+        
+        // Save email on successful OTP send
+        authManager.saveEmail(email)
+
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             runCatching {

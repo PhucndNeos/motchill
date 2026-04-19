@@ -109,6 +109,14 @@ class SupabaseAuthManager(
         }
     }
 
+    fun saveEmail(email: String) {
+        sessionStore.saveEmail(email)
+    }
+
+    fun getLastEmail(): String? {
+        return sessionStore.loadEmail()
+    }
+
     suspend fun verifyOTP(email: String, token: String) {
         withContext(Dispatchers.IO) {
             networkClient.verifyOtp(email, token)
