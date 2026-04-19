@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1096798858919",
+    "project_id": "phuctv",
+    "storage_bucket": "phuctv.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1096798858919:android:f587a8e10062d15e1bf582",
+        "android_client_info": {
+          "package_name": "com.motchill.androidcompose"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAO_RUuPCdXDC9AqBwxzifIbcVYv-fzExQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
